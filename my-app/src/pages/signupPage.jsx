@@ -30,8 +30,8 @@ export default function SignupPage({ onSignupComplete }) {
 
       <aside className="signup-left">
         <header className="brand">
-          <span className="brand-mark">SA</span>
-          <span className="brand-name">Learnerships Portal</span>
+          <span className="brand-mark">UBUNTY</span>
+          <span className="brand-name">CAREERS</span>
         </header>
 
         <section className="hero">
