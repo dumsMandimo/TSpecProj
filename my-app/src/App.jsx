@@ -1,4 +1,4 @@
-import MyApplications from "./components/applicant/MyApplications";
+import MyApplications from "./components/applicantDashboard/MyApplications";
 import SignupPage from "./pages/signupPage";
 
 function App() {
