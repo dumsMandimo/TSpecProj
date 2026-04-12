@@ -5,7 +5,7 @@ function App() {
         <> 
             <h1> Applicant Dashboard</h1>
         
-       <MyApplications />
+       <MyApplications name="Peace"/>
 
         </>
      

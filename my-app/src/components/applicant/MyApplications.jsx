@@ -1,8 +1,8 @@
 
-function MyApplications() {
+function MyApplications(props) {
     return (
         <>
-    <h1> My Applications </h1>
+    <h1> Welcome, {props.name}</h1>
     <p> No applications yet.</p>
    </> );
         
