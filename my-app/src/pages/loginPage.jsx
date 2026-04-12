@@ -1,60 +1,17 @@
-import { useState } from 'react';
+import { useState } from "react";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth, db } from "../firebase/firebaseConfig";
+import { doc, setDoc } from "firebase/firestore";
 import './loginPage.css';
 
-const ROLES = [
-  { key: 'applicant', label: 'Applicant', desc: 'Looking for learnerships & internships' },
-];
 
 export default function loginPage() {
-  const [activeRole, setActiveRole] = useState('applicant');
-
-  const forms = {
-    applicant: <SignupApplicant />,
-    provider:  <SignupProvider />,
-    admin:     <SignupAdmin />,
-  };
 
   return (
     <main className="login-page">
 
-      <aside className="login-left">
-        <header className="brand">
-          <span className="brand-mark">UBUNTY</span>
-          <span className="brand-name">CAREERS</span>
-        </header>
-        <section className="hero">
-          <h1>Connect.<br />Learn.<br />Grow.</h1>
-          <p>South Africa's platform linking work-seekers with SETA-accredited learnerships, apprenticeships and internships.</p>
-        </section>
-        <ul className="stats">
-          <li><strong>12k+</strong><span>Opportunities</span></li>
-          <li><strong>800+</strong><span>Providers</span></li>
-          <li><strong>9</strong><span>Provinces</span></li>
-        </ul>
-      </aside>
-
       <section className="login-right">
-        <h2>Create your account</h2>
-        <p className="subtitle">Choose your role to get started</p>
-
-        <nav aria-label="Account type">
-          <ul className="role-tabs" role="tablist">
-            {ROLES.map(({ key, label, desc }) => (
-              <li key={key} role="presentation">
-                <button
-                  role="tab"
-                  type="button"
-                  aria-selected={activeRole === key}
-                  className={activeRole === key ? 'active' : ''}
-                  onClick={() => setActiveRole(key)}
-                >
-                  <span className="tab-label">{label}</span>
-                  <span className="tab-desc">{desc}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <h2>Login to your account</h2>
 
         <section
           role="tabpanel"
@@ -65,7 +22,7 @@ export default function loginPage() {
         </section>
 
         <p className="login-prompt">
-          Already have an account? <a href="/login">Sign in</a>
+          Don't have an account? <a href="/login">Sign up here</a>
         </p>
       </section>
 
