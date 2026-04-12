@@ -1,16 +1,13 @@
 import MyApplications from "./components/applicant/MyApplications";
+import SignupPage from "./pages/signupPage";
+
 function App() {
-   
-    return (
-        <> 
-            <h1> Applicant Dashboard</h1>
-        
-       <MyApplications />
-
-        </>
-     
-    );
+  return (
+    <>
+      <SignupPage />
+      <MyApplications />
+    </>
+  );
 }
-
 
 export default App;
