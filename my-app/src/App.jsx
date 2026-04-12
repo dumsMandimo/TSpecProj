@@ -1,5 +1,13 @@
-import SignupPage from './pages/signupPage';
+import MyApplications from "./components/applicant/MyApplications";
+import SignupPage from "./pages/signupPage";
 
-export default function App() {
-  return <SignupPage />;
+function App() {
+  return (
+    <>
+      <SignupPage />
+      <MyApplications />
+    </>
+  );
 }
+
+export default App;
