@@ -3,6 +3,7 @@ import SignupApplicant from '../components/signupApplicant';
 import SignupProvider from '../components/signupProvider';
 import SignupAdmin from '../components/signupAdmin';
 import './signupPage.css';
+import { Link } from 'react-router-dom';
 
 const ROLES = [
   { key: 'applicant', label: 'Applicant', desc: 'Looking for learnerships & internships' },
@@ -70,7 +71,7 @@ export default function SignupPage() {
         </section>
 
         <p className="login-prompt">
-          Already have an account? <a href="/loginPage">Sign in</a>
+          Already have an account? <Link to="/login">Sign in</Link>
         </p>
       </section>
 

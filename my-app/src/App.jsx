@@ -1,15 +1,6 @@
-import MyApplications from "./components/applicantDashboard/MyApplications";
-import SignupPage from "./pages/signupPage";
+import AppRouter from './router/AppRouter';
 
-function App() {
-  return (
-   <>
-    <SignupPage />
-    <LoginPage />
-    <MyApplications />
-       </>
-  );
- 
+export default function App() { 
+  return <AppRouter />;
 }
 
-export default App;

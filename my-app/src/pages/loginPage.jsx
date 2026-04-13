@@ -1,21 +1,24 @@
 import { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase/firebaseConfig';
+//import { signInWithEmailAndPassword } from 'firebase/auth';
+//import { auth } from '../firebase/firebaseConfig';
 import './loginPage.css';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      alert('Logged in successfully!');
-    } catch (error) {
-      alert(error.message);
+
+    // TEMP: just simulate login
+    console.log('Login attempt:', { email, password });
+
+    if (!email || !password) {
+      alert('Please enter email and password');
+      return;
     }
-  };
+  }
+
 
   return (
 
@@ -24,7 +27,7 @@ export default function LoginPage() {
 
       <aside className="login-left">
         <header className="brand">
-          <span className="brand-mark">UBUNTY</span>
+          <span className="brand-mark">UBUNTU</span>
           <span className="brand-name">CAREERS</span>
         </header>
         <section className="hero">
