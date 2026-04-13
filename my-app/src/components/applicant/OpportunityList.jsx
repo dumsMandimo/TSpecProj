@@ -18,7 +18,7 @@ function OpportunityList() {
                     <p>Location: {opportunity.location}</p>
                     <p>Stipend: {opportunity.stipend}</p>
                     <p>Closing Date: {opportunity.closingDate}</p>
-                    <button className="apply-btn">Apply</button>
+                    <button type="button" className="apply-btn">Apply</button>
                 </Fragment>
             ))}
         </>
