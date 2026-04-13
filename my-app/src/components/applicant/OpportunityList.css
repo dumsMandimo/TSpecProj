@@ -1,11 +1,20 @@
-.Opportunity-title {
+.opportunities-title {
     font-size: 22px;
     color: black;
     margin-bottom: 16px;
 }
 
+.apply-btn {
+    background-color: #FF6600;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 16px;
+}
 
-.empty-message {
-    color: grey;
-    font-style: italic;
+.apply-btn:hover {
+    background-color: black;
+    color: white;
 }
