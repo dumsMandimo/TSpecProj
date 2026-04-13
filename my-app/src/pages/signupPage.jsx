@@ -11,13 +11,19 @@ const ROLES = [
   { key: 'admin',     label: 'Admin',     desc: 'Platform administrator' },
 ];
 
-export default function SignupPage() {
+export default function SignupPage({ onSignupComplete }) {
   const [activeRole, setActiveRole] = useState('applicant');
 
   const forms = {
     applicant: <SignupApplicant />,
     provider:  <SignupProvider />,
     admin:     <SignupAdmin />,
+  };
+
+  const handleSubmit = () => {
+    if (onSignupComplete) {
+      onSignupComplete(activeRole);
+    }
   };
 
   return (
@@ -28,10 +34,12 @@ export default function SignupPage() {
           <span className="brand-mark">UBUNTU</span>
           <span className="brand-name">CAREERS</span>
         </header>
+
         <section className="hero">
           <h1>Connect.<br />Learn.<br />Grow.</h1>
           <p>South Africa's platform linking work-seekers with SETA-accredited learnerships, apprenticeships and internships.</p>
         </section>
+
         <ul className="stats">
           <li><strong>12k+</strong><span>Opportunities</span></li>
           <li><strong>800+</strong><span>Providers</span></li>
@@ -68,6 +76,11 @@ export default function SignupPage() {
           className="form-panel"
         >
           {forms[activeRole]}
+
+          {/* ADD BUTTON TO TRIGGER SIGNUP COMPLETE */}
+          <button onClick={handleSubmit} type="button">
+            Create Account
+          </button>
         </section>
 
         <p className="login-prompt">

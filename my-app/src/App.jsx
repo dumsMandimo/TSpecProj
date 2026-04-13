@@ -1,12 +1,8 @@
 
-import SignupPage from "./pages/signupPage";
+import AppRouter from './router/AppRouter';
 
-function App() {
-  return (
-    <>
-      <SignupPage />
-      
-    </>
-  );
+export default function App() { 
+  return <AppRouter />;
+
 }
 

@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function SignupAdmin() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     fullName: '', email: '', password: '', confirmPassword: '',
   });
@@ -9,13 +11,21 @@ export default function SignupAdmin() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (form.password !== form.confirmPassword) {
       alert('Passwords do not match');
       return;
     }
+
+    localStorage.setItem('userRole', 'admin');
+    localStorage.setItem('userEmail', form.email);
+
     console.log('Admin signup:', form);
     alert('Admin form submitted! (MVP — no backend yet)');
+    navigate('/admin');
   };
+
+
 
   return (
     <form onSubmit={handleSubmit}>
