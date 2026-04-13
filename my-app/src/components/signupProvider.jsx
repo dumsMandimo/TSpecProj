@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const SECTORS = [
   'Agriculture','Construction','Education','Energy','Finance',
@@ -12,6 +13,8 @@ const PROVINCES = [
 ];
 
 export default function SignupProvider() {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     organisationName: '', contactName: '', email: '',
     password: '', sector: '', province: '', description: '',
@@ -21,8 +24,7 @@ export default function SignupProvider() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Provider signup:', form);
-    alert('Provider form submitted! (MVP — no backend yet)');
+    navigate('/dashboard/provider');
   };
 
   return (
@@ -101,6 +103,7 @@ export default function SignupProvider() {
             placeholder="Min. 8 characters"
             value={form.password}
             onChange={set('password')}
+            minLength={8}
             required
           />
         </label>

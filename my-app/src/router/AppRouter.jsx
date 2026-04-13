@@ -4,6 +4,8 @@ import LoginPage from '../pages/loginPage';
 import ApplicantDashboard from '../components/applicantDashboard/Dashboard';
 import AdminLayout from '../pages/adminLayout';
 import AdminDashboard from '../pages/adminDashboard';
+import ProviderDashboard from '../pages/ProviderDashboard';
+
 
 
 export default function AppRouter() {
@@ -12,11 +14,11 @@ export default function AppRouter() {
       <Routes>
         <Route path="/signup"                element={<SignupPage />} />
         <Route path="/login"                 element={<LoginPage />} />
-        <Route path="/dashboard/applicant"   element={<ApplicantDashboard />} />
+        <Route path="/dashboard/applicant" element={<ApplicantDashboard />} />
+        <Route path="/dashboard/admin" element={<AdminDashboard />} />
+        <Route path="/dashboard/provider" element={<ProviderDashboard />} />
 
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-        </Route>
+        
 
         <Route path="/"                      element={<Navigate to="/signup" replace />} />
         <Route path="*"                      element={<Navigate to="/signup" replace />} />
