@@ -25,7 +25,7 @@ export default function SignupPage() {
 
       <aside className="signup-left">
         <header className="brand">
-          <span className="brand-mark">UBUNTY</span>
+          <span className="brand-mark">UBUNTU</span>
           <span className="brand-name">CAREERS</span>
         </header>
         <section className="hero">

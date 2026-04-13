@@ -69,7 +69,7 @@ export default function LoginPage() {
         <input type="submit" value="LOGIN" className="btn" />
       </form>
       </section>
-      <p className="login-prompt">Already have an account? <a href="/">Sign Up</a>
+      <p className="login-prompt">Don't have an account? <a href="/">Sign Up</a>
       </p>
       </section>
     </main>
