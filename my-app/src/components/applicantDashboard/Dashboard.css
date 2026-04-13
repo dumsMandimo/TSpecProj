@@ -1,0 +1,6 @@
+.dashboard-page {
+    min-height: 100vh;
+    background: #060606;
+    padding: 2rem 1rem;
+    font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+}
