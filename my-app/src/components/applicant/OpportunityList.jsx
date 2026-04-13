@@ -11,6 +11,7 @@ function OpportunityList() {
     ];
 
     return (
+<<<<<<< HEAD
         <section className="opportunities-page">
             <header className="opportunities-header">
                 <p className="eyebrow">Opportunities</p>
@@ -37,6 +38,21 @@ function OpportunityList() {
                 ))}
             </div>
         </section>
+=======
+        <>
+            <h1 className="opportunities-title">Available Opportunities</h1>
+            {opportunities.map((opportunity) => (
+                <Fragment key={opportunity.id}>
+                    <h3>{opportunity.title}</h3>
+                    <p>{opportunity.description}</p>
+                    <p>Location: {opportunity.location}</p>
+                    <p>Stipend: {opportunity.stipend}</p>
+                    <p>Closing Date: {opportunity.closingDate}</p>
+                    <button type="button" className="apply-btn">Apply</button>
+                </Fragment>
+            ))}
+        </>
+>>>>>>> e0267178e6edfb48b3da1c31d2d064503820b2ab
     );
 }
 
