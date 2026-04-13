@@ -2,8 +2,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import SignupPage from '../pages/signupPage';
 import LoginPage from '../pages/loginPage';
 import ApplicantDashboard from '../components/applicantDashboard/Dashboard';
-//import AdminLayout from '../pages/adminLayout';
-//import AdminDashboard from '../pages/adminDashboard';
+import AdminLayout from '../pages/adminLayout';
+import AdminDashboard from '../pages/adminDashboard';
+import ProviderDashboard from '../pages/ProviderDashboard';
+
 
 
 export default function AppRouter() {
@@ -12,7 +14,9 @@ export default function AppRouter() {
       <Routes>
         <Route path="/signup"                element={<SignupPage />} />
         <Route path="/login"                 element={<LoginPage />} />
-        <Route path="/dashboard/applicant"   element={<ApplicantDashboard />} />
+        <Route path="/dashboard/applicant" element={<ApplicantDashboard />} />
+        <Route path="/dashboard/admin" element={<AdminDashboard />} />
+        
 
         
 
