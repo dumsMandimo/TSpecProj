@@ -18,8 +18,32 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="login">
+
+    
+    <main className="login-page">
+
+      <aside className="login-left">
+        <header className="brand">
+          <span className="brand-mark">UBUNTY</span>
+          <span className="brand-name">CAREERS</span>
+        </header>
+        <section className="hero">
+          <h1>Connect.<br />Learn.<br />Grow.</h1>
+          <p>South Africa's platform linking work-seekers with SETA-accredited learnerships, apprenticeships and internships.</p>
+        </section>
+        <ul className="stats">
+          <li><strong>12k+</strong><span>Opportunities</span></li>
+          <li><strong>800+</strong><span>Providers</span></li>
+          <li><strong>9</strong><span>Provinces</span></li>
+        </ul>
+      </aside>
+
+
+      <section className="login-right">
       <h4>Sign in to your account</h4>
+      <p className="subtitle">Welcome back!</p>
+
+      <section role="tabpanel" className="form-panel">
       <form onSubmit={handleSubmit}>
         <label className="text_area">
           <input
@@ -41,7 +65,10 @@ export default function LoginPage() {
         </label>
         <input type="submit" value="LOGIN" className="btn" />
       </form>
-      <a className="link" href="/signup">Sign Up</a>
+      </section>
+      <p className="login-prompt">Already have an account? <a href="/">Sign Up</a>
+      </p>
+      </section>
     </main>
   );
 }
