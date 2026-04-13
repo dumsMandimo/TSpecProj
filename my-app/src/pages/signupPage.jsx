@@ -70,7 +70,7 @@ export default function SignupPage() {
         </section>
 
         <p className="login-prompt">
-          Already have an account? <a href="/login">Sign in</a>
+          Already have an account? <a href="/loginPage">Sign in</a>
         </p>
       </section>
 
