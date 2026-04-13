@@ -16,7 +16,7 @@ export default function AppRouter() {
         <Route path="/login"                 element={<LoginPage />} />
         <Route path="/dashboard/applicant" element={<ApplicantDashboard />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
-        
+        <Route path="/dashboard/provider" element={<ProviderDashboard />} />
 
         
 
