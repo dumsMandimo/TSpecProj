@@ -17,15 +17,8 @@ export default function SignupAdmin() {
       return;
     }
 
-    localStorage.setItem('userRole', 'admin');
-    localStorage.setItem('userEmail', form.email);
-
-    console.log('Admin signup:', form);
-    alert('Admin form submitted! (MVP — no backend yet)');
-    navigate('/admin');
+    navigate('/dashboard/admin');
   };
-
-
 
   return (
     <form onSubmit={handleSubmit}>
@@ -61,6 +54,7 @@ export default function SignupAdmin() {
             placeholder="Min. 8 characters"
             value={form.password}
             onChange={set('password')}
+            minLength={8}
             required
           />
         </label>
@@ -72,6 +66,7 @@ export default function SignupAdmin() {
             placeholder="Repeat password"
             value={form.confirmPassword}
             onChange={set('confirmPassword')}
+            minLength={8}
             required
           />
         </label>
