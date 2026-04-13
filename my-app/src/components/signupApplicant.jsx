@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 const NQF_LEVELS = [
@@ -25,15 +26,15 @@ export default function SignupApplicant() {
   });
 
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Applicant signup:', form);
-    alert('Applicant form submitted! (MVP — no backend yet)');
+    navigate('/dashboard/applicant');
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
+    <form onSubmit={handleSubmit} >
       <fieldset>
         <legend>Personal details</legend>
 

@@ -18,7 +18,7 @@ export default function SignupAdmin() {
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
+    <form onSubmit={handleSubmit}>
       <fieldset>
         <legend>Admin details</legend>
 

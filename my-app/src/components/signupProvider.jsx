@@ -26,7 +26,7 @@ export default function SignupProvider() {
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
+    <form onSubmit={handleSubmit}>
       <fieldset>
         <legend>Organisation details</legend>
 

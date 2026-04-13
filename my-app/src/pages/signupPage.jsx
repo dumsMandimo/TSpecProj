@@ -3,6 +3,7 @@ import SignupApplicant from '../components/signupApplicant';
 import SignupProvider from '../components/signupProvider';
 import SignupAdmin from '../components/signupAdmin';
 import './signupPage.css';
+import { Link } from 'react-router-dom';
 
 const ROLES = [
   { key: 'applicant', label: 'Applicant', desc: 'Looking for learnerships & internships' },
@@ -24,8 +25,8 @@ export default function SignupPage() {
 
       <aside className="signup-left">
         <header className="brand">
-          <span className="brand-mark">SA</span>
-          <span className="brand-name">Learnerships Portal</span>
+          <span className="brand-mark">UBUNTU</span>
+          <span className="brand-name">CAREERS</span>
         </header>
         <section className="hero">
           <h1>Connect.<br />Learn.<br />Grow.</h1>
@@ -70,7 +71,7 @@ export default function SignupPage() {
         </section>
 
         <p className="login-prompt">
-          Already have an account? <a href="/login">Sign in</a>
+          Already have an account? <Link to="/login">Sign in</Link>
         </p>
       </section>
 
