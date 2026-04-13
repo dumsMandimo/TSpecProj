@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import SignupApplicant from '../components/signupApplicant';
 import SignupProvider from '../components/signupProvider';
 import SignupAdmin from '../components/signupAdmin';
 import './signupPage.css';
-import { Link } from 'react-router-dom';
 
 const ROLES = [
   { key: 'applicant', label: 'Applicant', desc: 'Looking for learnerships & internships' },
@@ -11,19 +11,13 @@ const ROLES = [
   { key: 'admin',     label: 'Admin',     desc: 'Platform administrator' },
 ];
 
-export default function SignupPage({ onSignupComplete }) {
+export default function SignupPage() {
   const [activeRole, setActiveRole] = useState('applicant');
 
   const forms = {
     applicant: <SignupApplicant />,
     provider:  <SignupProvider />,
     admin:     <SignupAdmin />,
-  };
-
-  const handleSubmit = () => {
-    if (onSignupComplete) {
-      onSignupComplete(activeRole);
-    }
   };
 
   return (
@@ -76,11 +70,6 @@ export default function SignupPage({ onSignupComplete }) {
           className="form-panel"
         >
           {forms[activeRole]}
-
-          {/* ADD BUTTON TO TRIGGER SIGNUP COMPLETE */}
-          <button onClick={handleSubmit} type="button">
-            Create Account
-          </button>
         </section>
 
         <p className="login-prompt">
