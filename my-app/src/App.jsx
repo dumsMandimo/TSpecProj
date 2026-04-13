@@ -6,9 +6,9 @@ function App() {
     <>
       <SignupPage />
       <MyApplications />
-      <ProviderDashboard />
     </>
   );
+ 
 }
 
 export default App;
