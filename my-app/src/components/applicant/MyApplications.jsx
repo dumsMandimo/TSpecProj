@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React from "react";
 import "./MyApplications.css";
 
 function MyApplications(props) {
@@ -9,18 +9,25 @@ function MyApplications(props) {
     ];
 
     return (
-        <>
-            <h1 className="applications-title">My Applications</h1>
-            <h2>Welcome, {props.name}</h2>
+        <section className="applications-page">
+            <header className="applications-header">
+                <p className="eyebrow">Career Dashboard</p>
+                <h1 className="applications-title">My Applications</h1>
+                <h2 className="applications-subtitle">Welcome back, {props.name}</h2>
+            </header>
 
-            {applications.map((application) => (
-                <Fragment key={application.id}>
-                    <h3>{application.title}</h3>
-                    <p>{application.company}</p>
-                    <p>{application.status}</p>
-                </Fragment>
-            ))}
-        </>
+            <div className="applications-grid">
+                {applications.map((application) => (
+                    <article key={application.id} className="application-card">
+                        <h3>{application.title}</h3>
+                        <p>{application.company}</p>
+                        <span className={`status-pill status-${application.status.toLowerCase()}`}>
+                            {application.status}
+                        </span>
+                    </article>
+                ))}
+            </div>
+        </section>
     );
 }
 

@@ -1,15 +1,6 @@
-.dashboard {
-    background-color: white;
+.dashboard-page {
     min-height: 100vh;
-    padding: 24px;
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-.dashboard-title{
-    color: #FF6600;
-    font-size: 28px;
-    margin-bottom:24px;
-    border-bottom: 2px solid black;
-    padding-bottom: 8px;
+    background: #060606;
+    padding: 2rem 1rem;
+    font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
 }
