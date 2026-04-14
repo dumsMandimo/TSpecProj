@@ -32,6 +32,8 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./my-app/coverage/lcov.info
+          fail_ci_error: true
 
   build:
     runs-on: ubuntu-latest
