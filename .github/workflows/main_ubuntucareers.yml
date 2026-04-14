@@ -21,21 +21,40 @@ jobs:
         with:
           node-version: '22.x'
 
-      - name: Install dependencies and build
+      - name: Install dependencies
         working-directory: ./my-app
-        run: |
-          npm install
-          npm run build
+        run: npm ci --omit=dev
+
+      - name: Build
+        working-directory: ./my-app
+        run: npm run build
+
+      - name: Install dev dependencies for testing
+        working-directory: ./my-app
+        run: npm ci
+
+      - name: Run tests with coverage
+        working-directory: ./my-app
+        run: npm run test -- --coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: ./my-app
+          path: |
+            ./my-app
+            !./my-app/node_modules
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      contents: read
 
     steps:
       - name: Download artifact
@@ -43,6 +62,10 @@ jobs:
         with:
           name: node-app
           path: ./my-app
+
+      - name: Install production dependencies
+        working-directory: ./my-app
+        run: npm ci --omit=dev
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
