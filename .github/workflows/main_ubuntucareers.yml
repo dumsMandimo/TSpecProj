@@ -1,4 +1,4 @@
-name: Build and Deploy to Azure
+name: CI/CD Pipeline
 
 on:
   push:
@@ -7,10 +7,35 @@ on:
   workflow_dispatch:
 
 jobs:
+  test:
+    name: Run tests and collect coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Install dependencies
+        working-directory: ./my-app
+        run: npm install
+
+      - name: Run tests
+        working-directory: ./my-app
+        run: npx jest --coverage
+
+      - name: Upload results to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    needs: test
 
     steps:
       - name: Checkout code
@@ -26,11 +51,6 @@ jobs:
         run: |
           npm install
           npm run build
-
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
