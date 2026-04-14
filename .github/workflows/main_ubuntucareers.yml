@@ -8,15 +8,12 @@ on:
 
 jobs:
   test:
-    name: Run tests and collect coverage
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22.x'
 
@@ -28,37 +25,35 @@ jobs:
         working-directory: ./my-app
         run: npx jest --coverage --passWithNoTests
 
-      - name: Upload results to Codecov
+      - name: Upload to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./my-app/coverage/lcov.info
-          fail_ci_error: true
+          fail_ci_if_error: true
 
   build:
     runs-on: ubuntu-latest
     needs: test
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22.x'
 
-      - name: Install dependencies and build
+      - name: Install + Build
         working-directory: ./my-app
         run: |
           npm install
           npm run build
 
-      - name: Upload artifact for deployment
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: ./my-app
+          path: ./my-app/build
 
   deploy:
     runs-on: ubuntu-latest
@@ -69,12 +64,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-          path: ./my-app
+          path: ./my-app/build
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'UbuntuCareers'
           slot-name: 'Production'
-          package: ./my-app
+          package: ./my-app/build
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69C9B4F571244BB0AA7474BC29A01C9C }}
