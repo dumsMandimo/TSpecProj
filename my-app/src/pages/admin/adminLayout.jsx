@@ -3,12 +3,16 @@ import { Outlet } from "react-router-dom";
 
 export default function AdminLayout() {
   return (
-    <div style={{ display: "flex" }}>
-      <Sidebar />
+    <main style={{ display: "flex" }}>
+      
+      <aside>
+        <Sidebar />
+      </aside>
 
-      <div style={{ flex: 1, padding: "20px" }}>
+      <section style={{ flex: 1, padding: "20px" }}>
         <Outlet />
-      </div>
-    </div>
+      </section>
+
+    </main>
   );
 }
