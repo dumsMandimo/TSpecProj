@@ -38,6 +38,8 @@ export default function SignupApplicant() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
   const navigate = useNavigate();
 
   const set = (field) => (e) =>
@@ -45,12 +47,21 @@ export default function SignupApplicant() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (loading) return;
     setLoading(true);
+    setErrorMsg("");
+
+    if (form.password.length < 6) {
+      setErrorMsg("Password must be at least 6 characters long.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const cleanEmail = form.email.trim().toLowerCase();
 
-      const user = await signUpWithEmail(
+      await signUpWithEmail(
         cleanEmail,
         form.password,
         "applicant",
@@ -62,29 +73,55 @@ export default function SignupApplicant() {
         }
       );
 
-      console.log("User created:", user);
+      // ✅ FIX ADDED HERE
+      localStorage.setItem("role", "applicant");
 
-      navigate("/verify-email");
+      navigate("/dashboard/applicant");
+
     } catch (error) {
       console.error("Signup failed:", error);
-      alert("Signup failed. Please try again.");
+
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          setErrorMsg("This account already exists. Please log in instead.");
+          break;
+
+        case "auth/invalid-email":
+          setErrorMsg("Please enter a valid email address.");
+          break;
+
+        case "auth/weak-password":
+          setErrorMsg("Password is too weak.");
+          break;
+
+        default:
+          setErrorMsg("Signup failed. Please try again.");
+          break;
+      }
+
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignup = async () => {
+    if (loading) return;
+
     setLoading(true);
+    setErrorMsg("");
 
     try {
-      const user = await signUpWithGoogle();
+      await signUpWithGoogle();
 
-      console.log("User created with Google:", user);
+      // (optional consistency fix, same logic applies)
+      localStorage.setItem("role", "applicant");
 
       navigate("/dashboard/applicant");
+
     } catch (error) {
       console.error("Google signup failed:", error);
-      alert("Google sign-in failed. Please try again.");
+      setErrorMsg("Google sign-in failed. Please try again.");
+
     } finally {
       setLoading(false);
     }
@@ -95,46 +132,30 @@ export default function SignupApplicant() {
       <fieldset>
         <legend>Personal details</legend>
 
-        <p className="field-row">
-          <label>
-            First name
-            <input
-              type="text"
-              value={form.firstName}
-              onChange={set("firstName")}
-              required
-            />
-          </label>
-
-          <label>
-            Last name
-            <input
-              type="text"
-              value={form.lastName}
-              onChange={set("lastName")}
-              required
-            />
-          </label>
-        </p>
+        {errorMsg && (
+          <p style={{ color: "red", marginBottom: "10px" }}>
+            {errorMsg}
+          </p>
+        )}
 
         <label>
-          Email address
-          <input
-            type="email"
-            value={form.email}
-            onChange={set("email")}
-            required
-          />
+          First name
+          <input value={form.firstName} onChange={set("firstName")} required />
+        </label>
+
+        <label>
+          Last name
+          <input value={form.lastName} onChange={set("lastName")} required />
+        </label>
+
+        <label>
+          Email
+          <input type="email" value={form.email} onChange={set("email")} required />
         </label>
 
         <label>
           Password
-          <input
-            type="password"
-            value={form.password}
-            onChange={set("password")}
-            required
-          />
+          <input type="password" value={form.password} onChange={set("password")} required />
         </label>
 
         <label>
@@ -148,12 +169,8 @@ export default function SignupApplicant() {
         </label>
 
         <label>
-          Highest qualification
-          <select
-            value={form.qualification}
-            onChange={set("qualification")}
-            required
-          >
+          Qualification
+          <select value={form.qualification} onChange={set("qualification")} required>
             <option value="">Select NQF level</option>
             {NQF_LEVELS.map((n) => (
               <option key={n}>{n}</option>
@@ -167,7 +184,7 @@ export default function SignupApplicant() {
       </button>
 
       <button type="button" onClick={handleGoogleSignup} disabled={loading}>
-        {loading ? "Signing in with Google..." : "Sign up with Google"}
+        {loading ? "Signing in..." : "Sign up with Google"}
       </button>
     </form>
   );

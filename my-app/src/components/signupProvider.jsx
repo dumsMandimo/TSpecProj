@@ -16,6 +16,7 @@ const PROVINCES = [
 export default function SignupProvider() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const [form, setForm] = useState({
     organisationName: '',
@@ -32,12 +33,22 @@ export default function SignupProvider() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (loading) return;
+
     setLoading(true);
+    setErrorMsg("");
+
+    if (form.password.length < 8) {
+      setErrorMsg("Password must be at least 8 characters long.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const cleanEmail = form.email.trim().toLowerCase();
 
-      const user = await signUpWithEmail(
+      await signUpWithEmail(
         cleanEmail,
         form.password,
         "provider",
@@ -50,29 +61,59 @@ export default function SignupProvider() {
         }
       );
 
-      console.log("Provider created:", user);
+      console.log("Provider created");
+
+      // ✅ FIX ADDED HERE
+      localStorage.setItem("role", "provider");
 
       navigate("/dashboard/provider");
+
     } catch (error) {
-      console.error(error);
-      alert("Provider signup failed");
+      console.error("Provider signup failed:", error);
+
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          setErrorMsg("This account already exists. Please log in instead.");
+          break;
+
+        case "auth/invalid-email":
+          setErrorMsg("Please enter a valid email address.");
+          break;
+
+        case "auth/weak-password":
+          setErrorMsg("Password is too weak.");
+          break;
+
+        default:
+          setErrorMsg("Provider signup failed. Please try again.");
+          break;
+      }
+
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignup = async () => {
+    if (loading) return;
+
     setLoading(true);
+    setErrorMsg("");
 
     try {
-      const user = await signUpWithGoogle("provider");
+      await signUpWithGoogle("provider");
 
-      console.log("Google provider user:", user);
+      console.log("Provider Google signup successful");
+
+      // optional consistency fix
+      localStorage.setItem("role", "provider");
 
       navigate("/dashboard/provider");
+
     } catch (error) {
-      console.error(error);
-      alert("Google signup failed");
+      console.error("Google signup failed:", error);
+      setErrorMsg("Google signup failed. Please try again.");
+
     } finally {
       setLoading(false);
     }
@@ -82,6 +123,12 @@ export default function SignupProvider() {
     <form onSubmit={handleSubmit}>
       <fieldset>
         <legend>Organisation details</legend>
+
+        {errorMsg && (
+          <p style={{ color: "red", marginBottom: "10px" }}>
+            {errorMsg}
+          </p>
+        )}
 
         <label>
           Organisation name

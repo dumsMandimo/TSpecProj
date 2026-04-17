@@ -5,6 +5,7 @@ import { signUpWithEmail, signUpWithGoogle } from '../services/authService';
 export default function SignupAdmin() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const [form, setForm] = useState({
     fullName: '',
@@ -19,8 +20,17 @@ export default function SignupAdmin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (loading) return;
+
+    setErrorMsg("");
+
     if (form.password !== form.confirmPassword) {
-      alert('Passwords do not match');
+      setErrorMsg("Passwords do not match.");
+      return;
+    }
+
+    if (form.password.length < 6) {
+      setErrorMsg("Password must be at least 6 characters long.");
       return;
     }
 
@@ -38,25 +48,59 @@ export default function SignupAdmin() {
         }
       );
 
+      console.log("Admin created successfully");
+
+      // ✅ FIX ADDED HERE
+      localStorage.setItem("role", "admin");
+
       navigate("/dashboard/admin");
 
     } catch (error) {
-      console.error(error);
-      alert("Admin signup failed");
+      console.error("Admin signup failed:", error);
+
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          setErrorMsg("This account already exists. Please log in instead.");
+          break;
+
+        case "auth/invalid-email":
+          setErrorMsg("Please enter a valid email address.");
+          break;
+
+        case "auth/weak-password":
+          setErrorMsg("Password is too weak.");
+          break;
+
+        default:
+          setErrorMsg("Admin signup failed. Please try again.");
+          break;
+      }
+
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignup = async () => {
+    if (loading) return;
+
     setLoading(true);
+    setErrorMsg("");
 
     try {
       await signUpWithGoogle("admin");
+
+      console.log("Admin Google signup successful");
+
+      // optional consistency fix
+      localStorage.setItem("role", "admin");
+
       navigate("/dashboard/admin");
+
     } catch (error) {
-      console.error(error);
-      alert("Google signup failed");
+      console.error("Google signup failed:", error);
+      setErrorMsg("Google signup failed. Please try again.");
+
     } finally {
       setLoading(false);
     }
@@ -66,6 +110,12 @@ export default function SignupAdmin() {
     <form onSubmit={handleSubmit}>
       <fieldset>
         <legend>Admin details</legend>
+
+        {errorMsg && (
+          <p style={{ color: "red", marginBottom: "10px" }}>
+            {errorMsg}
+          </p>
+        )}
 
         <label>
           Full name
@@ -113,7 +163,7 @@ export default function SignupAdmin() {
       </button>
 
       <button type="button" onClick={handleGoogleSignup} disabled={loading}>
-        {loading ? "Signing in with Google..." : "Sign up with Google"}
+        {loading ? "Signing in..." : "Sign up with Google"}
       </button>
     </form>
   );
