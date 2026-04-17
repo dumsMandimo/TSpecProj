@@ -1,4 +1,4 @@
-import Sidebar from "../components/adminSidebar";
+import Sidebar from "../../components/admin/adminSidebar";
 import { Outlet } from "react-router-dom";
 
 export default function AdminLayout() {
@@ -8,7 +8,6 @@ export default function AdminLayout() {
       <aside>
         <Sidebar />
       </aside>
-
       <section style={{ flex: 1, padding: "20px" }}>
         <Outlet />
       </section>

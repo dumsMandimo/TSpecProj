@@ -10,31 +10,31 @@ export default function Sidebar() {
       <h2 style={styles.title}>Admin</h2>
 
       <Link
+        to="/dashboard/admin"
         style={{
           ...styles.link,
-          ...(isActive("/admin") && styles.active),
+          ...(isActive("/dashboard/admin") && styles.active),
         }}
-        to="/admin"
       >
         Dashboard
       </Link>
 
       <Link
+        to="/dashboard/admin/opportunities"
         style={{
           ...styles.link,
-          ...(isActive("/admin/opportunities") && styles.active),
+          ...(isActive("/dashboard/admin/opportunities") && styles.active),
         }}
-        to="/admin/opportunities"
       >
         Opportunities
       </Link>
 
       <Link
+        to="/dashboard/admin/users"
         style={{
           ...styles.link,
-          ...(isActive("/admin/users") && styles.active),
+          ...(isActive("/dashboard/admin/users") && styles.active),
         }}
-        to="/admin/users"
       >
         Users
       </Link>
@@ -44,9 +44,9 @@ export default function Sidebar() {
 
 const styles = {
   sidebar: {
-    width: "200px",
+    width: "220px",
     height: "100vh",
-    background: "#111", // black
+    background: "#111",
     padding: "15px",
   },
   title: {
@@ -61,6 +61,6 @@ const styles = {
     marginBottom: "8px",
   },
   active: {
-    background: "#ff7b00", // orange
+    background: "#ff7b00",
   },
 };

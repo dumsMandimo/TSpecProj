@@ -2,11 +2,13 @@ const express = require('express');
 const path = require('path');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
+// Serve static files from the React build folder
 app.use(express.static(path.join(__dirname, 'build')));
 
-app.get('/{*splat}', (req, res) => {
+// Catch-all handler to serve index.html for all routes (for client-side routing)
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
