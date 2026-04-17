@@ -1,15 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { signUpWithEmail, signUpWithGoogle } from '../services/authService';
 
 export default function SignupAdmin() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
   const [form, setForm] = useState({
-    fullName: '', email: '', password: '', confirmPassword: '',
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
   });
 
-  const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
+  const set = (field) => (e) =>
+    setForm({ ...form, [field]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (form.password !== form.confirmPassword) {
@@ -17,7 +24,42 @@ export default function SignupAdmin() {
       return;
     }
 
-    navigate('/dashboard/admin');
+    setLoading(true);
+
+    try {
+      const cleanEmail = form.email.trim().toLowerCase();
+
+      await signUpWithEmail(
+        cleanEmail,
+        form.password,
+        "admin",
+        {
+          fullName: form.fullName,
+        }
+      );
+
+      navigate("/dashboard/admin");
+
+    } catch (error) {
+      console.error(error);
+      alert("Admin signup failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    setLoading(true);
+
+    try {
+      await signUpWithGoogle("admin");
+      navigate("/dashboard/admin");
+    } catch (error) {
+      console.error(error);
+      alert("Google signup failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,7 +71,6 @@ export default function SignupAdmin() {
           Full name
           <input
             type="text"
-            placeholder="Zanele Mokoena"
             value={form.fullName}
             onChange={set('fullName')}
             required
@@ -40,7 +81,6 @@ export default function SignupAdmin() {
           Email address
           <input
             type="email"
-            placeholder="admin@portal.co.za"
             value={form.email}
             onChange={set('email')}
             required
@@ -51,10 +91,8 @@ export default function SignupAdmin() {
           Password
           <input
             type="password"
-            placeholder="Min. 8 characters"
             value={form.password}
             onChange={set('password')}
-            minLength={8}
             required
           />
         </label>
@@ -63,16 +101,20 @@ export default function SignupAdmin() {
           Confirm password
           <input
             type="password"
-            placeholder="Repeat password"
             value={form.confirmPassword}
             onChange={set('confirmPassword')}
-            minLength={8}
             required
           />
         </label>
       </fieldset>
 
-      <button type="submit">Create admin account</button>
+      <button type="submit" disabled={loading}>
+        {loading ? "Creating..." : "Create admin account"}
+      </button>
+
+      <button type="button" onClick={handleGoogleSignup} disabled={loading}>
+        {loading ? "Signing in with Google..." : "Sign up with Google"}
+      </button>
     </form>
   );
 }
