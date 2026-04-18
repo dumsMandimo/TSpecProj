@@ -37,8 +37,10 @@ const {
 describe("providerService", () => {
 
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  jest.clearAllMocks();
+  const { serverTimestamp } = require("firebase/firestore");
+  serverTimestamp.mockReturnValue("SERVER_TIMESTAMP");
+});
 
   // ─── getProviderStats ────────────────────────────────────────────
 

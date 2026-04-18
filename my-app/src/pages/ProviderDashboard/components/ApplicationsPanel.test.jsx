@@ -2,12 +2,12 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ApplicationsPanel from "./ApplicationsPanel";
 import { subscribeToProviderApplications, updateApplicationStatus } from "../../../services/providerService";
 
-jest.mock("../services/providerService", () => ({
+jest.mock("../../../services/providerService", () => ({
   subscribeToProviderApplications: jest.fn(),
   updateApplicationStatus:         jest.fn(),
 }));
 
-jest.mock("../services/firebase", () => ({
+jest.mock("../../../services/firebase", () => ({
   auth: { currentUser: { uid: "provider-uid" } },
 }));
 
