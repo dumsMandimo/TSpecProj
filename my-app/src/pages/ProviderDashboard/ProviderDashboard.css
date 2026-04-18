@@ -1,0 +1,28 @@
+/* ProviderDashboard.css */
+
+.provider-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: #f4f6f8;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.provider-dashboard__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.provider-dashboard__body {
+  padding: 28px 32px;
+  flex: 1;
+}
+
+.provider-dashboard__panel {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+}
