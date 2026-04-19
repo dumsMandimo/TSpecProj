@@ -1,19 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { db } from "firebase";
-
-const NQF_LEVELS = [
-  "NQF 1 — General Certificate",
-  "NQF 2 — Elementary Certificate",
-  "NQF 3 — Intermediate Certificate",
-  "NQF 4 — National Certificate (Matric)",
-  "NQF 5 — Higher Certificate",
-  "NQF 6 — Diploma / Advanced Certificate",
-  "NQF 7 — Bachelor's Degree",
-  "NQF 8 — Honours / Postgrad Diploma",
-  "NQF 9 — Master's Degree",
-  "NQF 10 — Doctoral Degree",
-];
+import { getDocs, collection } from "firebase/firestore";
+import { useEffect } from "react";
 
 const PROVINCES = [
   "Eastern Cape",
@@ -28,6 +17,21 @@ const PROVINCES = [
 ];
 
 export default function SignupApplicant() {
+  const [nqfLevels, setNqfLevels] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const querySnapshot = await getDocs(collection(db, "nqfLevels"));
+      const nqf = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setNqfLevels(nqf);
+    };
+
+    fetchData();
+  }, []);
+
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -113,7 +117,7 @@ export default function SignupApplicant() {
             required
           >
             <option value="">Select NQF level</option>
-            {NQF_LEVELS.map((n) => (
+            {nqfLevels.map((n) => (
               <option key={n}>{n}</option>
             ))}
           </select>
