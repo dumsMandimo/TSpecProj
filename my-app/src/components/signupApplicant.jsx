@@ -1,7 +1,7 @@
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
-const NQF_LEVELS = [
+/*const NQF_LEVELS = [
   'NQF 1 — General Certificate',
   'NQF 2 — Elementary Certificate',
   'NQF 3 — Intermediate Certificate',
@@ -12,17 +12,30 @@ const NQF_LEVELS = [
   'NQF 8 — Honours / Postgrad Diploma',
   'NQF 9 — Master\'s Degree',
   'NQF 10 — Doctoral Degree',
-];
+]; */
+
+const ref = db.collection("nqfLevels");
 
 const PROVINCES = [
-  'Eastern Cape','Free State','Gauteng','KwaZulu-Natal',
-  'Limpopo','Mpumalanga','Northern Cape','North West','Western Cape',
+  "Eastern Cape",
+  "Free State",
+  "Gauteng",
+  "KwaZulu-Natal",
+  "Limpopo",
+  "Mpumalanga",
+  "Northern Cape",
+  "North West",
+  "Western Cape",
 ];
 
 export default function SignupApplicant() {
   const [form, setForm] = useState({
-    firstName: '', lastName: '', email: '',
-    password: '', province: '', qualification: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    province: "",
+    qualification: "",
   });
 
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
@@ -30,11 +43,11 @@ export default function SignupApplicant() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    navigate('/dashboard/applicant');
+    navigate("/dashboard/applicant");
   };
 
   return (
-    <form onSubmit={handleSubmit} >
+    <form onSubmit={handleSubmit}>
       <fieldset>
         <legend>Personal details</legend>
 
@@ -45,7 +58,7 @@ export default function SignupApplicant() {
               type="text"
               placeholder="Thabo"
               value={form.firstName}
-              onChange={set('firstName')}
+              onChange={set("firstName")}
               required
             />
           </label>
@@ -55,7 +68,7 @@ export default function SignupApplicant() {
               type="text"
               placeholder="Nkosi"
               value={form.lastName}
-              onChange={set('lastName')}
+              onChange={set("lastName")}
               required
             />
           </label>
@@ -67,7 +80,7 @@ export default function SignupApplicant() {
             type="email"
             placeholder="thabo@email.com"
             value={form.email}
-            onChange={set('email')}
+            onChange={set("email")}
             required
           />
         </label>
@@ -78,24 +91,32 @@ export default function SignupApplicant() {
             type="password"
             placeholder="Min. 8 characters"
             value={form.password}
-            onChange={set('password')}
+            onChange={set("password")}
             required
           />
         </label>
 
         <label>
           Province
-          <select value={form.province} onChange={set('province')} required>
+          <select value={form.province} onChange={set("province")} required>
             <option value="">Select province</option>
-            {PROVINCES.map((p) => <option key={p}>{p}</option>)}
+            {PROVINCES.map((p) => (
+              <option key={p}>{p}</option>
+            ))}
           </select>
         </label>
 
         <label>
           Highest qualification
-          <select value={form.qualification} onChange={set('qualification')} required>
+          <select
+            value={form.qualification}
+            onChange={set("qualification")}
+            required
+          >
             <option value="">Select NQF level</option>
-            {NQF_LEVELS.map((n) => <option key={n}>{n}</option>)}
+            {ref.map((n) => (
+              <option key={n}>{n}</option>
+            ))}
           </select>
         </label>
       </fieldset>

@@ -45,7 +45,7 @@ app.all("*", (req, res) => {
 
 //api to fetch vacancies from saqa
 
-/* async function searchApplications(vacancy) {
+/*async function searchApplications(vacancy) {
   try {
     const response = await fetch(`https://saqa.org.za/vacancies/`);
 
@@ -57,19 +57,20 @@ app.all("*", (req, res) => {
   } catch (err) {
     errorMessage.textContent;
   }
-}
+} */
 
 
-  const ref = db.ref("nqf levels");
+  const ref = db.ref("nqfLevels");
 
 db.collection('nqfLevels').get().then((snapshot) => {
+    const dropdown = document.getElementById("");
     getInfo(snapshot.docs);
 });
 
     var html = "";
 
   (function () {
-    fetch("http://localhost:8080/get-user-data")
+    fetch("http://localhost:8080/")
         .then(response => response.json())
         .then(data => {
             const dropdown = document.getElementById("userIdDropdown");
@@ -104,4 +105,3 @@ db.collection('nqfLevels').get().then((snapshot) => {
   ref.orderByChild("").on('child_added', (snapshot) => {
   console.log(snapshot.key + ' was ' + snapshot.val().height + ' meters tall');
 });
- */
