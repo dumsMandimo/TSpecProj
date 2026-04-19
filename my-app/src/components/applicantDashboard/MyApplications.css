@@ -11,7 +11,7 @@
 }
 
 .applications-header {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2.2rem;
 }
 
 .eyebrow {
@@ -34,7 +34,7 @@
     margin: 0;
     font-size: 1rem;
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.75);
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .applications-grid {
@@ -44,7 +44,7 @@
 }
 
 .application-card {
-    background: linear-gradient(160deg, #121212 0%, #171717 100%);
+    background: linear-gradient(160deg, #1a1a1a 0%, #222222 100%);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 14px;
     padding: 1rem;
@@ -65,7 +65,7 @@
 
 .application-card p {
     margin: 0 0 0.9rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9);
     font-size: 0.95rem;
 }
 
@@ -101,4 +101,84 @@
     background: #ff8a1f;
     color: #111111;
     border-color: #ff8a1f;
+}
+.progress-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    gap: 1rem;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+    
+}
+
+.circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.2);
+    transition: background-color 0.3s, border-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Active stage */
+.circle.active {
+    background: #ff8a1f;
+    border-color: #ff8a1f;
+}
+
+/* Final decision overrides */
+.circle.accepted {
+    background: #2ecc71;
+    border-color: #2ecc71;
+}
+
+.circle.rejected {
+    background: #e74c3c;
+    border-color: #e74c3c;
+}
+
+/* Default label style */
+.stage-label {
+    font-size: 0.75rem;
+    margin-top: 0.4rem;
+    color: rgba(255,255,255,0.6); /* softer default */
+    text-align: center;
+}
+
+/* Highlight the active stage label */
+.circle.active + .stage-label {
+    color: #ff8a1f;
+    font-weight: 600;
+}
+
+/* Accepted/Rejected label colors */
+.circle.accepted + .stage-label {
+    color: #2ecc71;
+    font-weight: 600;
+}
+
+.circle.rejected + .stage-label {
+    color: #e74c3c;
+    font-weight: 600;
+}
+.circle.shortlisted {
+    background: #f1c40f;   /* yellow */
+    border-color: #f1c40f;
+}
+
+.circle.shortlisted + .stage-label {
+    color: #f1c40f;
+    font-weight: 600;
 }
