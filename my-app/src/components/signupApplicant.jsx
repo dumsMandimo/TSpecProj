@@ -45,6 +45,7 @@ export default function SignupApplicant() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setLoading(true);
 
     try {
@@ -64,7 +65,7 @@ export default function SignupApplicant() {
 
       console.log("User created:", user);
 
-      navigate("/verify-email");
+      navigate("/dashboard/createProfile");
     } catch (error) {
       console.error("Signup failed:", error);
       alert("Signup failed. Please try again.");
@@ -81,15 +82,15 @@ export default function SignupApplicant() {
 
       console.log("User created with Google:", user);
 
-      navigate("/dashboard/applicant");
+      navigate("/dashboard/createProfile");
     } catch (error) {
       console.error("Google signup failed:", error);
       alert("Google sign-in failed. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
 
+  };
   return (
     <form onSubmit={handleSubmit} noValidate>
       <fieldset>
