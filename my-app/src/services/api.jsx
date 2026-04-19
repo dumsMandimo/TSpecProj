@@ -59,8 +59,7 @@ app.all("*", (req, res) => {
   }
 } */
 
-
-  const ref = db.ref("nqfLevels");
+/* const ref = db.ref("nqfLevels");
 
 db.collection('nqfLevels').get().then((snapshot) => {
     const dropdown = document.getElementById("");
@@ -105,3 +104,5 @@ db.collection('nqfLevels').get().then((snapshot) => {
   ref.orderByChild("").on('child_added', (snapshot) => {
   console.log(snapshot.key + ' was ' + snapshot.val().height + ' meters tall');
 });
+
+*/

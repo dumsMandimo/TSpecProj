@@ -1,20 +1,19 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { db } from "firebase";
 
-/*const NQF_LEVELS = [
-  'NQF 1 — General Certificate',
-  'NQF 2 — Elementary Certificate',
-  'NQF 3 — Intermediate Certificate',
-  'NQF 4 — National Certificate (Matric)',
-  'NQF 5 — Higher Certificate',
-  'NQF 6 — Diploma / Advanced Certificate',
-  'NQF 7 — Bachelor\'s Degree',
-  'NQF 8 — Honours / Postgrad Diploma',
-  'NQF 9 — Master\'s Degree',
-  'NQF 10 — Doctoral Degree',
-]; */
-
-const ref = db.collection("nqfLevels");
+const NQF_LEVELS = [
+  "NQF 1 — General Certificate",
+  "NQF 2 — Elementary Certificate",
+  "NQF 3 — Intermediate Certificate",
+  "NQF 4 — National Certificate (Matric)",
+  "NQF 5 — Higher Certificate",
+  "NQF 6 — Diploma / Advanced Certificate",
+  "NQF 7 — Bachelor's Degree",
+  "NQF 8 — Honours / Postgrad Diploma",
+  "NQF 9 — Master's Degree",
+  "NQF 10 — Doctoral Degree",
+];
 
 const PROVINCES = [
   "Eastern Cape",
@@ -114,7 +113,7 @@ export default function SignupApplicant() {
             required
           >
             <option value="">Select NQF level</option>
-            {ref.map((n) => (
+            {NQF_LEVELS.map((n) => (
               <option key={n}>{n}</option>
             ))}
           </select>
