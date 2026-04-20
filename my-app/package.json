@@ -15,18 +15,29 @@
   "scripts": {
     "start": "node server.js",
     "build": "react-scripts build",
-    "test": "react-scripts test",
-    "test:coverage": "react-scripts test --coverage",
+    "test": "react-scripts test --watchAll=false",
+    "test:coverage": "react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject"
   },
   "jest": {
     "collectCoverageFrom": [
-      "src/components/applicantDashboard/**/*.{js,jsx}",
-      "src/router/**/*.{js,jsx}"
+      "src/**/*.{js,jsx}",
+      "!src/**/*.test.{js,jsx}",
+      "!src/**/__mocks__/**",
+      "!src/index.js",
+      "!src/reportWebVitals.js",
+      "!src/setupTests.js"
     ],
     "moduleNameMapper": {
-      "react-router-dom": "<rootDir>/node_modules/react-router-dom/dist/index.js"
-    }
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+       "react-router-dom": "<rootDir>/node_modules/react-router-dom/dist/index.js",
+       "@supabase/supabase-js": "<rootDir>/src/__mocks__/supabaseMock.js"
+    },
+    "coverageReporters": [
+      "lcov",
+      "text",
+      "json-summary"
+    ]
   },
   "browserslist": {
     "production": [
@@ -48,9 +59,5 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^27.5.1",
     "jest-environment-jsdom": "^30.3.0"
-  },
-    "moduleNameMapper": {
-      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
-    },
-    "testEnvironment": "jsdom"
   }
+}
