@@ -25,8 +25,9 @@ export default function SignupApplicant() {
     const fetchData = async () => {
       const docRef = doc(db, "nqfLevel", "0Na7Q5IzFg2oI24GiqS3");
       const querySnapshot = await getDoc(docRef);
-      console.log(nqf);
+
       const nqf = querySnapshot.data();
+      console.log(nqf);
       setNqfLevels(nqf); //setting a state to an object
     };
 
