@@ -5,6 +5,8 @@ import ApplicantDashboard from '../components/applicantDashboard/Dashboard';
 import AdminLayout from '../pages/adminLayout';
 import AdminDashboard from '../pages/adminDashboard';
 import ProviderDashboard from '../pages/ProviderDashboard';
+import ApplicantProfile from '../components/applicantDashboard/ApplicantProfile';
+import CreateProfile from "../components/applicantDashboard/CreateProfile";
 
 
 
@@ -17,6 +19,11 @@ export default function AppRouter() {
         <Route path="/dashboard/applicant" element={<ApplicantDashboard />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
         <Route path="/dashboard/provider" element={<ProviderDashboard />} />
+        <Route path="/dashboard/myProfile" element={<ApplicantProfile />} />
+        <Route path="/dashboard/createProfile" element={<CreateProfile />} />
+        
+        
+
 
         
 
