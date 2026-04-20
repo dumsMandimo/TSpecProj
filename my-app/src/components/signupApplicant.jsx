@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { db } from "./firebase";
-import { getDocs, collection } from "firebase/firestore";
+import { db } from "../services/firebase.js";
+import { getDoc, doc } from "firebase/firestore";
 import { useEffect } from "react";
 
 const PROVINCES = [
@@ -17,16 +17,17 @@ const PROVINCES = [
 ];
 
 export default function SignupApplicant() {
-  const [nqfLevels, setNqfLevels] = useState([]);
+  const [nqfLevel, setNqfLevels] = useState({});
+  //React hook that lets components remember and store data that can change over time
+  //const [value, setValue] = useState
 
   useEffect(() => {
     const fetchData = async () => {
-      const querySnapshot = await getDocs(collection(db, "nqfLevels"));
-      const nqf = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setNqfLevels(nqf);
+      const docRef = doc(db, "nqfLevel", "0Na7Q5IzFg2oI24GiqS3");
+      const querySnapshot = await getDoc(docRef);
+      console.log(nqf);
+      const nqf = querySnapshot.data();
+      setNqfLevels(nqf); //setting a state to an object
     };
 
     fetchData();
@@ -117,9 +118,21 @@ export default function SignupApplicant() {
             required
           >
             <option value="">Select NQF level</option>
-            {nqfLevels.map((n) => (
-              <option key={n}>{n}</option>
-            ))}
+
+            {Object.entries(nqfLevel).map(([key, value]) => {
+              if (Array.isArray(value)) {
+                return value.map((v) => (
+                  <option key={`${key} - ${v}`} value={v}>
+                    {key} - {v}
+                  </option>
+                ));
+              }
+              return (
+                <option key={key} value={value}>
+                  {key} - {value}
+                </option>
+              );
+            })}
           </select>
         </label>
       </fieldset>
