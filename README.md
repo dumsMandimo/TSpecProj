@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -68,3 +69,10 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+=======
+# UbuntuCareers
+SA Learnerships & Skills Development Portal
+
+[![CI/CD Pipeline](https://github.com/dumsMandimo/TSpecProj/actions/workflows/main_ubuntucareers.yml/badge.svg?branch=main)](https://github.com/dumsMandimo/TSpecProj/actions/workflows/main_ubuntucareers.yml)
+[![codecov](https://codecov.io/gh/dumsMandimo/TSpecProj/branch/main/graph/badge.svg)](https://codecov.io/gh/dumsMandimo/TSpecProj)
+>>>>>>> 98b3ec52a6ffc73017653ec37923bbcc7a184eb5
