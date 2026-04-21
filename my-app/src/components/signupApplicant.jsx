@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { signUpWithEmail, signUpWithGoogle } from '../services/authService';
+import { signUpWithGoogle } from '../services/authService';
 
 const NQF_LEVELS = [
   "NQF 1 — General Certificate",
@@ -31,109 +31,84 @@ export default function SignupApplicant() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
-    email: "",
-    password: "",
     province: "",
     qualification: "",
   });
 
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
   const navigate = useNavigate();
 
   const set = (field) => (e) =>
     setForm({ ...form, [field]: e.target.value });
 
-  const handleSubmit = async (e) => {
+  const handleGoogleSignup = async (e) => {
     e.preventDefault();
 
+    setErrorMsg("");
+
+    // VALIDATION (THIS FIXES YOUR ISSUE)
+    if (
+      !form.firstName.trim() ||
+      !form.lastName.trim() ||
+      !form.province ||
+      !form.qualification
+    ) {
+      setErrorMsg("Please fill in all required fields before continuing.");
+      return;
+    }
+
+    if (loading) return;
+
     setLoading(true);
 
     try {
-      const cleanEmail = form.email.trim().toLowerCase();
+      const user = await signUpWithGoogle("applicant", {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        province: form.province,
+        qualification: form.qualification,
+      });
 
-      const user = await signUpWithEmail(
-        cleanEmail,
-        form.password,
-        "applicant",
-        {
-          firstName: form.firstName,
-          lastName: form.lastName,
-          province: form.province,
-          qualification: form.qualification,
-        }
-      );
+      console.log("Applicant created:", user.uid);
 
-      console.log("User created:", user);
+      navigate("/dashboard/applicant");
 
-      navigate("/dashboard/createProfile");
     } catch (error) {
-      console.error("Signup failed:", error);
-      alert("Signup failed. Please try again.");
+      console.error(error);
+      setErrorMsg("Google signup failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSignup = async () => {
-    setLoading(true);
-
-    try {
-      const user = await signUpWithGoogle();
-
-      console.log("User created with Google:", user);
-
-      navigate("/dashboard/createProfile");
-    } catch (error) {
-      console.error("Google signup failed:", error);
-      alert("Google sign-in failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-
-  };
   return (
-    <form onSubmit={handleSubmit} noValidate>
+    <form onSubmit={handleGoogleSignup}>
+
       <fieldset>
         <legend>Personal details</legend>
 
-        <p className="field-row">
-          <label>
-            First name
-            <input
-              type="text"
-              value={form.firstName}
-              onChange={set("firstName")}
-              required
-            />
-          </label>
-
-          <label>
-            Last name
-            <input
-              type="text"
-              value={form.lastName}
-              onChange={set("lastName")}
-              required
-            />
-          </label>
-        </p>
+        {errorMsg && (
+          <p style={{ color: "red", marginBottom: "10px" }}>
+            {errorMsg}
+          </p>
+        )}
 
         <label>
-          Email address
+          First name
           <input
-            type="email"
-            value={form.email}
-            onChange={set("email")}
+            value={form.firstName}
+            onChange={set("firstName")}
             required
           />
         </label>
 
         <label>
-          Password
+          Last name
           <input
-            type="password"
-            value={form.password}
-            onChange={set("password")}
+            value={form.lastName}
+            onChange={set("lastName")}
             required
           />
         </label>
@@ -149,7 +124,7 @@ export default function SignupApplicant() {
         </label>
 
         <label>
-          Highest qualification
+          Qualification
           <select
             value={form.qualification}
             onChange={set("qualification")}
@@ -164,12 +139,9 @@ export default function SignupApplicant() {
       </fieldset>
 
       <button type="submit" disabled={loading}>
-        {loading ? "Creating account..." : "Create account"}
+        {loading ? "Signing up..." : "Continue with Google"}
       </button>
 
-      <button type="button" onClick={handleGoogleSignup} disabled={loading}>
-        {loading ? "Signing in with Google..." : "Sign up with Google"}
-      </button>
     </form>
   );
 }
