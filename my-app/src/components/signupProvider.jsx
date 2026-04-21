@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signUpWithEmail, signUpWithGoogle } from '../services/authService';
+import { signUpWithGoogle } from '../services/authService';
 
 const SECTORS = [
   'Agriculture','Construction','Education','Energy','Finance',
@@ -21,8 +21,6 @@ export default function SignupProvider() {
   const [form, setForm] = useState({
     organisationName: '',
     contactName: '',
-    email: '',
-    password: '',
     sector: '',
     province: '',
     description: '',
@@ -31,96 +29,51 @@ export default function SignupProvider() {
   const set = (field) => (e) =>
     setForm({ ...form, [field]: e.target.value });
 
-  const handleSubmit = async (e) => {
+  const handleGoogleSignup = async (e) => {
     e.preventDefault();
 
-    if (loading) return;
-
-    setLoading(true);
     setErrorMsg("");
 
-    if (form.password.length < 8) {
-      setErrorMsg("Password must be at least 8 characters long.");
-      setLoading(false);
+    // VALIDATION (IMPORTANT FIX)
+    if (
+      !form.organisationName.trim() ||
+      !form.contactName.trim() ||
+      !form.sector ||
+      !form.province ||
+      !form.description.trim()
+    ) {
+      setErrorMsg("Please fill in all required fields before continuing.");
       return;
     }
 
-    try {
-      const cleanEmail = form.email.trim().toLowerCase();
-
-      await signUpWithEmail(
-        cleanEmail,
-        form.password,
-        "provider",
-        {
-          organisationName: form.organisationName,
-          contactName: form.contactName,
-          sector: form.sector,
-          province: form.province,
-          description: form.description,
-        }
-      );
-
-      console.log("Provider created");
-
-      // ✅ FIX ADDED HERE
-      localStorage.setItem("role", "provider");
-
-      navigate("/dashboard/provider");
-
-    } catch (error) {
-      console.error("Provider signup failed:", error);
-
-      switch (error.code) {
-        case "auth/email-already-in-use":
-          setErrorMsg("This account already exists. Please log in instead.");
-          break;
-
-        case "auth/invalid-email":
-          setErrorMsg("Please enter a valid email address.");
-          break;
-
-        case "auth/weak-password":
-          setErrorMsg("Password is too weak.");
-          break;
-
-        default:
-          setErrorMsg("Provider signup failed. Please try again.");
-          break;
-      }
-
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignup = async () => {
     if (loading) return;
 
     setLoading(true);
-    setErrorMsg("");
 
     try {
-      await signUpWithGoogle("provider");
+      const user = await signUpWithGoogle("provider", {
+        organisationName: form.organisationName,
+        contactName: form.contactName,
+        sector: form.sector,
+        province: form.province,
+        description: form.description,
+      });
 
-      console.log("Provider Google signup successful");
-
-      // optional consistency fix
-      localStorage.setItem("role", "provider");
+      console.log("Provider Google signup successful", user.uid);
 
       navigate("/dashboard/provider");
 
     } catch (error) {
-      console.error("Google signup failed:", error);
+      console.error(error);
       setErrorMsg("Google signup failed. Please try again.");
-
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleGoogleSignup}>
+
       <fieldset>
         <legend>Organisation details</legend>
 
@@ -176,42 +129,15 @@ export default function SignupProvider() {
             value={form.description}
             onChange={set('description')}
             rows={3}
-          />
-        </label>
-      </fieldset>
-
-      <fieldset>
-        <legend>Login details</legend>
-
-        <label>
-          Work email
-          <input
-            type="email"
-            value={form.email}
-            onChange={set('email')}
-            required
-          />
-        </label>
-
-        <label>
-          Password
-          <input
-            type="password"
-            value={form.password}
-            onChange={set('password')}
-            minLength={8}
             required
           />
         </label>
       </fieldset>
 
       <button type="submit" disabled={loading}>
-        {loading ? "Creating..." : "Register organisation"}
+        {loading ? "Signing up..." : "Continue with Google"}
       </button>
 
-      <button type="button" onClick={handleGoogleSignup} disabled={loading}>
-        {loading ? "Signing in..." : "Sign up with Google"}
-      </button>
     </form>
   );
 }

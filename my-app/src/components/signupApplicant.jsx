@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { signUpWithEmail, signUpWithGoogle } from '../services/authService';
+import { signUpWithGoogle } from '../services/authService';
 
 const NQF_LEVELS = [
   "NQF 1 — General Certificate",
@@ -31,8 +31,6 @@ export default function SignupApplicant() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
-    email: "",
-    password: "",
     province: "",
     qualification: "",
   });
@@ -45,90 +43,49 @@ export default function SignupApplicant() {
   const set = (field) => (e) =>
     setForm({ ...form, [field]: e.target.value });
 
-  const handleSubmit = async (e) => {
+  const handleGoogleSignup = async (e) => {
     e.preventDefault();
 
-    if (loading) return;
-    setLoading(true);
     setErrorMsg("");
 
-    if (form.password.length < 6) {
-      setErrorMsg("Password must be at least 6 characters long.");
-      setLoading(false);
+    // VALIDATION (THIS FIXES YOUR ISSUE)
+    if (
+      !form.firstName.trim() ||
+      !form.lastName.trim() ||
+      !form.province ||
+      !form.qualification
+    ) {
+      setErrorMsg("Please fill in all required fields before continuing.");
       return;
     }
 
-    try {
-      const cleanEmail = form.email.trim().toLowerCase();
-
-      await signUpWithEmail(
-        cleanEmail,
-        form.password,
-        "applicant",
-        {
-          firstName: form.firstName,
-          lastName: form.lastName,
-          province: form.province,
-          qualification: form.qualification,
-        }
-      );
-
-      // ✅ FIX ADDED HERE
-      localStorage.setItem("role", "applicant");
-
-      navigate("/dashboard/applicant");
-
-    } catch (error) {
-      console.error("Signup failed:", error);
-
-      switch (error.code) {
-        case "auth/email-already-in-use":
-          setErrorMsg("This account already exists. Please log in instead.");
-          break;
-
-        case "auth/invalid-email":
-          setErrorMsg("Please enter a valid email address.");
-          break;
-
-        case "auth/weak-password":
-          setErrorMsg("Password is too weak.");
-          break;
-
-        default:
-          setErrorMsg("Signup failed. Please try again.");
-          break;
-      }
-
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignup = async () => {
     if (loading) return;
 
     setLoading(true);
-    setErrorMsg("");
 
     try {
-      await signUpWithGoogle();
+      const user = await signUpWithGoogle("applicant", {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        province: form.province,
+        qualification: form.qualification,
+      });
 
-      // (optional consistency fix, same logic applies)
-      localStorage.setItem("role", "applicant");
+      console.log("Applicant created:", user.uid);
 
       navigate("/dashboard/applicant");
 
     } catch (error) {
-      console.error("Google signup failed:", error);
-      setErrorMsg("Google sign-in failed. Please try again.");
-
+      console.error(error);
+      setErrorMsg("Google signup failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
+    <form onSubmit={handleGoogleSignup}>
+
       <fieldset>
         <legend>Personal details</legend>
 
@@ -140,22 +97,20 @@ export default function SignupApplicant() {
 
         <label>
           First name
-          <input value={form.firstName} onChange={set("firstName")} required />
+          <input
+            value={form.firstName}
+            onChange={set("firstName")}
+            required
+          />
         </label>
 
         <label>
           Last name
-          <input value={form.lastName} onChange={set("lastName")} required />
-        </label>
-
-        <label>
-          Email
-          <input type="email" value={form.email} onChange={set("email")} required />
-        </label>
-
-        <label>
-          Password
-          <input type="password" value={form.password} onChange={set("password")} required />
+          <input
+            value={form.lastName}
+            onChange={set("lastName")}
+            required
+          />
         </label>
 
         <label>
@@ -170,7 +125,11 @@ export default function SignupApplicant() {
 
         <label>
           Qualification
-          <select value={form.qualification} onChange={set("qualification")} required>
+          <select
+            value={form.qualification}
+            onChange={set("qualification")}
+            required
+          >
             <option value="">Select NQF level</option>
             {NQF_LEVELS.map((n) => (
               <option key={n}>{n}</option>
@@ -180,12 +139,9 @@ export default function SignupApplicant() {
       </fieldset>
 
       <button type="submit" disabled={loading}>
-        {loading ? "Creating account..." : "Create account"}
+        {loading ? "Signing up..." : "Continue with Google"}
       </button>
 
-      <button type="button" onClick={handleGoogleSignup} disabled={loading}>
-        {loading ? "Signing in..." : "Sign up with Google"}
-      </button>
     </form>
   );
 }

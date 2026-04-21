@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signUpWithEmail, signUpWithGoogle } from '../services/authService';
+import { signUpWithGoogle } from '../services/authService';
 
 export default function SignupAdmin() {
   const navigate = useNavigate();
@@ -9,105 +9,46 @@ export default function SignupAdmin() {
 
   const [form, setForm] = useState({
     fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
   });
 
   const set = (field) => (e) =>
     setForm({ ...form, [field]: e.target.value });
 
-  const handleSubmit = async (e) => {
+  const handleGoogleSignup = async (e) => {
     e.preventDefault();
 
-    if (loading) return;
-
     setErrorMsg("");
 
-    if (form.password !== form.confirmPassword) {
-      setErrorMsg("Passwords do not match.");
+    // VALIDATION (IMPORTANT FIX)
+    if (!form.fullName.trim()) {
+      setErrorMsg("Please enter your full name before continuing.");
       return;
     }
 
-    if (form.password.length < 6) {
-      setErrorMsg("Password must be at least 6 characters long.");
-      return;
-    }
+    if (loading) return;
 
     setLoading(true);
 
     try {
-      const cleanEmail = form.email.trim().toLowerCase();
+      const user = await signUpWithGoogle("admin", {
+        fullName: form.fullName,
+      });
 
-      await signUpWithEmail(
-        cleanEmail,
-        form.password,
-        "admin",
-        {
-          fullName: form.fullName,
-        }
-      );
-
-      console.log("Admin created successfully");
-
-      // ✅ FIX ADDED HERE
-      localStorage.setItem("role", "admin");
+      console.log("Admin created:", user.uid);
 
       navigate("/dashboard/admin");
 
     } catch (error) {
-      console.error("Admin signup failed:", error);
-
-      switch (error.code) {
-        case "auth/email-already-in-use":
-          setErrorMsg("This account already exists. Please log in instead.");
-          break;
-
-        case "auth/invalid-email":
-          setErrorMsg("Please enter a valid email address.");
-          break;
-
-        case "auth/weak-password":
-          setErrorMsg("Password is too weak.");
-          break;
-
-        default:
-          setErrorMsg("Admin signup failed. Please try again.");
-          break;
-      }
-
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignup = async () => {
-    if (loading) return;
-
-    setLoading(true);
-    setErrorMsg("");
-
-    try {
-      await signUpWithGoogle("admin");
-
-      console.log("Admin Google signup successful");
-
-      // optional consistency fix
-      localStorage.setItem("role", "admin");
-
-      navigate("/dashboard/admin");
-
-    } catch (error) {
-      console.error("Google signup failed:", error);
+      console.error(error);
       setErrorMsg("Google signup failed. Please try again.");
-
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleGoogleSignup}>
+
       <fieldset>
         <legend>Admin details</legend>
 
@@ -127,44 +68,12 @@ export default function SignupAdmin() {
           />
         </label>
 
-        <label>
-          Email address
-          <input
-            type="email"
-            value={form.email}
-            onChange={set('email')}
-            required
-          />
-        </label>
-
-        <label>
-          Password
-          <input
-            type="password"
-            value={form.password}
-            onChange={set('password')}
-            required
-          />
-        </label>
-
-        <label>
-          Confirm password
-          <input
-            type="password"
-            value={form.confirmPassword}
-            onChange={set('confirmPassword')}
-            required
-          />
-        </label>
       </fieldset>
 
       <button type="submit" disabled={loading}>
-        {loading ? "Creating..." : "Create admin account"}
+        {loading ? "Signing up..." : "Continue with Google"}
       </button>
 
-      <button type="button" onClick={handleGoogleSignup} disabled={loading}>
-        {loading ? "Signing in..." : "Sign up with Google"}
-      </button>
     </form>
   );
 }
