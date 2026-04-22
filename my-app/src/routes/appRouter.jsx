@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import SignupPage from "../pages/signupPage";
 import LoginPage from "../pages/loginPage";
@@ -13,7 +13,7 @@ import ProviderDashboard from "../pages/ProviderDashboard";
 
 export default function AppRouter() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -32,6 +32,6 @@ export default function AppRouter() {
         <Route path="/" element={<Navigate to="/signup" replace />} />
         <Route path="*" element={<Navigate to="/signup" replace />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
