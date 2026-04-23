@@ -33,5 +33,5 @@ export default function AppRouter() {
         <Route path="*" element={<Navigate to="/signup" replace />} />
       </Routes>
     </HashRouter>
-  );
+  ); 
 }
