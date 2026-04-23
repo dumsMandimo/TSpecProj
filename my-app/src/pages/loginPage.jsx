@@ -17,7 +17,6 @@ export default function LoginPage() {
     e.preventDefault();
 
     const cleanEmail = email.trim().toLowerCase();
-
     console.log('Login attempt:', { cleanEmail, password });
 
     if (!cleanEmail || !password) {
@@ -26,49 +25,43 @@ export default function LoginPage() {
     }
 
     setLoading(true);
+    console.log('Step 1: attempting Firebase auth...');
 
     try {
-      // 1. Firebase login
       const userCredential = await signInWithEmailAndPassword(
         auth,
         cleanEmail,
         password
       );
+      console.log('Step 2: Firebase auth success', userCredential);
 
       const user = userCredential.user;
+      console.log('Step 3: getting role for uid', user.uid);
 
-      // 2. Get role from Firestore
       const role = await getUserRole(user.uid);
+      console.log('Step 4: role is', role);
 
-      console.log("Logged in role:", role);
-
-      // 3. Safety check
       if (!role) {
         alert("No role found for this user. Contact admin.");
         setLoading(false);
         return;
       }
 
-      // 4. Role-based routing
       if (role === "admin") {
         navigate("/dashboard/admin");
-      } 
-      else if (role === "provider") {
+      } else if (role === "provider") {
         navigate("/dashboard/provider");
-      } 
-      else {
+      } else {
         navigate("/dashboard/applicant");
       }
 
     } catch (error) {
-      console.error(error);
-
+      console.error('Step ERROR:', error.code, error.message);
       if (error.code === "auth/invalid-credential") {
         alert("Invalid email or password.");
       } else {
         alert("Login failed: " + error.message);
       }
-
     } finally {
       setLoading(false);
     }
