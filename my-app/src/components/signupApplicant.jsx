@@ -1,8 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { db } from "../services/firebase.js";
-import { getDoc, doc } from "firebase/firestore";
-import { useEffect } from "react";
+import NqfSelect from "../components/nqfSelect.jsx";
 
 const PROVINCES = [
   "Eastern Cape",
@@ -17,23 +15,6 @@ const PROVINCES = [
 ];
 
 export default function SignupApplicant() {
-  const [nqfLevel, setNqfLevels] = useState({});
-  //React hook that lets components remember and store data that can change over time
-  //const [value, setValue] = useState
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const docRef = doc(db, "nqfLevel", "0Na7Q5IzFg2oI24GiqS3");
-      const querySnapshot = await getDoc(docRef);
-
-      const nqf = querySnapshot.data();
-      console.log(nqf);
-      setNqfLevels(nqf); //setting a state to an object
-    };
-
-    fetchData();
-  }, []);
-
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -111,6 +92,8 @@ export default function SignupApplicant() {
           </select>
         </label>
 
+        {/* split it into two. i want the name to be in grey */}
+
         <label>
           Highest qualification
           <select
@@ -119,25 +102,7 @@ export default function SignupApplicant() {
             required
           >
             <option value="">Select NQF level</option>
-
-            {Object.entries(nqfLevel).map(([key, value]) => {
-              if (Array.isArray(value)) {
-                return (
-                  <optgroup key={key} label={key}>
-                    {value.map((v) => (
-                      <option key={`${key} - ${v}`} value={v}>
-                        {v}
-                      </option>
-                    ))}
-                  </optgroup>
-                );
-              }
-              return (
-                <option key={key} value={value}>
-                  {key} - {value}
-                </option>
-              );
-            })}
+            <NqfSelect />
           </select>
         </label>
       </fieldset>
