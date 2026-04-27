@@ -122,11 +122,15 @@ export default function SignupApplicant() {
 
             {Object.entries(nqfLevel).map(([key, value]) => {
               if (Array.isArray(value)) {
-                return value.map((v) => (
-                  <option key={`${key} - ${v}`} value={v}>
-                    {key} - {v}
-                  </option>
-                ));
+                return (
+                  <optgroup key={key} label={key}>
+                    {value.map((v) => (
+                      <option key={`${key} - ${v}`} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </optgroup>
+                );
               }
               return (
                 <option key={key} value={value}>
