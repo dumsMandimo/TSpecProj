@@ -23,10 +23,10 @@
     margin-top: 0.25rem;
 }
 
-/* Summary cards */
+/* Summary cards — updated to 5 columns for the new Removed card */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 1rem;
     margin-bottom: 2rem;
 }
@@ -50,6 +50,56 @@
     font-weight: 700;
     color: #111;
     margin: 0;
+}
+
+/* Removed stat card accent */
+.stat-card--removed {
+    border-left: 4px solid #d32f2f;
+}
+
+.stat-card--removed h2 {
+    color: #d32f2f;
+}
+
+/* Status tabs (Active / Removed) */
+.status-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.status-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    background: #fff;
+    color: #111;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.status-tab--active {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+}
+
+.status-tab--removed {
+    background: #d32f2f;
+    color: #fff;
+    border-color: #d32f2f;
+}
+
+.tab-count {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    padding: 0 6px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 /* Controls */
@@ -148,6 +198,28 @@
     text-decoration: underline;
 }
 
+/* Remove button */
+.remove-btn {
+    background: #d32f2f;
+    color: #fff;
+    border: none;
+    padding: 5px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.15s;
+}
+
+.remove-btn:hover:not(:disabled) {
+    background: #b71c1c;
+}
+
+.remove-btn:disabled {
+    background: #e57373;
+    cursor: not-allowed;
+}
+
 .empty-state {
     color: #666;
     padding: 1rem 0;
@@ -156,4 +228,20 @@
 .error-message {
     color: #c0392b;
     padding: 1rem 0;
+}
+
+/* Responsive — collapse to 2 columns on smaller screens */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .search-input {
+        width: 100%;
+    }
+
+    .controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
