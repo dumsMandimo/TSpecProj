@@ -31,8 +31,7 @@ export default function SignupApplicant() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
-    email: "",
-    password: "",
+    
     province: "",
     qualification: "",
   });
@@ -42,6 +41,8 @@ export default function SignupApplicant() {
 
   const set = (field) => (e) =>
     setForm({ ...form, [field]: e.target.value });
+
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -118,25 +119,7 @@ export default function SignupApplicant() {
           </label>
         </p>
 
-        <label>
-          Email address
-          <input
-            type="email"
-            value={form.email}
-            onChange={set("email")}
-            required
-          />
-        </label>
-
-        <label>
-          Password
-          <input
-            type="password"
-            value={form.password}
-            onChange={set("password")}
-            required
-          />
-        </label>
+        
 
         <label>
           Province
@@ -163,9 +146,7 @@ export default function SignupApplicant() {
         </label>
       </fieldset>
 
-      <button type="submit" disabled={loading}>
-        {loading ? "Creating account..." : "Create account"}
-      </button>
+      
 
       <button type="button" onClick={handleGoogleSignup} disabled={loading}>
         {loading ? "Signing in with Google..." : "Sign up with Google"}

@@ -20,8 +20,6 @@ export default function SignupProvider() {
   const [form, setForm] = useState({
     organisationName: '',
     contactName: '',
-    email: '',
-    password: '',
     sector: '',
     province: '',
     description: '',
@@ -29,6 +27,16 @@ export default function SignupProvider() {
 
   const set = (field) => (e) =>
     setForm({ ...form, [field]: e.target.value });
+
+  const validateForm = () => {
+    if (!form.organisationName.trim()) return "Organisation name is required";
+    if (!form.contactName.trim()) return "Contact person is required";
+    if (!form.sector) return "Sector is required";
+    if (!form.province) return "Province is required";
+    return null;
+  };
+
+  const isFormValid = !validateForm();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,6 +70,15 @@ export default function SignupProvider() {
   };
 
   const handleGoogleSignup = async () => {
+    const validateForm = () => {
+    if (!form.organisationName.trim()) return "Organisation name is required";
+    if (!form.contactName.trim()) return "Contact person is required";
+    if (!form.sector) return "Sector is required";
+    if (!form.province) return "Province is required";
+    return null;
+  };
+
+  const isFormValid = !validateForm();
     setLoading(true);
 
     try {
@@ -133,36 +150,11 @@ export default function SignupProvider() {
         </label>
       </fieldset>
 
-      <fieldset>
-        <legend>Login details</legend>
+      
 
-        <label>
-          Work email
-          <input
-            type="email"
-            value={form.email}
-            onChange={set('email')}
-            required
-          />
-        </label>
+      
 
-        <label>
-          Password
-          <input
-            type="password"
-            value={form.password}
-            onChange={set('password')}
-            minLength={8}
-            required
-          />
-        </label>
-      </fieldset>
-
-      <button type="submit" disabled={loading}>
-        {loading ? "Creating..." : "Register organisation"}
-      </button>
-
-      <button type="button" onClick={handleGoogleSignup} disabled={loading}>
+      <button type="button" onClick={handleGoogleSignup} disabled={loading || !isFormValid}>
         {loading ? "Signing in..." : "Sign up with Google"}
       </button>
     </form>

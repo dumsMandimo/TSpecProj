@@ -2,13 +2,12 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import SignupApplicant from '../components/signupApplicant';
 import SignupProvider from '../components/signupProvider';
-import SignupAdmin from '../components/signupAdmin';
 import './signupPage.css';
 
 const ROLES = [
   { key: 'applicant', label: 'Applicant', desc: 'Looking for learnerships & internships' },
   { key: 'provider',  label: 'Provider',  desc: 'Employer or training organisation' },
-  { key: 'admin',     label: 'Admin',     desc: 'Platform administrator' },
+  
 ];
 
 export default function SignupPage() {
@@ -17,7 +16,7 @@ export default function SignupPage() {
   const forms = {
     applicant: <SignupApplicant />,
     provider:  <SignupProvider />,
-    admin:     <SignupAdmin />,
+    
   };
 
   return (
