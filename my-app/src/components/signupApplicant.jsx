@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import NqfSelect from "../components/nqfSelect.jsx";
+import { NqfDropdown } from "../components/nqfSelect.jsx";
 //import { signUpWithEmail, signUpWithGoogle } from "../services/authService";
 
 const PROVINCES = [
@@ -136,7 +136,7 @@ export default function SignupApplicant() {
 
         <label>
           Highest qualification
-          <NqfSelect
+          <NqfDropdown
             value={form.qualification}
             onChange={set("qualification")}
             required

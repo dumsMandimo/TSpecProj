@@ -22,7 +22,22 @@ const NQF_LEVELS = [
   },
 ];
 
-export default function NqfDropdown({ value, onChange, required }) {
+const SECTORS = [
+  "Agriculture and Nature Conservation",
+  "Business, Communications and Management",
+  "Communication Studies and Language",
+  "Culture and Arts",
+  "Education, Training and Development",
+  "Health Sciences and Social Services",
+  "Human and Social Sciences",
+  "Law, Military Science and Security",
+  "Manufacturing, Engineering and Technology",
+  "Physical Planning and Construction",
+  "Physical, Mathematical, Computer and Life Sciences",
+  "Services",
+];
+
+export function NqfDropdown({ value, onChange, required }) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const ref = useRef(null);
@@ -87,6 +102,69 @@ export default function NqfDropdown({ value, onChange, required }) {
                   {name}
                 </button>
               ))}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+export function SectorDropdown({ value, onChange, required }) {
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const pick = (name) => {
+    setSelected(name);
+    onChange({
+      target: {
+        value: name,
+      },
+    });
+    setOpen(false);
+  };
+
+  return (
+    <section ref={ref} className="nqf-dropdown">
+      <input
+        type="text"
+        required={required}
+        value={value}
+        readOnly
+        style={{ display: "none" }}
+      />
+
+      <button
+        type="button"
+        className={`nqf-trigger ${open ? "open" : ""}`}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className={selected ? "" : "placeholder"}>
+          {selected || "Select sector"}
+        </span>
+        <span className="nqf-chevron">{open ? "▲" : "▼"}</span>
+      </button>
+
+      {open && (
+        <ul className="nqf-list">
+          {SECTORS.map((name) => (
+            <li key={name}>
+              <button
+                type="button"
+                className={`nqf-option ${selected === name ? "selected" : ""}`}
+                onClick={() => pick(name)}
+              >
+                {name}
+              </button>
             </li>
           ))}
         </ul>
