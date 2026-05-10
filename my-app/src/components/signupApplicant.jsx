@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import NqfSelect from "../components/nqfSelect.jsx";
 //import { signUpWithEmail, signUpWithGoogle } from "../services/authService";
 
 const NQF_LEVELS = [
@@ -157,23 +158,11 @@ export default function SignupApplicant() {
 
         <label>
           Highest qualification
-          <select
+          <NqfSelect
             value={form.qualification}
             onChange={set("qualification")}
             required
-          >
-            <option value="">Select NQF level</option>
-            {NQF_LEVELS.map(({ group, options }) => (
-              <optgroup key={group} label={group}>
-                <option disabled style={{ display: "none" }}></option>
-                {options.map((name) => (
-                  <option key={name} value={group}>
-                    {name}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
+          />
         </label>
       </fieldset>
 
