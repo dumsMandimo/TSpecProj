@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { signUpWithEmail, signUpWithGoogle } from '../services/authService';
+=======
+import { signUpWithGoogle } from '../services/authService';
+>>>>>>> dev-auth-fix
 
 const SECTORS = [
   'Agriculture','Construction','Education','Energy','Finance',
@@ -16,12 +20,19 @@ const PROVINCES = [
 export default function SignupProvider() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+<<<<<<< HEAD
+=======
+  const [errorMsg, setErrorMsg] = useState("");
+>>>>>>> dev-auth-fix
 
   const [form, setForm] = useState({
     organisationName: '',
     contactName: '',
+<<<<<<< HEAD
     email: '',
     password: '',
+=======
+>>>>>>> dev-auth-fix
     sector: '',
     province: '',
     description: '',
@@ -30,6 +41,7 @@ export default function SignupProvider() {
   const set = (field) => (e) =>
     setForm({ ...form, [field]: e.target.value });
 
+<<<<<<< HEAD
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -73,16 +85,62 @@ export default function SignupProvider() {
     } catch (error) {
       console.error(error);
       alert("Google signup failed");
+=======
+  const handleGoogleSignup = async () => {
+    if (loading) return;
+
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      if (
+        !form.organisationName ||
+        !form.contactName ||
+        !form.sector ||
+        !form.province
+      ) {
+        setErrorMsg("Please fill in all required fields.");
+        return;
+      }
+
+      const user = await signUpWithGoogle("provider", {
+        organisationName: form.organisationName,
+        contactName: form.contactName,
+        sector: form.sector,
+        province: form.province,
+        description: form.description,
+      });
+
+      console.log("Provider created:", user.uid);
+
+      navigate("/dashboard/provider");
+    } catch (error) {
+      console.error("Provider signup failed:", error);
+      setErrorMsg("Provider signup failed. Please try again.");
+>>>>>>> dev-auth-fix
     } finally {
       setLoading(false);
     }
   };
 
   return (
+<<<<<<< HEAD
     <form onSubmit={handleSubmit}>
       <fieldset>
         <legend>Organisation details</legend>
 
+=======
+    <form>
+      <fieldset>
+        <legend>Organisation details</legend>
+
+        {errorMsg && (
+          <p style={{ color: "red", marginBottom: "10px" }}>
+            {errorMsg}
+          </p>
+        )}
+
+>>>>>>> dev-auth-fix
         <label>
           Organisation name
           <input
@@ -133,6 +191,7 @@ export default function SignupProvider() {
         </label>
       </fieldset>
 
+<<<<<<< HEAD
       <fieldset>
         <legend>Login details</legend>
 
@@ -164,6 +223,14 @@ export default function SignupProvider() {
 
       <button type="button" onClick={handleGoogleSignup} disabled={loading}>
         {loading ? "Signing in..." : "Sign up with Google"}
+=======
+      <button
+        type="button"
+        onClick={handleGoogleSignup}
+        disabled={loading}
+      >
+        {loading ? "Signing in..." : "Continue with Google"}
+>>>>>>> dev-auth-fix
       </button>
     </form>
   );

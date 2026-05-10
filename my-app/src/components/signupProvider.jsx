@@ -34,7 +34,9 @@ export default function SignupProvider() {
 
     setErrorMsg("");
 
-    // VALIDATION (IMPORTANT FIX)
+    if (loading) return;
+
+    // Validation
     if (
       !form.organisationName.trim() ||
       !form.contactName.trim() ||
@@ -45,8 +47,6 @@ export default function SignupProvider() {
       setErrorMsg("Please fill in all required fields before continuing.");
       return;
     }
-
-    if (loading) return;
 
     setLoading(true);
 
@@ -59,13 +59,13 @@ export default function SignupProvider() {
         description: form.description,
       });
 
-      console.log("Provider Google signup successful", user.uid);
+      console.log("Provider Google signup successful:", user?.uid);
 
       navigate("/dashboard/provider");
 
     } catch (error) {
       console.error(error);
-      setErrorMsg("Google signup failed. Please try again.");
+      setErrorMsg(error?.message || "Signup failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,6 @@ export default function SignupProvider() {
 
   return (
     <form onSubmit={handleGoogleSignup}>
-
       <fieldset>
         <legend>Organisation details</legend>
 
@@ -108,7 +107,7 @@ export default function SignupProvider() {
           <select value={form.sector} onChange={set('sector')} required>
             <option value="">Select sector</option>
             {SECTORS.map((s) => (
-              <option key={s}>{s}</option>
+              <option key={s} value={s}>{s}</option>
             ))}
           </select>
         </label>
@@ -118,7 +117,7 @@ export default function SignupProvider() {
           <select value={form.province} onChange={set('province')} required>
             <option value="">Select province</option>
             {PROVINCES.map((p) => (
-              <option key={p}>{p}</option>
+              <option key={p} value={p}>{p}</option>
             ))}
           </select>
         </label>
@@ -137,7 +136,6 @@ export default function SignupProvider() {
       <button type="submit" disabled={loading}>
         {loading ? "Signing up..." : "Continue with Google"}
       </button>
-
     </form>
   );
 }

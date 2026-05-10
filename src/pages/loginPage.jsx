@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './loginPage.css';
@@ -57,16 +58,67 @@ export default function LoginPage() {
         navigate("/dashboard/provider");
       } 
       else {
+=======
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./loginPage.css";
+
+import { signUpWithGoogle } from "../services/authService";
+import { getUserRole } from "../services/userService";
+
+export default function LoginPage() {
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+
+    try {
+      // 1. Authenticate user (Google login)
+      const user = await signUpWithGoogle();
+
+      console.log("Logged in user:", user.uid);
+
+      // 2. Fetch role from Firestore
+      const role = await getUserRole(user.uid);
+
+      // 3. If no role → user never signed up properly
+      if (!role) {
+        alert("No account found. Please sign up first.");
+        return;
+      }
+
+      console.log("Navigating based on role:", role);
+
+      // 4. Store role locally
+      localStorage.setItem("role", role);
+
+      // 5. Redirect user
+      if (role === "admin") {
+        navigate("/dashboard/admin");
+      } else if (role === "provider") {
+        navigate("/dashboard/provider");
+      } else {
+>>>>>>> dev-auth-fix
         navigate("/dashboard/applicant");
       }
 
     } catch (error) {
+<<<<<<< HEAD
       console.error(error);
 
       if (error.code === "auth/invalid-credential") {
         alert("Invalid email or password.");
       } else {
         alert("Login failed: " + error.message);
+=======
+      console.error("GOOGLE LOGIN ERROR:", error);
+
+      if (error.message === "Role is required for new users") {
+        alert("No account found. Please sign up first.");
+      } else {
+        alert("Google login failed: " + error.message);
+>>>>>>> dev-auth-fix
       }
 
     } finally {
@@ -85,7 +137,14 @@ export default function LoginPage() {
 
         <section className="hero">
           <h1>Connect.<br />Learn.<br />Grow.</h1>
+<<<<<<< HEAD
           <p>South Africa's platform linking work-seekers with SETA-accredited learnerships, apprenticeships and internships.</p>
+=======
+          <p>
+            South Africa's platform linking work-seekers with SETA-accredited learnerships,
+            apprenticeships and internships.
+          </p>
+>>>>>>> dev-auth-fix
         </section>
 
         <ul className="stats">
@@ -99,6 +158,7 @@ export default function LoginPage() {
         <h4>Sign in to your account</h4>
         <p className="subtitle">Welcome back!</p>
 
+<<<<<<< HEAD
         <section role="tabpanel" className="form-panel">
           <form onSubmit={handleSubmit}>
             <label className="text_area">
@@ -133,6 +193,20 @@ export default function LoginPage() {
         <p className="login-prompt">
           Don't have an account? <a href="/">Sign Up</a>
         </p>
+=======
+        <section className="form-panel">
+
+          <button
+            onClick={handleGoogleLogin}
+            className="btn"
+            disabled={loading}
+          >
+            {loading ? "Signing in..." : "Sign in with Google"}
+          </button>
+
+        </section>
+
+>>>>>>> dev-auth-fix
       </section>
 
     </main>

@@ -1,6 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+<<<<<<< HEAD
 import { signUpWithEmail, signUpWithGoogle } from '../services/authService';
+=======
+import { signUpWithGoogle } from '../services/authService';
+>>>>>>> dev-auth-fix
 
 const NQF_LEVELS = [
   "NQF 1 — General Certificate",
@@ -31,18 +35,27 @@ export default function SignupApplicant() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
+<<<<<<< HEAD
     email: "",
     password: "",
+=======
+>>>>>>> dev-auth-fix
     province: "",
     qualification: "",
   });
 
   const [loading, setLoading] = useState(false);
+<<<<<<< HEAD
+=======
+  const [errorMsg, setErrorMsg] = useState("");
+
+>>>>>>> dev-auth-fix
   const navigate = useNavigate();
 
   const set = (field) => (e) =>
     setForm({ ...form, [field]: e.target.value });
 
+<<<<<<< HEAD
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -136,6 +149,64 @@ export default function SignupApplicant() {
             onChange={set("password")}
             required
           />
+=======
+  const handleGoogleSignup = async () => {
+    if (loading) return;
+
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      if (
+        !form.firstName ||
+        !form.lastName ||
+        !form.province ||
+        !form.qualification
+      ) {
+        setErrorMsg("Please fill in all required fields.");
+        return;
+      }
+
+      const user = await signUpWithGoogle("applicant", {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        fullName: form.firstName + " " + form.lastName,
+        province: form.province,
+        qualification: form.qualification,
+      });
+
+      console.log("Applicant created:", user.uid);
+
+      navigate("/dashboard/applicant");
+
+    } catch (error) {
+      console.error("Applicant signup failed:", error);
+      setErrorMsg("Google signup failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form noValidate>
+      <fieldset>
+        <legend>Personal details</legend>
+
+        {errorMsg && (
+          <p style={{ color: "red", marginBottom: "10px" }}>
+            {errorMsg}
+          </p>
+        )}
+
+        <label>
+          First name
+          <input value={form.firstName} onChange={set("firstName")} required />
+        </label>
+
+        <label>
+          Last name
+          <input value={form.lastName} onChange={set("lastName")} required />
+>>>>>>> dev-auth-fix
         </label>
 
         <label>
@@ -149,12 +220,17 @@ export default function SignupApplicant() {
         </label>
 
         <label>
+<<<<<<< HEAD
           Highest qualification
           <select
             value={form.qualification}
             onChange={set("qualification")}
             required
           >
+=======
+          Qualification
+          <select value={form.qualification} onChange={set("qualification")} required>
+>>>>>>> dev-auth-fix
             <option value="">Select NQF level</option>
             {NQF_LEVELS.map((n) => (
               <option key={n}>{n}</option>
@@ -163,12 +239,21 @@ export default function SignupApplicant() {
         </label>
       </fieldset>
 
+<<<<<<< HEAD
       <button type="submit" disabled={loading}>
         {loading ? "Creating account..." : "Create account"}
       </button>
 
       <button type="button" onClick={handleGoogleSignup} disabled={loading}>
         {loading ? "Signing in with Google..." : "Sign up with Google"}
+=======
+      <button
+        type="button"
+        onClick={handleGoogleSignup}
+        disabled={loading}
+      >
+        {loading ? "Signing up..." : "Continue with Google"}
+>>>>>>> dev-auth-fix
       </button>
     </form>
   );

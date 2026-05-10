@@ -28,6 +28,8 @@ const PROVINCES = [
 ];
 
 export default function SignupApplicant() {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -38,17 +40,18 @@ export default function SignupApplicant() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const navigate = useNavigate();
-
   const set = (field) => (e) =>
     setForm({ ...form, [field]: e.target.value });
 
   const handleGoogleSignup = async (e) => {
     e.preventDefault();
-
     setErrorMsg("");
 
-    // VALIDATION (THIS FIXES YOUR ISSUE)
+    // Prevent double submit early
+    if (loading) return;
+    setLoading(true);
+
+    // Validation
     if (
       !form.firstName.trim() ||
       !form.lastName.trim() ||
@@ -56,12 +59,9 @@ export default function SignupApplicant() {
       !form.qualification
     ) {
       setErrorMsg("Please fill in all required fields before continuing.");
+      setLoading(false);
       return;
     }
-
-    if (loading) return;
-
-    setLoading(true);
 
     try {
       const user = await signUpWithGoogle("applicant", {
@@ -71,13 +71,17 @@ export default function SignupApplicant() {
         qualification: form.qualification,
       });
 
-      console.log("Applicant created:", user.uid);
+      console.log("Applicant created:", user?.uid);
 
       navigate("/dashboard/applicant");
 
     } catch (error) {
-      console.error(error);
-      setErrorMsg("Google signup failed. Please try again.");
+      console.error("Signup error:", error);
+
+      setErrorMsg(
+        error?.message || "Signup failed. Please try again."
+      );
+
     } finally {
       setLoading(false);
     }
@@ -85,7 +89,6 @@ export default function SignupApplicant() {
 
   return (
     <form onSubmit={handleGoogleSignup}>
-
       <fieldset>
         <legend>Personal details</legend>
 
@@ -118,7 +121,9 @@ export default function SignupApplicant() {
           <select value={form.province} onChange={set("province")} required>
             <option value="">Select province</option>
             {PROVINCES.map((p) => (
-              <option key={p}>{p}</option>
+              <option key={p} value={p}>
+                {p}
+              </option>
             ))}
           </select>
         </label>
@@ -132,7 +137,9 @@ export default function SignupApplicant() {
           >
             <option value="">Select NQF level</option>
             {NQF_LEVELS.map((n) => (
-              <option key={n}>{n}</option>
+              <option key={n} value={n}>
+                {n}
+              </option>
             ))}
           </select>
         </label>
@@ -141,7 +148,6 @@ export default function SignupApplicant() {
       <button type="submit" disabled={loading}>
         {loading ? "Signing up..." : "Continue with Google"}
       </button>
-
     </form>
   );
 }
