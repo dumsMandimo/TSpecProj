@@ -45,10 +45,9 @@ export default function SignupApplicant() {
 
   const handleGoogleSignup = async (e) => {
     e.preventDefault();
-
     setErrorMsg("");
 
-    // VALIDATION (THIS FIXES YOUR ISSUE)
+    // validation
     if (
       !form.firstName.trim() ||
       !form.lastName.trim() ||
@@ -71,13 +70,13 @@ export default function SignupApplicant() {
         qualification: form.qualification,
       });
 
-      console.log("Applicant created:", user.uid);
+      console.log("Applicant created/login success:", user.uid);
 
       navigate("/dashboard/applicant");
 
     } catch (error) {
       console.error(error);
-      setErrorMsg("Google signup failed. Please try again.");
+      setErrorMsg("This Google account is already registered.");
     } finally {
       setLoading(false);
     }

@@ -34,7 +34,7 @@ export default function SignupProvider() {
 
     setErrorMsg("");
 
-    // VALIDATION (IMPORTANT FIX)
+    // Validation
     if (
       !form.organisationName.trim() ||
       !form.contactName.trim() ||
@@ -65,7 +65,9 @@ export default function SignupProvider() {
 
     } catch (error) {
       console.error(error);
-      setErrorMsg("Google signup failed. Please try again.");
+
+      // IMPORTANT: show actual Firebase/service error message if available
+      setErrorMsg(error.message || "This Google account is already registered.");
     } finally {
       setLoading(false);
     }
