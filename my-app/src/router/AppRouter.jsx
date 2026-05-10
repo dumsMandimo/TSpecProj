@@ -4,7 +4,6 @@ import SignupPage from '../pages/signupPage';
 import LoginPage from '../pages/loginPage';
 
 import ApplicantDashboard from '../components/applicantDashboard/Dashboard';
-import AdminDashboard from '../pages/adminDashboard';
 import ProviderDashboard from '../pages/ProviderDashboard';
 
 import ApplicantProfile from '../components/applicantDashboard/ApplicantProfile';
@@ -21,7 +20,7 @@ export default function AppRouter() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected dashboards */}
+        {/* Applicant protected routes */}
         <Route
           path="/dashboard/applicant"
           element={
@@ -31,25 +30,6 @@ export default function AppRouter() {
           }
         />
 
-        <Route
-          path="/dashboard/admin"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/dashboard/provider"
-          element={
-            <ProtectedRoute allowedRoles={["provider"]}>
-              <ProviderDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Protected applicant-only pages */}
         <Route
           path="/dashboard/myProfile"
           element={
@@ -68,8 +48,20 @@ export default function AppRouter() {
           }
         />
 
-        {/* Default redirects */}
+        {/* Provider protected route */}
+        <Route
+          path="/dashboard/provider"
+          element={
+            <ProtectedRoute allowedRoles={["provider"]}>
+              <ProviderDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Default redirect */}
         <Route path="/" element={<Navigate to="/signup" replace />} />
+
+        {/* Catch-all fallback */}
         <Route path="*" element={<Navigate to="/signup" replace />} />
 
       </Routes>

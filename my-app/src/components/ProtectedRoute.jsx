@@ -20,7 +20,6 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
       }
 
       try {
-        // Get role from Firestore instead of localStorage
         const userRef = doc(db, "users", u.uid);
         const snap = await getDoc(userRef);
 
@@ -40,20 +39,22 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
     return () => unsubscribe();
   }, []);
 
-  // wait for Firebase + Firestore
-  if (loading) return null;
+  // Show loading state (prevents flicker / redirect bug)
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-  // not logged in
+  // Not logged in
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // role not found in DB
+  // No role found in Firestore
   if (!role) {
     return <Navigate to="/login" replace />;
   }
 
-  // role mismatch
+  // Role not allowed
   if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
     return <Navigate to="/login" replace />;
   }

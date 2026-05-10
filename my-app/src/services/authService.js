@@ -17,7 +17,7 @@ export const signUpWithGoogle = async (role, extraData = {}) => {
     prompt: "select_account",
   });
 
-  // 1. Google login
+  // Google login
   const result = await signInWithPopup(auth, provider);
   const user = result.user;
 
@@ -25,11 +25,10 @@ export const signUpWithGoogle = async (role, extraData = {}) => {
     throw new Error("Google authentication failed");
   }
 
-  // 2. Reference user document by UID (correct identity source)
   const userRef = doc(db, "users", user.uid);
   const userSnap = await getDoc(userRef);
 
-  // 3. Create user ONLY if they don't exist
+  // Create user only if they don't exist
   if (!userSnap.exists()) {
     await setDoc(userRef, {
       uid: user.uid,
