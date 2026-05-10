@@ -66,7 +66,7 @@ export default function SignupProvider() {
             Sector
             <SectorDropdown
               value={form.qualification}
-              onChange={set("qualification")}
+              onChange={set("sector")}
               required
             />
           </label>
