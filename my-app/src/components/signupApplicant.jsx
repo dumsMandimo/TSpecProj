@@ -1,6 +1,28 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import NqfSelect from "../components/nqfSelect.jsx";
+//import { signUpWithEmail, signUpWithGoogle } from "../services/authService";
+
+const NQF_LEVELS = [
+  { group: "NQF 1", options: ["General Certificate"] },
+  { group: "NQF 2", options: ["Elementary Certificate"] },
+  { group: "NQF 3", options: ["Intermediate Certificate"] },
+  { group: "NQF 4", options: ["National Certificate"] },
+  { group: "NQF 5", options: ["Higher Certificate"] },
+  { group: "NQF 6", options: ["Diploma", "Advanced Certificate"] },
+  { group: "NQF 7", options: ["Bachelor's Degree", "Advanced Diploma"] },
+  {
+    group: "NQF 8",
+    options: ["Bachelor Honours Degree", "Postgraduate Diploma"],
+  },
+  {
+    group: "NQF 9",
+    options: ["Master's Degree", "Master's Degree (Professional)"],
+  },
+  {
+    group: "NQF 10",
+    options: ["Doctoral Degree (Professional)", "Doctoral Degree"],
+  },
+];
 
 const PROVINCES = [
   "Eastern Cape",
@@ -24,16 +46,60 @@ export default function SignupApplicant() {
     qualification: "",
   });
 
-  const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/dashboard/applicant");
+
+    setLoading(true);
+
+    try {
+      const cleanEmail = form.email.trim().toLowerCase();
+
+      const user = await signUpWithEmail(
+        cleanEmail,
+        form.password,
+        "applicant",
+        {
+          firstName: form.firstName,
+          lastName: form.lastName,
+          province: form.province,
+          qualification: form.qualification,
+        },
+      );
+
+      console.log("User created:", user);
+
+      navigate("/dashboard/createProfile");
+    } catch (error) {
+      console.error("Signup failed:", error);
+      alert("Signup failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleGoogleSignup = async () => {
+    setLoading(true);
+
+    try {
+      const user = await signUpWithGoogle();
+
+      console.log("User created with Google:", user);
+
+      navigate("/dashboard/createProfile");
+    } catch (error) {
+      console.error("Google signup failed:", error);
+      alert("Google sign-in failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} noValidate>
       <fieldset>
         <legend>Personal details</legend>
 
@@ -42,17 +108,16 @@ export default function SignupApplicant() {
             First name
             <input
               type="text"
-              placeholder="Thabo"
               value={form.firstName}
               onChange={set("firstName")}
               required
             />
           </label>
+
           <label>
             Last name
             <input
               type="text"
-              placeholder="Nkosi"
               value={form.lastName}
               onChange={set("lastName")}
               required
@@ -64,7 +129,6 @@ export default function SignupApplicant() {
           Email address
           <input
             type="email"
-            placeholder="thabo@email.com"
             value={form.email}
             onChange={set("email")}
             required
@@ -75,7 +139,6 @@ export default function SignupApplicant() {
           Password
           <input
             type="password"
-            placeholder="Min. 8 characters"
             value={form.password}
             onChange={set("password")}
             required
@@ -92,8 +155,6 @@ export default function SignupApplicant() {
           </select>
         </label>
 
-        {/* split it into two. i want the name to be in grey */}
-
         <label>
           Highest qualification
           <select
@@ -102,12 +163,27 @@ export default function SignupApplicant() {
             required
           >
             <option value="">Select NQF level</option>
-            <NqfSelect />
+            {NQF_LEVELS.map(({ group, options }) => (
+              <optgroup key={group} label={group}>
+                <option disabled style={{ display: "none" }}></option>
+                {options.map((name) => (
+                  <option key={name} value={group}>
+                    {name}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
           </select>
         </label>
       </fieldset>
 
-      <button type="submit">Create account</button>
+      <button type="submit" disabled={loading}>
+        {loading ? "Creating account..." : "Create account"}
+      </button>
+
+      <button type="button" onClick={handleGoogleSignup} disabled={loading}>
+        {loading ? "Signing in with Google..." : "Sign up with Google"}
+      </button>
     </form>
   );
 }

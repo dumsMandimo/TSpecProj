@@ -20,6 +20,7 @@ export default function NqfSelect() {
     }
     return (
       <optgroup key={key} label={key}>
+        <option disabled style={{ display: "none" }}></option>
         <option key={key} value={value}>
           {value}
         </option>

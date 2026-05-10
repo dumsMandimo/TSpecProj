@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { db } from "../services/firebase.js";
 import { getDoc, doc } from "firebase/firestore";
 
+/*
+
 export const fetchNqfLevels = async () => {
   const docRef = doc(db, "nqfLevel", "0Na7Q5IzFg2oI24GiqS3");
   const querySnapshot = await getDoc(docRef);
@@ -40,3 +42,5 @@ export const useNqfLevels = () => {
 
   return { nqfLevel, loading, error };
 };
+
+*/
