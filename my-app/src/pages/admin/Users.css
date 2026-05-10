@@ -23,10 +23,10 @@
     margin-top: 0.25rem;
 }
 
-/* Summary cards — updated to 5 columns for the new Removed card */
+
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
     margin-bottom: 2rem;
 }

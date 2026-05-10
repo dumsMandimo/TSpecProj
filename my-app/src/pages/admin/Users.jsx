@@ -1,4 +1,4 @@
-// src/pages/admin/Users.jsx
+
 import { useState, useEffect } from 'react';
 import { db } from '../../services/firebase';
 import { getAuth } from 'firebase/auth';
@@ -29,9 +29,6 @@ export default function Users() {
         id: doc.id,
         ...doc.data()
       }));
-
-      console.log('First user document:', data[0]); // TEMP: remove after fixing field names
-
       setUsers(data);
     } catch (err) {
       console.error('Failed to fetch users:', err);
@@ -51,7 +48,6 @@ export default function Users() {
     setRemovingId(userId);
     try {
       await updateDoc(doc(db, 'users', userId), { status: 'removed' });
-      // Update local state immediately so UI reflects change without refetch
       setUsers(prev =>
         prev.map(u => u.id === userId ? { ...u, status: 'removed' } : u)
       );
@@ -80,11 +76,10 @@ export default function Users() {
     return fullName.includes(term) || u.email?.toLowerCase().includes(term);
   });
 
-  // Counts — only count active users in summary cards
-  const activeUsers = users.filter(u => u.status !== 'removed');
+  // Counts — exclude admins since they are hardcoded
+  const activeUsers = users.filter(u => u.status !== 'removed' && u.role !== 'admin');
   const totalApplicants = activeUsers.filter(u => u.role === 'applicant').length;
   const totalProviders = activeUsers.filter(u => u.role === 'provider').length;
-  const totalAdmins = activeUsers.filter(u => u.role === 'admin').length;
   const totalRemoved = users.filter(u => u.status === 'removed').length;
 
   function formatDate(dateStr) {
@@ -136,10 +131,6 @@ export default function Users() {
           <h2>Providers</h2>
           <p className="stat-number">{totalProviders}</p>
         </article>
-        <article className="stat-card">
-          <h2>Admins</h2>
-          <p className="stat-number">{totalAdmins}</p>
-        </article>
         <article className="stat-card stat-card--removed">
           <h2>Removed</h2>
           <p className="stat-number">{totalRemoved}</p>
@@ -180,7 +171,7 @@ export default function Users() {
 
         <nav aria-label="Filter users by role">
           <ul className="filter-list" role="list">
-            {['all', 'applicant', 'provider', 'admin'].map(f => (
+            {['all', 'applicant', 'provider'].map(f => (
               <li key={f}>
                 <button
                   onClick={() => setRoleFilter(f)}
