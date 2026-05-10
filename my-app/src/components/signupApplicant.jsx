@@ -3,28 +3,6 @@ import { useState } from "react";
 import NqfSelect from "../components/nqfSelect.jsx";
 //import { signUpWithEmail, signUpWithGoogle } from "../services/authService";
 
-const NQF_LEVELS = [
-  { group: "NQF 1", options: ["General Certificate"] },
-  { group: "NQF 2", options: ["Elementary Certificate"] },
-  { group: "NQF 3", options: ["Intermediate Certificate"] },
-  { group: "NQF 4", options: ["National Certificate"] },
-  { group: "NQF 5", options: ["Higher Certificate"] },
-  { group: "NQF 6", options: ["Diploma", "Advanced Certificate"] },
-  { group: "NQF 7", options: ["Bachelor's Degree", "Advanced Diploma"] },
-  {
-    group: "NQF 8",
-    options: ["Bachelor Honours Degree", "Postgraduate Diploma"],
-  },
-  {
-    group: "NQF 9",
-    options: ["Master's Degree", "Master's Degree (Professional)"],
-  },
-  {
-    group: "NQF 10",
-    options: ["Doctoral Degree (Professional)", "Doctoral Degree"],
-  },
-];
-
 const PROVINCES = [
   "Eastern Cape",
   "Free State",
