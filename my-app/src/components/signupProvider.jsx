@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signUpWithEmail, signUpWithGoogle } from '../services/authService';
+import { signUpWithGoogle } from '../services/authService';
 
 const SECTORS = [
   'Agriculture','Construction','Education','Energy','Finance',
@@ -16,12 +16,11 @@ const PROVINCES = [
 export default function SignupProvider() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const [form, setForm] = useState({
     organisationName: '',
     contactName: '',
-    email: '',
-    password: '',
     sector: '',
     province: '',
     description: '',
@@ -30,58 +29,59 @@ export default function SignupProvider() {
   const set = (field) => (e) =>
     setForm({ ...form, [field]: e.target.value });
 
-  const handleSubmit = async (e) => {
+  const handleGoogleSignup = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
-    try {
-      const cleanEmail = form.email.trim().toLowerCase();
+    setErrorMsg("");
 
-      const user = await signUpWithEmail(
-        cleanEmail,
-        form.password,
-        "provider",
-        {
-          organisationName: form.organisationName,
-          contactName: form.contactName,
-          sector: form.sector,
-          province: form.province,
-          description: form.description,
-        }
-      );
-
-      console.log("Provider created:", user);
-
-      navigate("/dashboard/provider");
-    } catch (error) {
-      console.error(error);
-      alert("Provider signup failed");
-    } finally {
-      setLoading(false);
+    // VALIDATION (IMPORTANT FIX)
+    if (
+      !form.organisationName.trim() ||
+      !form.contactName.trim() ||
+      !form.sector ||
+      !form.province ||
+      !form.description.trim()
+    ) {
+      setErrorMsg("Please fill in all required fields before continuing.");
+      return;
     }
-  };
 
-  const handleGoogleSignup = async () => {
+    if (loading) return;
+
     setLoading(true);
 
     try {
-      const user = await signUpWithGoogle("provider");
+      const user = await signUpWithGoogle("provider", {
+        organisationName: form.organisationName,
+        contactName: form.contactName,
+        sector: form.sector,
+        province: form.province,
+        description: form.description,
+      });
 
-      console.log("Google provider user:", user);
+      console.log("Provider Google signup successful", user.uid);
 
       navigate("/dashboard/provider");
+
     } catch (error) {
       console.error(error);
-      alert("Google signup failed");
+      setErrorMsg("Google signup failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleGoogleSignup}>
+
       <fieldset>
         <legend>Organisation details</legend>
+
+        {errorMsg && (
+          <p style={{ color: "red", marginBottom: "10px" }}>
+            {errorMsg}
+          </p>
+        )}
 
         <label>
           Organisation name
@@ -129,42 +129,15 @@ export default function SignupProvider() {
             value={form.description}
             onChange={set('description')}
             rows={3}
-          />
-        </label>
-      </fieldset>
-
-      <fieldset>
-        <legend>Login details</legend>
-
-        <label>
-          Work email
-          <input
-            type="email"
-            value={form.email}
-            onChange={set('email')}
-            required
-          />
-        </label>
-
-        <label>
-          Password
-          <input
-            type="password"
-            value={form.password}
-            onChange={set('password')}
-            minLength={8}
             required
           />
         </label>
       </fieldset>
 
       <button type="submit" disabled={loading}>
-        {loading ? "Creating..." : "Register organisation"}
+        {loading ? "Signing up..." : "Continue with Google"}
       </button>
 
-      <button type="button" onClick={handleGoogleSignup} disabled={loading}>
-        {loading ? "Signing in..." : "Sign up with Google"}
-      </button>
     </form>
   );
 }

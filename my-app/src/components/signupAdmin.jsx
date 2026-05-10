@@ -1,71 +1,62 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signUpWithEmail, signUpWithGoogle } from '../services/authService';
+import { signUpWithGoogle } from '../services/authService';
 
 export default function SignupAdmin() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const [form, setForm] = useState({
     fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
   });
 
   const set = (field) => (e) =>
     setForm({ ...form, [field]: e.target.value });
 
-  const handleSubmit = async (e) => {
+  const handleGoogleSignup = async (e) => {
     e.preventDefault();
 
-    if (form.password !== form.confirmPassword) {
-      alert('Passwords do not match');
+    setErrorMsg("");
+
+    // VALIDATION (IMPORTANT FIX)
+    if (!form.fullName.trim()) {
+      setErrorMsg("Please enter your full name before continuing.");
       return;
     }
 
+    if (loading) return;
+
     setLoading(true);
 
     try {
-      const cleanEmail = form.email.trim().toLowerCase();
+      const user = await signUpWithGoogle("admin", {
+        fullName: form.fullName,
+      });
 
-      await signUpWithEmail(
-        cleanEmail,
-        form.password,
-        "admin",
-        {
-          fullName: form.fullName,
-        }
-      );
+      console.log("Admin created:", user.uid);
 
       navigate("/dashboard/admin");
 
     } catch (error) {
       console.error(error);
-      alert("Admin signup failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignup = async () => {
-    setLoading(true);
-
-    try {
-      await signUpWithGoogle("admin");
-      navigate("/dashboard/admin");
-    } catch (error) {
-      console.error(error);
-      alert("Google signup failed");
+      setErrorMsg("Google signup failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleGoogleSignup}>
+
       <fieldset>
         <legend>Admin details</legend>
+
+        {errorMsg && (
+          <p style={{ color: "red", marginBottom: "10px" }}>
+            {errorMsg}
+          </p>
+        )}
 
         <label>
           Full name
@@ -77,44 +68,12 @@ export default function SignupAdmin() {
           />
         </label>
 
-        <label>
-          Email address
-          <input
-            type="email"
-            value={form.email}
-            onChange={set('email')}
-            required
-          />
-        </label>
-
-        <label>
-          Password
-          <input
-            type="password"
-            value={form.password}
-            onChange={set('password')}
-            required
-          />
-        </label>
-
-        <label>
-          Confirm password
-          <input
-            type="password"
-            value={form.confirmPassword}
-            onChange={set('confirmPassword')}
-            required
-          />
-        </label>
       </fieldset>
 
       <button type="submit" disabled={loading}>
-        {loading ? "Creating..." : "Create admin account"}
+        {loading ? "Signing up..." : "Continue with Google"}
       </button>
 
-      <button type="button" onClick={handleGoogleSignup} disabled={loading}>
-        {loading ? "Signing in with Google..." : "Sign up with Google"}
-      </button>
     </form>
   );
 }
