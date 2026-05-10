@@ -29,6 +29,9 @@ export default function Users() {
         id: doc.id,
         ...doc.data()
       }));
+
+      console.log('First user document:', data[0]); // TEMP: remove after fixing field names
+
       setUsers(data);
     } catch (err) {
       console.error('Failed to fetch users:', err);
