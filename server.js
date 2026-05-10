@@ -44,3 +44,7 @@ app.get("*", (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups"); // ✅ fixes popup warning
+  next();
+});
