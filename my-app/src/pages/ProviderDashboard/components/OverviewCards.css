@@ -45,9 +45,14 @@
   border-left: 4px solid #f97316;
   border-radius: 12px;
   padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .overview-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 8px;
 }
 
@@ -77,6 +82,31 @@
 .overview-card__description {
   font-size: 12px;
   color: #9ca3af;
+}
+
+/* Clickable card */
+
+.overview-card--clickable {
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.overview-card--clickable:hover {
+  border-color: #f97316;
+  background: #fff7ed;
+}
+
+.overview-card--clickable:hover .overview-card__arrow {
+  opacity: 1;
+  transform: translateX(3px);
+}
+
+.overview-card__arrow {
+  opacity: 0;
+  color: #f97316;
+  font-size: 16px;
+  transition: opacity 0.15s, transform 0.15s;
 }
 
 @media (max-width: 900px) {

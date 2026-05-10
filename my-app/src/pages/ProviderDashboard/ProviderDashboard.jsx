@@ -38,7 +38,7 @@ export default function ProviderDashboard() {
 
         <section className="provider-dashboard__body">
           <section className="provider-dashboard__panel">
-            {tab === "overview" && <OverviewCards />}
+            {tab === "overview" && <OverviewCards setTab={setTab} />}
             {tab === "listings" && <ListingsPanel />}
             {tab === "applications" && <ApplicationsPanel />}
             {tab === "create" && <CreateOpportunityForm />}
