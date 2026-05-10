@@ -4,7 +4,7 @@ import LoginPage from '../pages/loginPage';
 import ApplicantDashboard from '../components/applicantDashboard/Dashboard';
 import AdminLayout from '../pages/adminLayout';
 import AdminDashboard from '../pages/adminDashboard';
-import ProviderDashboard from '../pages/ProviderDashboard';
+ import ProviderDashboard from '../pages/ProviderDashboard/ProviderDashboard';
 
 
 
