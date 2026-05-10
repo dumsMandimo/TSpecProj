@@ -1,11 +1,22 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { signUpWithGoogle } from '../services/authService';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { signUpWithGoogle } from "../services/authService";
 
 const SECTORS = [
-  'Agriculture','Construction','Education','Energy','Finance',
-  'Healthcare','Hospitality','ICT','Manufacturing','Mining',
-  'Public Service','Retail','Transport','Other',
+  "Agriculture",
+  "Construction",
+  "Education",
+  "Energy",
+  "Finance",
+  "Healthcare",
+  "Hospitality",
+  "ICT",
+  "Manufacturing",
+  "Mining",
+  "Public Service",
+  "Retail",
+  "Transport",
+  "Other",
 ];
 
 const PROVINCES = [
@@ -22,21 +33,47 @@ const PROVINCES = [
 
 export default function SignupProvider() {
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const [form, setForm] = useState({
     organisationName: "",
     contactName: "",
-    email: "",
-    password: "",
     sector: "",
     province: "",
     description: "",
   });
 
   const set = (field) => (e) =>
-    setForm({ ...form, [field]: e.target.value });
+    setForm((prev) => ({
+      ...prev,
+      [field]: e.target.value,
+    }));
+
+  const validateForm = () => {
+    if (!form.organisationName.trim()) {
+      return "Organisation name is required";
+    }
+
+    if (!form.contactName.trim()) {
+      return "Contact person is required";
+    }
+
+    if (!form.sector) {
+      return "Sector is required";
+    }
+
+    if (!form.province) {
+      return "Province is required";
+    }
+
+    if (!form.description.trim()) {
+      return "Description is required";
+    }
+
+    return null;
+  };
 
   const handleGoogleSignup = async (e) => {
     e.preventDefault();
@@ -45,15 +82,10 @@ export default function SignupProvider() {
 
     if (loading) return;
 
-    // Validation
-    if (
-      !form.organisationName.trim() ||
-      !form.contactName.trim() ||
-      !form.sector ||
-      !form.province ||
-      !form.description.trim()
-    ) {
-      setErrorMsg("Please fill in all required fields before continuing.");
+    const validationError = validateForm();
+
+    if (validationError) {
+      setErrorMsg(validationError);
       return;
     }
 
@@ -68,20 +100,22 @@ export default function SignupProvider() {
         description: form.description,
       });
 
-      console.log("Provider Google signup successful:", user?.uid);
+      console.log("Provider signup successful:", user);
 
       navigate("/dashboard/provider");
-
     } catch (error) {
-      console.error(error);
-      setErrorMsg(error?.message || "Signup failed. Please try again.");
+      console.error("Signup failed:", error);
+
+      setErrorMsg(
+        error?.message || "Signup failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleGoogleSignup}>
+    <form onSubmit={handleGoogleSignup} noValidate>
       <fieldset>
         <legend>Organisation details</legend>
 
@@ -111,41 +145,36 @@ export default function SignupProvider() {
           />
         </label>
 
-        <p className="field-row">
-          <label>
-            Sector
-            <SectorDropdown
-              value={form.qualification}
-              onChange={set("sector")}
-              required
-            />
-          </label>
-          <label>
-            Province
-            <select value={form.province} onChange={set("province")} required>
-              <option value="">Select province</option>
-              {PROVINCES.map((p) => (
-                <option key={p}>{p}</option>
-              ))}
-            </select>
-          </label>
-        </p>
         <label>
           Sector
-          <select value={form.sector} onChange={set('sector')} required>
+          <select
+            value={form.sector}
+            onChange={set("sector")}
+            required
+          >
             <option value="">Select sector</option>
-            {SECTORS.map((s) => (
-              <option key={s} value={s}>{s}</option>
+
+            {SECTORS.map((sector) => (
+              <option key={sector} value={sector}>
+                {sector}
+              </option>
             ))}
           </select>
         </label>
 
         <label>
           Province
-          <select value={form.province} onChange={set('province')} required>
+          <select
+            value={form.province}
+            onChange={set("province")}
+            required
+          >
             <option value="">Select province</option>
-            {PROVINCES.map((p) => (
-              <option key={p} value={p}>{p}</option>
+
+            {PROVINCES.map((province) => (
+              <option key={province} value={province}>
+                {province}
+              </option>
             ))}
           </select>
         </label>
@@ -155,14 +184,16 @@ export default function SignupProvider() {
           <textarea
             value={form.description}
             onChange={set("description")}
-            rows={3}
+            rows={4}
             required
           />
         </label>
       </fieldset>
 
       <button type="submit" disabled={loading}>
-        {loading ? "Signing up..." : "Continue with Google"}
+        {loading
+          ? "Signing up..."
+          : "Continue with Google"}
       </button>
     </form>
   );
