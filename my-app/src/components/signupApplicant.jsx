@@ -30,7 +30,50 @@ export default function SignupApplicant() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+<<<<<<< Updated upstream
     navigate('/dashboard/applicant');
+=======
+    setErrorMsg("");
+
+    // Prevent double submit early
+    if (loading) return;
+    setLoading(true);
+
+    // Validation
+    if (
+      !form.firstName.trim() ||
+      !form.lastName.trim() ||
+      !form.province ||
+      !form.qualification
+    ) {
+      setErrorMsg("Please fill in all required fields before continuing.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const user = await signUpWithGoogle("applicant", {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        province: form.province,
+        qualification: form.qualification,
+      });
+
+      console.log("Applicant created:", user?.uid);
+
+      navigate("/dashboard/createProfile");
+
+    } catch (error) {
+      console.error("Signup error:", error);
+
+      setErrorMsg(
+        error?.message || "Signup failed. Please try again."
+      );
+
+    } finally {
+      setLoading(false);
+    }
+>>>>>>> Stashed changes
   };
 
   return (
