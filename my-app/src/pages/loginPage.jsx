@@ -9,75 +9,30 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-<<<<<<< dev-auth-fix
   const handleGoogleLogin = async () => {
-=======
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const cleanEmail = email.trim().toLowerCase();
-    console.log('Login attempt:', { cleanEmail, password });
-
-    if (!cleanEmail || !password) {
-      alert('Please enter email and password');
-      return;
-    }
-
->>>>>>> main
     setLoading(true);
-    console.log('Step 1: attempting Firebase auth...');
 
     try {
-<<<<<<< dev-auth-fix
+      // 1. Authenticate user (Google login)
       const user = await signUpWithGoogle();
 
       console.log("Logged in user:", user.uid);
 
-      let role = null;
-
-      try {
-        role = await getUserRole(user.uid);
-        console.log("Role fetched:", role);
-
-        if (role) {
-          localStorage.setItem("role", role);
-        }
-      } catch (err) {
-        console.error("Role fetch error:", err);
-
-        alert("We couldn't verify your account. Please sign up first.");
-        navigate("/signup");
-        return;
-      }
-
-=======
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        cleanEmail,
-        password
-      );
-      console.log('Step 2: Firebase auth success', userCredential);
-
-      const user = userCredential.user;
-      console.log('Step 3: getting role for uid', user.uid);
-
+      // 2. Fetch role from Firestore
       const role = await getUserRole(user.uid);
-      console.log('Step 4: role is', role);
 
->>>>>>> main
+      // 3. If no role → user never signed up properly
       if (!role) {
-        console.warn("No role found for user:", user.uid);
-
-        alert("We couldn't find your account. Please sign up first.");
-        navigate("/signup");
+        alert("No account found. Please sign up first.");
         return;
       }
 
-<<<<<<< dev-auth-fix
       console.log("Navigating based on role:", role);
 
-=======
->>>>>>> main
+      // 4. Store role locally
+      localStorage.setItem("role", role);
+
+      // 5. Redirect user
       if (role === "admin") {
         navigate("/dashboard/admin");
       } else if (role === "provider") {
@@ -87,21 +42,14 @@ export default function LoginPage() {
       }
 
     } catch (error) {
-<<<<<<< dev-auth-fix
       console.error("GOOGLE LOGIN ERROR:", error);
 
-      // Always show friendly message regardless of exact backend wording
-      alert("We couldn't complete login. Please make sure you have an account or sign up first.");
-
-      navigate("/signup");
-=======
-      console.error('Step ERROR:', error.code, error.message);
-      if (error.code === "auth/invalid-credential") {
-        alert("Invalid email or password.");
+      if (error.message === "Role is required for new users") {
+        alert("No account found. Please sign up first.");
       } else {
-        alert("Login failed: " + error.message);
+        alert("Google login failed: " + error.message);
       }
->>>>>>> main
+
     } finally {
       setLoading(false);
     }
@@ -118,6 +66,7 @@ export default function LoginPage() {
 
         <section className="hero">
           <h1>Connect.<br />Learn.<br />Grow.</h1>
+
           <p>
             South Africa's platform linking work-seekers with SETA-accredited learnerships,
             apprenticeships and internships.
