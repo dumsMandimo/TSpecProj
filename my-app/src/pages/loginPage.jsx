@@ -1,18 +1,17 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './loginPage.css';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./loginPage.css";
 
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../services/firebase";
+import { signUpWithGoogle } from "../services/authService";
 import { getUserRole } from "../services/userService";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
 
+<<<<<<< dev-auth-fix
+  const handleGoogleLogin = async () => {
+=======
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -24,10 +23,34 @@ export default function LoginPage() {
       return;
     }
 
+>>>>>>> main
     setLoading(true);
     console.log('Step 1: attempting Firebase auth...');
 
     try {
+<<<<<<< dev-auth-fix
+      const user = await signUpWithGoogle();
+
+      console.log("Logged in user:", user.uid);
+
+      let role = null;
+
+      try {
+        role = await getUserRole(user.uid);
+        console.log("Role fetched:", role);
+
+        if (role) {
+          localStorage.setItem("role", role);
+        }
+      } catch (err) {
+        console.error("Role fetch error:", err);
+
+        alert("We couldn't verify your account. Please sign up first.");
+        navigate("/signup");
+        return;
+      }
+
+=======
       const userCredential = await signInWithEmailAndPassword(
         auth,
         cleanEmail,
@@ -41,12 +64,20 @@ export default function LoginPage() {
       const role = await getUserRole(user.uid);
       console.log('Step 4: role is', role);
 
+>>>>>>> main
       if (!role) {
-        alert("No role found for this user. Contact admin.");
-        setLoading(false);
+        console.warn("No role found for user:", user.uid);
+
+        alert("We couldn't find your account. Please sign up first.");
+        navigate("/signup");
         return;
       }
 
+<<<<<<< dev-auth-fix
+      console.log("Navigating based on role:", role);
+
+=======
+>>>>>>> main
       if (role === "admin") {
         navigate("/dashboard/admin");
       } else if (role === "provider") {
@@ -56,12 +87,21 @@ export default function LoginPage() {
       }
 
     } catch (error) {
+<<<<<<< dev-auth-fix
+      console.error("GOOGLE LOGIN ERROR:", error);
+
+      // Always show friendly message regardless of exact backend wording
+      alert("We couldn't complete login. Please make sure you have an account or sign up first.");
+
+      navigate("/signup");
+=======
       console.error('Step ERROR:', error.code, error.message);
       if (error.code === "auth/invalid-credential") {
         alert("Invalid email or password.");
       } else {
         alert("Login failed: " + error.message);
       }
+>>>>>>> main
     } finally {
       setLoading(false);
     }
@@ -78,7 +118,10 @@ export default function LoginPage() {
 
         <section className="hero">
           <h1>Connect.<br />Learn.<br />Grow.</h1>
-          <p>South Africa's platform linking work-seekers with SETA-accredited learnerships, apprenticeships and internships.</p>
+          <p>
+            South Africa's platform linking work-seekers with SETA-accredited learnerships,
+            apprenticeships and internships.
+          </p>
         </section>
 
         <ul className="stats">
@@ -92,40 +135,18 @@ export default function LoginPage() {
         <h4>Sign in to your account</h4>
         <p className="subtitle">Welcome back!</p>
 
-        <section role="tabpanel" className="form-panel">
-          <form onSubmit={handleSubmit}>
-            <label className="text_area">
-              <input
-                type="email"
-                placeholder="Email"
-                className="text_input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </label>
+        <section className="form-panel">
 
-            <label className="text_area">
-              <input
-                type="password"
-                placeholder="Password"
-                className="text_input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </label>
+          <button
+            onClick={handleGoogleLogin}
+            className="btn"
+            disabled={loading}
+          >
+            {loading ? "Signing in..." : "Sign in with Google"}
+          </button>
 
-            <input
-              type="submit"
-              value={loading ? "Logging in..." : "LOGIN"}
-              className="btn"
-              disabled={loading}
-            />
-          </form>
         </section>
 
-        <p className="login-prompt">
-          Don't have an account? <a href="/">Sign Up</a>
-        </p>
       </section>
 
     </main>
