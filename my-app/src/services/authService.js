@@ -35,9 +35,17 @@ export const signUpWithGoogle = async (role, extraData = {}) => {
       email: user.email,
       role,
       ...extraData,
+      status: 'active',
       createdAt: new Date().toISOString(),
     });
+    return { user, role };
   }
 
-  return user;
+  const data = userSnap.data();
+//block removed users
+  if (data.status === 'removed'){
+    await auth.signOut();
+    throw new Error('account-removed');
+  }
+  return { user, role: data.role };
 };

@@ -9,10 +9,26 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+<<<<<<< dev-auth-fix
   const handleGoogleLogin = async () => {
+=======
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const cleanEmail = email.trim().toLowerCase();
+    console.log('Login attempt:', { cleanEmail, password });
+
+    if (!cleanEmail || !password) {
+      alert('Please enter email and password');
+      return;
+    }
+
+>>>>>>> main
     setLoading(true);
+    console.log('Step 1: attempting Firebase auth...');
 
     try {
+<<<<<<< dev-auth-fix
       const user = await signUpWithGoogle();
 
       console.log("Logged in user:", user.uid);
@@ -34,6 +50,21 @@ export default function LoginPage() {
         return;
       }
 
+=======
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        cleanEmail,
+        password
+      );
+      console.log('Step 2: Firebase auth success', userCredential);
+
+      const user = userCredential.user;
+      console.log('Step 3: getting role for uid', user.uid);
+
+      const role = await getUserRole(user.uid);
+      console.log('Step 4: role is', role);
+
+>>>>>>> main
       if (!role) {
         console.warn("No role found for user:", user.uid);
 
@@ -42,8 +73,11 @@ export default function LoginPage() {
         return;
       }
 
+<<<<<<< dev-auth-fix
       console.log("Navigating based on role:", role);
 
+=======
+>>>>>>> main
       if (role === "admin") {
         navigate("/dashboard/admin");
       } else if (role === "provider") {
@@ -53,12 +87,21 @@ export default function LoginPage() {
       }
 
     } catch (error) {
+<<<<<<< dev-auth-fix
       console.error("GOOGLE LOGIN ERROR:", error);
 
       // Always show friendly message regardless of exact backend wording
       alert("We couldn't complete login. Please make sure you have an account or sign up first.");
 
       navigate("/signup");
+=======
+      console.error('Step ERROR:', error.code, error.message);
+      if (error.code === "auth/invalid-credential") {
+        alert("Invalid email or password.");
+      } else {
+        alert("Login failed: " + error.message);
+      }
+>>>>>>> main
     } finally {
       setLoading(false);
     }
