@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { SectorDropdown } from "../components/nqfSelect.jsx";
-=======
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signUpWithGoogle } from '../services/authService';
@@ -12,7 +7,6 @@ const SECTORS = [
   'Healthcare','Hospitality','ICT','Manufacturing','Mining',
   'Public Service','Retail','Transport','Other',
 ];
->>>>>>> b086a4c7512174d6ae59bae88c2719c9bcfecb2d
 
 const PROVINCES = [
   "Eastern Cape",
@@ -32,7 +26,6 @@ export default function SignupProvider() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const [form, setForm] = useState({
-<<<<<<< HEAD
     organisationName: "",
     contactName: "",
     email: "",
@@ -40,13 +33,6 @@ export default function SignupProvider() {
     sector: "",
     province: "",
     description: "",
-=======
-    organisationName: '',
-    contactName: '',
-    sector: '',
-    province: '',
-    description: '',
->>>>>>> b086a4c7512174d6ae59bae88c2719c9bcfecb2d
   });
 
   const set = (field) => (e) =>
@@ -54,9 +40,6 @@ export default function SignupProvider() {
 
   const handleGoogleSignup = async (e) => {
     e.preventDefault();
-<<<<<<< HEAD
-    navigate("/dashboard/provider");
-=======
 
     setErrorMsg("");
 
@@ -95,7 +78,6 @@ export default function SignupProvider() {
     } finally {
       setLoading(false);
     }
->>>>>>> b086a4c7512174d6ae59bae88c2719c9bcfecb2d
   };
 
   return (
@@ -129,7 +111,6 @@ export default function SignupProvider() {
           />
         </label>
 
-<<<<<<< HEAD
         <p className="field-row">
           <label>
             Sector
@@ -149,7 +130,6 @@ export default function SignupProvider() {
             </select>
           </label>
         </p>
-=======
         <label>
           Sector
           <select value={form.sector} onChange={set('sector')} required>
@@ -169,7 +149,6 @@ export default function SignupProvider() {
             ))}
           </select>
         </label>
->>>>>>> b086a4c7512174d6ae59bae88c2719c9bcfecb2d
 
         <label>
           Description
@@ -177,35 +156,6 @@ export default function SignupProvider() {
             value={form.description}
             onChange={set("description")}
             rows={3}
-<<<<<<< HEAD
-          />
-        </label>
-      </fieldset>
-
-      <fieldset>
-        <legend>Login details</legend>
-
-        <label>
-          Work email
-          <input
-            type="email"
-            placeholder="nomvula@org.co.za"
-            value={form.email}
-            onChange={set("email")}
-            required
-          />
-        </label>
-
-        <label>
-          Password
-          <input
-            type="password"
-            placeholder="Min. 8 characters"
-            value={form.password}
-            onChange={set("password")}
-            minLength={8}
-=======
->>>>>>> b086a4c7512174d6ae59bae88c2719c9bcfecb2d
             required
           />
         </label>
