@@ -8,7 +8,7 @@ import ApplicantDashboard from '../components/applicantDashboard/Dashboard';
 import ApplicantProfile from '../components/applicantDashboard/ApplicantProfile';
 import CreateProfile from '../components/applicantDashboard/CreateProfile';
 
-import ProviderDashboard from '../pages/ProviderDashboard';
+import ProviderDashboard from '../pages/ProviderDashboard/ProviderDashboard';
 import ProtectedRoute from '../components/ProtectedRoute';
 
 import AdminLayout from '../pages/adminLayout';
