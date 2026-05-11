@@ -11,6 +11,9 @@ import CreateProfile from '../components/applicantDashboard/CreateProfile';
 import ProviderDashboard from '../pages/ProviderDashboard';
 import ProtectedRoute from '../components/ProtectedRoute';
 
+import AdminLayout from '../pages/adminLayout';
+import AdminDashboard from '../pages/adminDashboard';
+
 export default function AppRouter() {
   return (
     <BrowserRouter>
@@ -53,6 +56,18 @@ export default function AppRouter() {
             element={
               <ProtectedRoute allowedRoles={["provider"]}>
                 <ProviderDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin protected route */}
+          <Route
+            path="/dashboard/admin"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminLayout>
+                  <AdminDashboard />
+                </AdminLayout>
               </ProtectedRoute>
             }
           />
