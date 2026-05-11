@@ -1,6 +1,9 @@
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 import { useState } from "react";
 =======
+=======
+>>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
 import { useEffect, useState } from "react";
 import { db, auth } from "../../firebase";
 import {
@@ -10,14 +13,23 @@ import {
     query,
     where,
     Timestamp
+<<<<<<< HEAD
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 >>>>>>> Stashed changes
+=======
+
+} from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+>>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
 import "./OpportunityList.css";
 
-function OpportunityList() {
-    const [appliedIds, setAppliedIds] = useState([]);
+function OpportunityList(props) {
+    const [opportunities, setOpportunities] = useState([]);
+    const [user, setUser] = useState(null);
+    const [applications, setApplications] = useState([]);
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     const opportunities = [
         { id: 1, title: "Software Development Internship", description: "Work with our dev team building web applications", location: "Johannesburg", closingDate: "2026-05-01", stipend: "R5000/month" },
@@ -25,38 +37,66 @@ function OpportunityList() {
         { id: 3, title: "IT Support Apprenticeship", description: "Gain hands-on IT support experience", location: "Pretoria", closingDate: "2026-06-01", stipend: "R3500/month" },
     ];
 =======
+=======
+    
+>>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
         });
+<<<<<<< HEAD
+=======
+
+>>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
         return () => unsubscribe();
     }, []);
 
     useEffect(() => {
+<<<<<<< HEAD
         setApplications([]);
     }, [user]);
+=======
+    setApplications([]);
+}, [user]);
+>>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
 
     useEffect(() => {
         const fetchOpportunities = async () => {
             try {
+<<<<<<< HEAD
                 const q = query(
                     collection(db, "opportunities"),
                     where("status", "==", "approved")
                 );
                 const querySnapshot = await getDocs(q);
+=======
+                const querySnapshot = await getDocs(
+                    collection(db, "applicantOpportunities")
+                );
+
+>>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
                 const data = querySnapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
+<<<<<<< HEAD
+=======
+
+>>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
                 setOpportunities(data);
             } catch (error) {
                 console.error("Error fetching opportunities:", error);
             }
         };
+<<<<<<< HEAD
+=======
+
+>>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
         fetchOpportunities();
     }, []);
 
     useEffect(() => {
+<<<<<<< HEAD
         if (!user) return;
 
         const fetchApps = async () => {
@@ -74,6 +114,29 @@ function OpportunityList() {
 
         fetchApps();
     }, [user]);
+=======
+    if (!user) return;
+
+    const fetchApps = async () => {
+        const q = query(
+            collection(db, "applications"),
+            where("userId", "==", user.uid)
+        );
+
+        const snapshot = await getDocs(q);
+
+        const apps = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        setApplications(apps);
+    };
+
+    fetchApps();
+}, [user]);
+
+>>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
 
     const handleApply = async (opportunity) => {
         if (!user) {
@@ -82,6 +145,7 @@ function OpportunityList() {
         }
 
         const alreadyApplied = applications.some(
+<<<<<<< HEAD
             app => app.opportunityId === opportunity.id
         );
 
@@ -107,6 +171,46 @@ function OpportunityList() {
 
             const docRef = await addDoc(collection(db, "applications"), applicationData);
             const newApp = { id: docRef.id, ...applicationData };
+=======
+        app => app.opportunityId === opportunity.id
+    );
+
+    if (alreadyApplied) {
+        alert("You already applied for this opportunity");
+        return;
+    }
+
+        try {
+            const stages = [
+                "Submitted",
+                "Received",
+                "Under Evaluation",
+                "Final Decision"
+            ];
+
+            const newStatus = "Submitted";
+            const stageIndex = stages.indexOf(newStatus);
+
+            const docRef = await addDoc(collection(db, "applications"), {
+                userId: user.uid, 
+                opportunityId: opportunity.id,
+                title: opportunity.title,
+                company: opportunity.company,
+                status: newStatus,
+                stageIndex: stageIndex,
+                appliedAt: Timestamp.now()
+            });
+
+            const newApp = {
+                id: docRef.id,
+                userId: user.uid,
+                opportunityId: opportunity.id,
+                title: opportunity.title,
+                company: opportunity.company,
+                status: newStatus,
+                stageIndex: stageIndex
+            };
+>>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
 
             setApplications(prev => [...prev, newApp]);
 
@@ -117,19 +221,27 @@ function OpportunityList() {
             alert("Application submitted!");
         } catch (error) {
             console.error("Error applying:", error);
+<<<<<<< HEAD
             alert("Failed to submit application. Please try again.");
         }
     };
 >>>>>>> Stashed changes
+=======
+        }
+    };
+>>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
 
     return (
         <section className="opportunities-page">
             <header className="opportunities-header">
                 <p className="eyebrow">Opportunities</p>
                 <h1 className="opportunities-title">Available Opportunities</h1>
-                <p className="opportunities-subtitle">Find and apply for learnerships, internships and apprenticeships</p>
+                <p className="opportunities-subtitle">
+                    Find and apply for learnerships, internships and apprenticeships
+                </p>
             </header>
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
             <div className="opportunities-grid">
                 {opportunities.map((opportunity) => (
@@ -157,6 +269,14 @@ function OpportunityList() {
                 {opportunities
                     .filter(opportunity =>
                         !applications.some(app => app.opportunityId === opportunity.id)
+=======
+            <section className="opportunities-grid">
+                {opportunities
+                    .filter(opportunity =>
+                        !applications.some(
+                            app => app.opportunityId === opportunity.id
+                        )
+>>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
                     )
                     .map((opportunity) => (
                         <article key={opportunity.id} className="opportunity-card">
@@ -166,6 +286,7 @@ function OpportunityList() {
                             <p>💰 {opportunity.stipend}</p>
                             <p>📅 Closes: {opportunity.closingDate}</p>
 
+<<<<<<< HEAD
                             {opportunity.company || opportunity.companyName ? (
                                 <p>🏢 {opportunity.company || opportunity.companyName}</p>
                             ) : null}
@@ -180,6 +301,19 @@ function OpportunityList() {
                                     More about {opportunity.company || "this provider"}
                                 </a>
                             )}
+=======
+                            {/* More Info Button */}
+                            {opportunity.companyUrl && (
+                            <a
+                            href={opportunity.companyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="more-info-btn"
+                            >
+                            More about {opportunity.company}
+                        </a>
+                         )}
+>>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
 
                             <button
                                 className="apply-btn"
@@ -190,7 +324,10 @@ function OpportunityList() {
                         </article>
                     ))}
             </section>
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
         </section>
     );
 }
