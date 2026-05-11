@@ -9,7 +9,7 @@ import Opportunities from "../pages/admin/Opportunities";
 import Users from "../pages/admin/Users"; 
 
 import ApplicantDashboard from "../components/applicantDashboard/Dashboard";
-import ProviderDashboard from "../pages/ProviderDashboard";
+import ProviderDashboard from "../pages/ProviderDashboard/ProviderDashboard";
 
 export default function AppRouter() {
   return (
