@@ -142,4 +142,6 @@ export const applyToOpportunity = async (opportunity) => {
     status:           "Submitted",
     stageIndex:       0,                                               // ✅ maps to ProgressTracker stages
 
-    appliedAt:        serverTimest
+        appliedAt:        serverTimestamp(),  // ✅ Firestore timestamp
+  });
+};
