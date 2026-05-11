@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { NqfDropdown } from "../components/nqfSelect.jsx";
-import { signUpWithGoogle, signUpWithEmail } from "../services/authService";
+import { signUpWithGoogle } from "../services/authService";
 
 const NQF_LEVELS = [
   "NQF 1 — General Certificate",
@@ -34,7 +34,6 @@ export default function SignupApplicant() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
-    
     province: "",
     qualification: "",
   });
@@ -45,39 +44,7 @@ export default function SignupApplicant() {
   const set = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
-  
-
-  
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErrorMsg("");
-
-    if (loading) return;
-    setLoading(true);
-
-    try {
-      const cleanEmail = form.email.trim().toLowerCase();
-
-      const user = await signUpWithEmail(cleanEmail, form.password, "applicant", {
-        firstName: form.firstName,
-        lastName: form.lastName,
-        province: form.province,
-        qualification: form.qualification,
-      });
-
-      console.log("User created:", user);
-
-      navigate("/dashboard/createProfile");
-    } catch (error) {
-      console.error("Signup failed:", error);
-      setErrorMsg(error?.message || "Signup failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // GOOGLE SIGNUP
+  // GOOGLE SIGNUP ONLY
   const handleGoogleSignup = async () => {
     setErrorMsg("");
 
@@ -104,7 +71,7 @@ export default function SignupApplicant() {
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
+    <form noValidate>
       <fieldset>
         <legend>Personal details</legend>
 
@@ -114,21 +81,25 @@ export default function SignupApplicant() {
           </p>
         )}
 
-<<<<<<< HEAD
-=======
-          <label>
-            Last name
-            <input
-              type="text"
-              value={form.lastName}
-              onChange={set("lastName")}
-              required
-            />
-          </label>
-        </p>
+        <label>
+          First name
+          <input
+            type="text"
+            value={form.firstName}
+            onChange={set("firstName")}
+            required
+          />
+        </label>
 
->>>>>>> 1d8b89ffcd0b28f062bd5d626fbd9b9b1a83589f
-        
+        <label>
+          Last name
+          <input
+            type="text"
+            value={form.lastName}
+            onChange={set("lastName")}
+            required
+          />
+        </label>
 
         <label>
           Province
@@ -155,8 +126,6 @@ export default function SignupApplicant() {
           />
         </label>
       </fieldset>
-
-      
 
       <button
         type="button"
