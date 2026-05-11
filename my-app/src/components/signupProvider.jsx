@@ -38,11 +38,19 @@ export default function SignupProvider() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const [form, setForm] = useState({
+<<<<<<< HEAD
     organisationName: "",
     contactName: "",
     sector: "",
     province: "",
     description: "",
+=======
+    organisationName: '',
+    contactName: '',
+    sector: '',
+    province: '',
+    description: '',
+>>>>>>> 1d8b89ffcd0b28f062bd5d626fbd9b9b1a83589f
   });
 
   const set = (field) => (e) =>
@@ -52,8 +60,48 @@ export default function SignupProvider() {
     }));
 
   const validateForm = () => {
+<<<<<<< HEAD
     if (!form.organisationName.trim()) {
       return "Organisation name is required";
+=======
+    if (!form.organisationName.trim()) return "Organisation name is required";
+    if (!form.contactName.trim()) return "Contact person is required";
+    if (!form.sector) return "Sector is required";
+    if (!form.province) return "Province is required";
+    return null;
+  };
+
+  const isFormValid = !validateForm();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const cleanEmail = form.email.trim().toLowerCase();
+
+      const user = await signUpWithEmail(
+        cleanEmail,
+        form.password,
+        "provider",
+        {
+          organisationName: form.organisationName,
+          contactName: form.contactName,
+          sector: form.sector,
+          province: form.province,
+          description: form.description,
+        }
+      );
+
+      console.log("Provider created:", user);
+
+      navigate("/dashboard/provider");
+    } catch (error) {
+      console.error(error);
+      alert("Provider signup failed");
+    } finally {
+      setLoading(false);
+>>>>>>> 1d8b89ffcd0b28f062bd5d626fbd9b9b1a83589f
     }
 
     if (!form.contactName.trim()) {
@@ -75,6 +123,7 @@ export default function SignupProvider() {
     return null;
   };
 
+<<<<<<< HEAD
   const handleGoogleSignup = async (e) => {
     e.preventDefault();
 
@@ -89,6 +138,18 @@ export default function SignupProvider() {
       return;
     }
 
+=======
+  const handleGoogleSignup = async () => {
+    const validateForm = () => {
+    if (!form.organisationName.trim()) return "Organisation name is required";
+    if (!form.contactName.trim()) return "Contact person is required";
+    if (!form.sector) return "Sector is required";
+    if (!form.province) return "Province is required";
+    return null;
+  };
+
+  const isFormValid = !validateForm();
+>>>>>>> 1d8b89ffcd0b28f062bd5d626fbd9b9b1a83589f
     setLoading(true);
 
     try {
@@ -183,17 +244,31 @@ export default function SignupProvider() {
           Description
           <textarea
             value={form.description}
+<<<<<<< HEAD
             onChange={set("description")}
             rows={4}
             required
+=======
+            onChange={set('description')}
+            rows={3}
+>>>>>>> 1d8b89ffcd0b28f062bd5d626fbd9b9b1a83589f
           />
         </label>
       </fieldset>
 
+<<<<<<< HEAD
       <button type="submit" disabled={loading}>
         {loading
           ? "Signing up..."
           : "Continue with Google"}
+=======
+      
+
+      
+
+      <button type="button" onClick={handleGoogleSignup} disabled={loading || !isFormValid}>
+        {loading ? "Signing in..." : "Sign up with Google"}
+>>>>>>> 1d8b89ffcd0b28f062bd5d626fbd9b9b1a83589f
       </button>
     </form>
   );

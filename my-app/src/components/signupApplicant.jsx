@@ -47,6 +47,8 @@ export default function SignupApplicant() {
 
   
 
+  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
@@ -112,6 +114,20 @@ export default function SignupApplicant() {
           </p>
         )}
 
+<<<<<<< HEAD
+=======
+          <label>
+            Last name
+            <input
+              type="text"
+              value={form.lastName}
+              onChange={set("lastName")}
+              required
+            />
+          </label>
+        </p>
+
+>>>>>>> 1d8b89ffcd0b28f062bd5d626fbd9b9b1a83589f
         
 
         <label>

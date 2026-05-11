@@ -8,9 +8,13 @@ const ROLES = [
   { key: 'applicant', label: 'Applicant', desc: 'Looking for learnerships & internships' },
   { key: 'provider',  label: 'Provider',  desc: 'Employer or training organisation' },
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   
 >>>>>>> 1d8b89f (gi)
+=======
+  
+>>>>>>> 1d8b89ffcd0b28f062bd5d626fbd9b9b1a83589f
 ];
 
 export default function SignupPage() {
@@ -20,9 +24,13 @@ export default function SignupPage() {
     applicant: <SignupApplicant />,
     provider:  <SignupProvider />,
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     
 >>>>>>> 1d8b89f (gi)
+=======
+    
+>>>>>>> 1d8b89ffcd0b28f062bd5d626fbd9b9b1a83589f
   };
 
   return (
