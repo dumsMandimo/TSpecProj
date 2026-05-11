@@ -34,8 +34,7 @@ export default function SignupApplicant() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
-    email: "",
-    password: "",
+    
     province: "",
     qualification: "",
   });
@@ -46,7 +45,10 @@ export default function SignupApplicant() {
   const set = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
-  // EMAIL/PASSWORD SIGNUP
+  
+
+  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
@@ -112,45 +114,21 @@ export default function SignupApplicant() {
           </p>
         )}
 
-        <label>
-          First name
-          <input
-            type="text"
-            value={form.firstName}
-            onChange={set("firstName")}
-            required
-          />
-        </label>
+<<<<<<< HEAD
+=======
+          <label>
+            Last name
+            <input
+              type="text"
+              value={form.lastName}
+              onChange={set("lastName")}
+              required
+            />
+          </label>
+        </p>
 
-        <label>
-          Last name
-          <input
-            type="text"
-            value={form.lastName}
-            onChange={set("lastName")}
-            required
-          />
-        </label>
-
-        <label>
-          Email
-          <input
-            type="email"
-            value={form.email}
-            onChange={set("email")}
-            required
-          />
-        </label>
-
-        <label>
-          Password
-          <input
-            type="password"
-            value={form.password}
-            onChange={set("password")}
-            required
-          />
-        </label>
+>>>>>>> 1d8b89ffcd0b28f062bd5d626fbd9b9b1a83589f
+        
 
         <label>
           Province
@@ -178,9 +156,7 @@ export default function SignupApplicant() {
         </label>
       </fieldset>
 
-      <button type="submit" disabled={loading}>
-        {loading ? "Creating account..." : "Create account"}
-      </button>
+      
 
       <button
         type="button"
