@@ -53,9 +53,6 @@ export default function ApplicationsPanel() {
   );
 }
 
-/* =========================
-   THEME BUTTON STYLES
-========================= */
 
 const baseBtn = {
   padding: "6px 10px",

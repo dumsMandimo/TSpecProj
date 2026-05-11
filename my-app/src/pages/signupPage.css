@@ -248,7 +248,7 @@ textarea:focus {
 textarea {
     resize: vertical;
     line-height: 1.6;
-}
+} 
 
 /* Submit */
 button[type="submit"] {
