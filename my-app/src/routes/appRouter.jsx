@@ -6,7 +6,8 @@ import LoginPage from "../pages/loginPage";
 import AdminLayout from "../pages/admin/adminLayout";
 import AdminDashboard from "../pages/admin/adminDashboard";
 import Opportunities from "../pages/admin/Opportunities";
-import Users from "../pages/admin/Users"; 
+import Users from "../pages/admin/Users";
+import NotificationDetail from "../components/applicantDashboard/NotificationDetail"; 
 
 import ApplicantDashboard from "../components/applicantDashboard/Dashboard";
 import ApplicantProfile from '../components/applicantDashboard/ApplicantProfile';
@@ -32,6 +33,7 @@ export default function AppRouter() {
         <Route path="/dashboard/applicant" element={<ApplicantDashboard />} />
         <Route path="/dashboard/applicant/myProfile" element={<ApplicantProfile />} />
         <Route path="/dashboard/applicant/createProfile" element={<CreateProfile />} />
+        <Route path="/dashboard/applicant/notifications/:notificationId" element={<NotificationDetail />} />
 
         <Route path="/dashboard/provider" element={<ProviderDashboard />} />
 

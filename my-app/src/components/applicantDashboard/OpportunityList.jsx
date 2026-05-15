@@ -97,6 +97,16 @@ function OpportunityList(props) {
             };
 
             const docRef = await addDoc(collection(db, "applications"), applicationData);
+
+            await addDoc(collection(db, "notifications"), {
+            userId: user.uid,
+            title: "Application submitted",
+            body: `Your application for ${opportunity.title} at ${opportunity.company || opportunity.companyName || "this provider"} has been received.`,
+            read: false,
+            type: "status_update",
+            createdAt: Timestamp.now(),
+            });
+            
             const newApp = { id: docRef.id, ...applicationData };
 
             setApplications(prev => [...prev, newApp]);

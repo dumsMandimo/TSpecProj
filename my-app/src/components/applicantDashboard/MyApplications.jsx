@@ -1,24 +1,47 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
     collection,
     doc,
-    updateDoc,
     query,
     where,
     getDoc,
-    onSnapshot
+    onSnapshot,
+    addDoc,
+    Timestamp
 } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import "./MyApplications.css";
 
-
 const stages = ["Submitted", "Received", "Under Evaluation", "Final Decision"];
 
+// Derive stageIndex from status so manually changing
+// status in Firestore is enough — no need to also update stageIndex
+function getStageIndex(status) {
+    switch (status) {
+        case "Submitted":       return 0;
+        case "Received":        return 1;
+        case "Under Evaluation":return 2;
+        case "Shortlisted":     return 3;
+        case "Accepted":        return 3;
+        case "Rejected":        return 3;
+        default:                return 0;
+    }
+}
 
-function ProgressTracker({ stageIndex = 0, status = "" }) {
-    const isAccepted = status === "Accepted";
-    const isRejected = status === "Rejected";
+const STATUS_MESSAGES = {
+    Received:           "Your application has been received and is under review.",
+    Pending:            "Your application is pending review.",
+    "Under Evaluation": "Your application is currently being evaluated.",
+    Shortlisted:        "Great news! You have been shortlisted.",
+    Accepted:           "Congratulations! Your application has been accepted.",
+    Rejected:           "Unfortunately your application was not successful this time.",
+};
+
+function ProgressTracker({ status = "" }) {
+    const stageIndex = getStageIndex(status);
+    const isAccepted    = status === "Accepted";
+    const isRejected    = status === "Rejected";
     const isShortlisted = status === "Shortlisted";
 
     return (
@@ -33,7 +56,7 @@ function ProgressTracker({ stageIndex = 0, status = "" }) {
                                 ? "accepted"
                                 : stage === "Final Decision" && isRejected
                                 ? "rejected"
-                                 : stage === "Final Decision" && isShortlisted
+                                : stage === "Final Decision" && isShortlisted
                                 ? "shortlisted"
                                 : ""
                         }`}
@@ -47,7 +70,10 @@ function ProgressTracker({ stageIndex = 0, status = "" }) {
                                 : isShortlisted
                                 ? "Shortlisted"
                                 : "Final Decision"
+                            : stage === "Received" && status === "Pending"
+                            ? "Pending" 
                             : stage}
+                            
                     </span>
                 </article>
             ))}
@@ -57,33 +83,66 @@ function ProgressTracker({ stageIndex = 0, status = "" }) {
 
 function MyApplications() {
     const [applications, setApplications] = useState([]);
-    const [userName, setUserName] = useState("");
+    const [userName, setUserName]         = useState("");
+    const prevApplicationsRef             = useRef([]);
 
     useEffect(() => {
         let unsubscribeSnapshot = null;
 
         const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
-            if (!user) return;
+            if (!user) {
+                setApplications([]);
+                return;
+            }
 
-           
             const q = query(
                 collection(db, "applications"),
                 where("userId", "==", user.uid)
             );
 
-            unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
-                const apps = snapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+            unsubscribeSnapshot = onSnapshot(
+                q,
+                async (snapshot) => {
+                    const apps = snapshot.docs.map((d) => ({
+                        id: d.id,
+                        ...d.data()
+                    }));
 
-                setApplications(apps);
-            });
+                    // Check each app for a status change and write a notification
+                    for (const app of apps) {
+                        const prev = prevApplicationsRef.current.find(
+                            p => p.id === app.id
+                        );
 
-           
-            const userRef = doc(db, "applicants", user.uid);
-            const userSnap = await getDoc(userRef);
+                        const statusChanged = prev && prev.status !== app.status;
+                        const hasMessage    = STATUS_MESSAGES[app.status];
 
+                        if (statusChanged && hasMessage) {
+                            try {
+                                await addDoc(collection(db, "notifications"), {
+                                    userId:        user.uid,
+                                    title:         `Application ${app.status}`,
+                                    body:          `${app.title}: ${hasMessage}`,
+                                    read:          false,
+                                    type:          "status_update",
+                                    applicationId: app.id,
+                                    createdAt:     Timestamp.now(),
+                                });
+                            } catch (err) {
+                                console.error("Failed to write notification:", err);
+                            }
+                        }
+                    }
+
+                    prevApplicationsRef.current = apps;
+                    setApplications(apps);
+                },
+                (error) => {
+                    console.error("Snapshot error:", error);
+                }
+            );
+
+            const userSnap = await getDoc(doc(db, "applicants", user.uid));
             if (userSnap.exists()) {
                 setUserName(userSnap.data().name || "User");
             }
@@ -95,49 +154,23 @@ function MyApplications() {
         };
     }, []);
 
-   
-    const updateApplicationStatus = async (applicationId, newStatus) => {
-        const applicationRef = doc(db, "applications", applicationId);
-
-        let stageIndex;
-        if (newStatus === "Accepted" || newStatus === "Rejected") {
-            stageIndex = stages.indexOf("Final Decision");
-        } else {
-            stageIndex = stages.indexOf(newStatus);
-        }
-
-        try {
-            await updateDoc(applicationRef, {
-                status: newStatus,
-                stageIndex
-            });
-        } catch (error) {
-            console.error("Error updating status:", error);
-        }
-    }
-
     return (
         <section className="applications-page">
             <header className="applications-header">
                 <p className="eyebrow">Career Dashboard</p>
                 <h1 className="applications-title">My Applications</h1>
-                <h2 className="applications-subtitle">
-                    Welcome back, {userName}
-                </h2>
+                <h2 className="applications-subtitle">Welcome back, {userName}</h2>
             </header>
 
             <section className="applications-grid">
+                {applications.length === 0 && (
+                    <p>You have not applied to any opportunities yet.</p>
+                )}
                 {applications.map((application) => (
                     <article key={application.id} className="application-card">
                         <h3>{application.title}</h3>
                         <p>{application.company}</p>
-
-                        <ProgressTracker
-                            stageIndex={application.stageIndex ?? 0}
-                            status={application.status}
-                        />
-
-                        
+                        <ProgressTracker status={application.status} />
                     </article>
                 ))}
             </section>
