@@ -24,20 +24,11 @@ const PROVINCES = [
 
 const uploadCvToSupabase = async (file, userId) => {
   const fileName = `${userId}_${Date.now()}.pdf`;
-
   const { data, error } = await supabase.storage
     .from("cvs")
-    .upload(fileName, file, {
-      contentType: "application/pdf",
-      upsert: true,
-    });
-
+    .upload(fileName, file, { contentType: "application/pdf", upsert: true });
   if (error) throw new Error(error.message);
-
-  const { data: urlData } = supabase.storage
-    .from("cvs")
-    .getPublicUrl(fileName);
-
+  const { data: urlData } = supabase.storage.from("cvs").getPublicUrl(fileName);
   return urlData.publicUrl;
 };
 
@@ -50,17 +41,21 @@ export default function ApplicantProfile() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          const userRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(userRef);
+          // Fetch from both collections simultaneously
+          const [applicantSnap, userSnap] = await Promise.all([
+            getDoc(doc(db, "applicants", user.uid)),
+            getDoc(doc(db, "users", user.uid)),
+          ]);
 
-          if (docSnap.exists()) {
-            setProfile({
-              id: docSnap.id,
-              ...docSnap.data(),
-            });
-          } else {
-            console.log("No profile found");
-          }
+          const applicantData = applicantSnap.exists() ? applicantSnap.data() : {};
+          const userData = userSnap.exists() ? userSnap.data() : {};
+
+          setProfile({
+            id: user.uid,
+            ...applicantData,
+            // Province lives in users, fallback to applicants if migrated
+            province: userData.province || applicantData.province || "",
+          });
         } catch (err) {
           console.error("Error fetching profile:", err);
         }
@@ -74,28 +69,30 @@ export default function ApplicantProfile() {
 
   const handleUpdate = async () => {
     try {
-      if (!profile.id) {
-        console.error("Missing profile ID");
+      const user = auth.currentUser;
+
+      if (!user) {
+        console.error("No user logged in");
         return;
       }
 
       let cvUrl = profile.cvUrl;
-
       if (newCv) {
-        const user = auth.currentUser;
         cvUrl = await uploadCvToSupabase(newCv, user.uid);
       }
 
-      const user = auth.currentUser;
-      const profileRef = doc(db, "users", user.uid);
-
-      await updateDoc(profileRef, {
+      // Update applicants collection
+      await updateDoc(doc(db, "applicants", user.uid), {
         name: profile.name,
         phone: profile.phone,
         education: profile.education,
         skills: profile.skills,
         interests: profile.interests,
-        cvUrl: cvUrl,
+        cvUrl,
+      });
+
+      // Sync province back to users collection
+      await updateDoc(doc(db, "users", user.uid), {
         province: profile.province,
       });
 
@@ -115,7 +112,7 @@ export default function ApplicantProfile() {
       <h1 className="title">My Profile</h1>
 
       {editMode ? (
-        <fieldset className="card">
+        <fieldset className="profile-card">
           <legend>Edit Profile</legend>
 
           <label>Name</label>
@@ -130,6 +127,7 @@ export default function ApplicantProfile() {
             value={profile.phone || ""}
             onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
             className="input"
+            maxLength={10}
           />
 
           <label>Education</label>
@@ -146,9 +144,9 @@ export default function ApplicantProfile() {
             className="input"
           >
             <option value="">Select province</option>
-            {PROVINCES.map((level, idx) => (
-              <option key={idx} value={level}>
-                {level}
+            {PROVINCES.map((province, idx) => (
+              <option key={idx} value={province}>
+                {province}
               </option>
             ))}
           </select>
@@ -178,27 +176,30 @@ export default function ApplicantProfile() {
           <button onClick={handleUpdate} className="button">
             Save Changes
           </button>
+          <button
+            onClick={() => setEditMode(false)}
+            className="button"
+            style={{ marginTop: "0.5rem", background: "#333", color: "#fff" }}
+          >
+            Cancel
+          </button>
         </fieldset>
       ) : (
-        <fieldset className="card">
+        <fieldset className="profile-card">
           <legend>Profile Details</legend>
 
-          <p><strong>Name:</strong> {profile.name}</p>
-          <p><strong>Phone:</strong> {profile.phone}</p>
-          <p><strong>Education:</strong> {profile.education}</p>
-          <p><strong>Province:</strong> {profile.province}</p>
-          <p><strong>Skills:</strong> {profile.skills}</p>
-          <p><strong>Interests:</strong> {profile.interests}</p>
-          <p><strong>NQF Level:</strong> {profile.qualification}</p>
+          <p><strong>Name:</strong> {profile.name || "—"}</p>
+          <p><strong>Phone:</strong> {profile.phone || "—"}</p>
+          <p><strong>Education:</strong> {profile.education || "—"}</p>
+          <p><strong>Province:</strong> {profile.province || "—"}</p>
+          <p><strong>Skills:</strong> {profile.skills || "—"}</p>
+          <p><strong>Interests:</strong> {profile.interests || "—"}</p>
+          <p><strong>NQF Level:</strong> {profile.qualification || "—"}</p>
 
           {profile.cvUrl && (
             <p>
               <strong>CV:</strong>{" "}
-              <a
-                href={profile.cvUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href={profile.cvUrl} target="_blank" rel="noopener noreferrer">
                 Download CV
               </a>
             </p>

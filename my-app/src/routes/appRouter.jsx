@@ -9,6 +9,9 @@ import Opportunities from "../pages/admin/Opportunities";
 import Users from "../pages/admin/Users"; 
 
 import ApplicantDashboard from "../components/applicantDashboard/Dashboard";
+import ApplicantProfile from '../components/applicantDashboard/ApplicantProfile';
+import CreateProfile from '../components/applicantDashboard/CreateProfile';
+
 import ProviderDashboard from "../pages/ProviderDashboard/ProviderDashboard";
 
 export default function AppRouter() {
@@ -27,6 +30,9 @@ export default function AppRouter() {
         </Route>
 
         <Route path="/dashboard/applicant" element={<ApplicantDashboard />} />
+        <Route path="/dashboard/applicant/myProfile" element={<ApplicantProfile />} />
+        <Route path="/dashboard/applicant/createProfile" element={<CreateProfile />} />
+
         <Route path="/dashboard/provider" element={<ProviderDashboard />} />
 
         <Route path="/" element={<Navigate to="/signup" replace />} />

@@ -58,7 +58,7 @@ export default function ApplicationsPanel() {
         <ul className="applications-panel__list">
           {applications.map((app) => (
             <li key={app.id} className="applications-panel__item">
-              <article className="application-card">
+              <article className="panel-application-card">
                 <header className="application-card__info">
                   <h3 className="application-card__name">{app.applicantName}</h3>
                   <p className="application-card__meta">

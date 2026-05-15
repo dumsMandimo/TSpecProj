@@ -1,148 +1,169 @@
-import { useState } from "react";
-import { applyToOpportunity } from "../../services/userService";
+import { useEffect, useState } from "react";
+import { db, auth } from "../../firebase";
+import {
+    collection,
+    getDocs,
+    addDoc,
+    query,
+    where,
+    Timestamp
+} from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 import "./OpportunityList.css";
 
-const TYPE_LABELS = {
-  learnership: "Learnership",
-  internship: "Internship",
-  apprenticeship: "Apprenticeship",
-  graduate: "Graduate Programme",
-};
+function OpportunityList(props) {
+    const [opportunities, setOpportunities] = useState([]);
+    const [user, setUser] = useState(null);
+    const [applications, setApplications] = useState([]);
 
-export default function OpportunityList({ opportunities = [] }) {
-  const [applying, setApplying] = useState(null);
-  const [feedback, setFeedback] = useState({});
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+        });
+        return () => unsubscribe();
+    }, []);
 
-  const handleApply = async (opportunity) => {
-    setApplying(opportunity.id);
-    setFeedback((prev) => ({
-      ...prev,
-      [opportunity.id]: {},
-    }));
+    useEffect(() => {
+        setApplications([]);
+    }, [user]);
 
-    try {
-      await applyToOpportunity(opportunity);
+    useEffect(() => {
+        const fetchOpportunities = async () => {
+            try {
+                const q = query(
+                    collection(db, "opportunities"),
+                    where("status", "==", "approved")
+                );
+                const querySnapshot = await getDocs(q);
+                const data = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setOpportunities(data);
+            } catch (error) {
+                console.error("Error fetching opportunities:", error);
+            }
+        };
+        fetchOpportunities();
+    }, []);
 
-      setFeedback((prev) => ({
-        ...prev,
-        [opportunity.id]: {
-          success: "Application submitted!",
-        },
-      }));
-    } catch (err) {
-      setFeedback((prev) => ({
-        ...prev,
-        [opportunity.id]: {
-          error:
-            err.message === "Already applied to this opportunity."
-              ? "You've already applied to this opportunity."
-              : "Failed to apply. Please try again.",
-        },
-      }));
-    } finally {
-      setApplying(null);
-    }
-  };
+    useEffect(() => {
+        if (!user) return;
 
-  return (
-    <section aria-label="Available opportunities">
-      <header className="opportunity-list__header">
-        <h2 className="opportunity-list__title">Available Opportunities</h2>
-        <p className="opportunity-list__subtitle">
-          Browse and apply to learnerships, internships and more
-        </p>
-      </header>
-
-      {opportunities.length === 0 ? (
-        <p className="opportunity-list__empty">
-          No opportunities available yet. Check back soon!
-        </p>
-      ) : (
-        <ul className="opportunity-list__grid">
-          {opportunities.map((opp) => {
-            const fb = feedback[opp.id] || {};
-            const isApplying = applying === opp.id;
-
-            return (
-              <li key={opp.id} className="opportunity-list__item">
-                <article className="opportunity-card">
-                  <header className="opportunity-card__header">
-                    <h3 className="opportunity-card__title">
-                      {opp.title}
-                    </h3>
-                    <span className="opportunity-card__type">
-                      {TYPE_LABELS[opp.type] ?? opp.type}
-                    </span>
-                  </header>
-
-                  <section className="opportunity-card__meta">
-                    <p className="opportunity-card__provider">
-                      {opp.providerName || "Unknown Provider"}
-                    </p>
-                    <p className="opportunity-card__location">
-                      {opp.location}
-                    </p>
-                    {opp.stipend && (
-                      <p className="opportunity-card__stipend">
-                        {opp.stipend}
-                      </p>
-                    )}
-                  </section>
-
-                  {opp.description && (
-                    <p className="opportunity-card__description">
-                      {opp.description}
-                    </p>
-                  )}
-
-                  {opp.companyUrl && (
-                    <a
-                      href={opp.companyUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="opportunity-card__more-info"
-                    >
-                      More about {opp.providerName || "this provider"}
-                    </a>
-                  )}
-
-                  <footer className="opportunity-card__footer">
-                    {fb.success ? (
-                      <p
-                        className="opportunity-card__success"
-                        role="status"
-                      >
-                        {fb.success}
-                      </p>
-                    ) : (
-                      <>
-                        {fb.error && (
-                          <p
-                            className="opportunity-card__error"
-                            role="alert"
-                          >
-                            {fb.error}
-                          </p>
-                        )}
-
-                        <button
-                          className="opportunity-card__apply-btn"
-                          onClick={() => handleApply(opp)}
-                          disabled={isApplying}
-                          aria-busy={isApplying}
-                          type="button"
-                        >
-                          {isApplying ? "Applying..." : "Apply Now"}
-                        </button>
-                      </>
-                    )}
-                  </footer>
-                </article>
-              </li>
+        const fetchApps = async () => {
+            const q = query(
+                collection(db, "applications"),
+                where("userId", "==", user.uid)
             );
-          })}
-        </ul>
-      )}
-    </section>
-  );
+            const snapshot = await getDocs(q);
+            const apps = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setApplications(apps);
+        };
+
+        fetchApps();
+    }, [user]);
+
+    const handleApply = async (opportunity) => {
+        if (!user) {
+            alert("Please log in first");
+            return;
+        }
+
+        const alreadyApplied = applications.some(
+            app => app.opportunityId === opportunity.id
+        );
+
+        if (alreadyApplied) {
+            alert("You already applied for this opportunity");
+            return;
+        }
+
+        try {
+            const stages = ["Submitted", "Received", "Under Evaluation", "Final Decision"];
+            const newStatus = "Submitted";
+            const stageIndex = stages.indexOf(newStatus);
+
+            const applicationData = {
+                userId: user.uid,
+                opportunityId: opportunity.id,
+                title: opportunity.title || "",
+                company: opportunity.company || opportunity.companyName || "",
+                status: newStatus,
+                stageIndex: stageIndex,
+                appliedAt: Timestamp.now()
+            };
+
+            const docRef = await addDoc(collection(db, "applications"), applicationData);
+            const newApp = { id: docRef.id, ...applicationData };
+
+            setApplications(prev => [...prev, newApp]);
+
+            if (props.onApplicationAdded) {
+                props.onApplicationAdded(newApp);
+            }
+
+            alert("Application submitted!");
+        } catch (error) {
+            console.error("Error applying:", error);
+            alert("Failed to submit application. Please try again.");
+        }
+    };
+
+    return (
+        <section className="opportunities-page">
+            <header className="opportunities-header">
+                <p className="eyebrow">Opportunities</p>
+                <h1 className="opportunities-title">Available Opportunities</h1>
+                <p className="opportunities-subtitle">
+                    Find and apply for learnerships, internships and apprenticeships
+                </p>
+            </header>
+
+            <section className="opportunities-grid">
+                {opportunities.length === 0 && (
+                    <p>No opportunities available at the moment.</p>
+                )}
+                {opportunities
+                    .filter(opportunity =>
+                        !applications.some(app => app.opportunityId === opportunity.id)
+                    )
+                    .map((opportunity) => (
+                        <article key={opportunity.id} className="opportunity-card">
+                            <h3>{opportunity.title}</h3>
+                            <p>{opportunity.description}</p>
+                            <p>📍 {opportunity.location}</p>
+                            <p>💰 {opportunity.stipend}</p>
+                            <p>📅 Closes: {opportunity.closingDate}</p>
+
+                            {opportunity.company || opportunity.companyName ? (
+                                <p>🏢 {opportunity.company || opportunity.companyName}</p>
+                            ) : null}
+
+                            {opportunity.companyUrl && (
+                                <a
+                                    href={opportunity.companyUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="more-info-btn"
+                                >
+                                    More about {opportunity.company || "this provider"}
+                                </a>
+                            )}
+
+                            <button
+                                className="apply-btn"
+                                onClick={() => handleApply(opportunity)}
+                            >
+                                Apply Now
+                            </button>
+                        </article>
+                    ))}
+            </section>
+        </section>
+    );
 }
+
+export default OpportunityList;
