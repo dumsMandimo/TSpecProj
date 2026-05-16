@@ -20,12 +20,13 @@ const DAYS_BEFORE = 7;
 function Dashboard() {
     const navigate = useNavigate();
 
+    
     useEffect(() => {
         const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
             if (!user) return;
 
             try {
-                // 1. Get all opportunity IDs the user already applied for
+                
                 const appsSnap = await getDocs(query(
                     collection(db, "applications"),
                     where("userId", "==", user.uid)
@@ -33,7 +34,7 @@ function Dashboard() {
 
                 const appliedOpportunityIds = appsSnap.docs.map(d => d.data().opportunityId);
 
-                // 2. Get all approved opportunities
+                
                 const oppsSnap = await getDocs(query(
                     collection(db, "opportunities"),
                     where("status", "==", "approved")
@@ -48,21 +49,21 @@ function Dashboard() {
                 for (const oppDoc of oppsSnap.docs) {
                     const opp = oppDoc.data();
 
-                    // 3. Skip ones they already applied for
+                    
                     if (appliedOpportunityIds.includes(oppDoc.id)) continue;
 
-                    // 4. Skip if no closing date
+                    
                     if (!opp.closingDate) continue;
 
-                    // 5. Check how many days until closing
+                    
                     const closing  = new Date(opp.closingDate);
                     const diffMs   = closing - today;
                     const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-                    // Only notify if closing within 7 days and not already closed
+                    
                     if (diffDays < 0 || diffDays > DAYS_BEFORE) continue;
 
-                    // 6. Check if we already sent this notification today
+                    
                     const existingSnap = await getDocs(query(
                         collection(db, "notifications"),
                         where("userId",        "==", user.uid),
@@ -77,7 +78,7 @@ function Dashboard() {
 
                     if (alreadySentToday) continue;
 
-                    // 7. Write the notification
+                    
                     await addDoc(collection(db, "notifications"), {
                         userId:        user.uid,
                         title:         "Opportunity closing soon!",
@@ -92,6 +93,66 @@ function Dashboard() {
                 }
             } catch (err) {
                 console.error("Error checking closing dates:", err);
+            }
+        });
+
+        return () => unsubscribeAuth();
+    }, []);
+
+    
+    useEffect(() => {
+        const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+            if (!user) return;
+
+            try {
+                
+                const appsSnap = await getDocs(query(
+                    collection(db, "applications"),
+                    where("userId", "==", user.uid)
+                ));
+
+                const appliedOpportunityIds = appsSnap.docs.map(d => d.data().opportunityId);
+
+                
+                const oppsSnap = await getDocs(query(
+                    collection(db, "opportunities"),
+                    where("status", "==", "approved")
+                ));
+
+                if (oppsSnap.empty) return;
+
+                for (const oppDoc of oppsSnap.docs) {
+                    const opp = oppDoc.data();
+
+                    
+                    if (appliedOpportunityIds.includes(oppDoc.id)) continue;
+
+                    
+                    const existingSnap = await getDocs(query(
+                        collection(db, "notifications"),
+                        where("userId",        "==", user.uid),
+                        where("type",          "==", "new_opportunity"),
+                        where("opportunityId", "==", oppDoc.id)
+                    ));
+
+                    
+                    if (!existingSnap.empty) continue;
+
+                    
+                    await addDoc(collection(db, "notifications"), {
+                        userId:        user.uid,
+                        title:         "New opportunity available!",
+                        body:          `${opp.title} at ${opp.company || opp.companyName || "a provider"} is now open for applications. Apply before ${opp.closingDate || "the closing date"}!`,
+                        read:          false,
+                        type:          "new_opportunity",
+                        opportunityId: oppDoc.id,
+                        createdAt:     Timestamp.now(),
+                    });
+
+                    console.log(`New opportunity notification sent for: ${opp.title}`);
+                }
+            } catch (err) {
+                console.error("Error checking new opportunities:", err);
             }
         });
 
