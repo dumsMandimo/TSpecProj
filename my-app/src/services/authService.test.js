@@ -1,166 +1,61 @@
-import {
-  signUpWithEmail,
-  loginWithEmail,
-  resendVerificationEmail,
-  signUpWithGoogle,
-} from "./authService";
+const { signUpWithGoogle } = require('./authService');  // <-- fixed path
+const { signInWithPopup, GoogleAuthProvider } = require('firebase/auth');
+const { doc, setDoc, getDoc } = require('firebase/firestore');
+const { auth, db } = require('./firebase');
 
-import {
-  createUserWithEmailAndPassword,
-  updateProfile,
-  signInWithPopup,
-  GoogleAuthProvider,
-  signInWithEmailAndPassword,
-  sendEmailVerification,
-} from "firebase/auth";
-
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import { auth } from "./firebase";
-
-// 🔥 MOCK FIREBASE
-jest.mock("firebase/auth", () => ({
-  createUserWithEmailAndPassword: jest.fn(),
-  updateProfile: jest.fn(),
+jest.mock('firebase/auth', () => ({
   signInWithPopup: jest.fn(),
   GoogleAuthProvider: jest.fn(),
-  signInWithEmailAndPassword: jest.fn(),
-  sendEmailVerification: jest.fn(),
 }));
 
-jest.mock("firebase/firestore", () => ({
+jest.mock('firebase/firestore', () => ({
   doc: jest.fn(),
   setDoc: jest.fn(),
   getDoc: jest.fn(),
 }));
 
-jest.mock("./firebase", () => ({
-  auth: { currentUser: null },
+jest.mock('./firebase', () => ({
+  auth: {},
   db: {},
 }));
 
-describe("Auth Service Tests", () => {
+describe('Google Auth Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  /**
-   * =========================
-   * SIGNUP WITH EMAIL
-   * =========================
-   */
-  test("signUpWithEmail creates user successfully", async () => {
-    const mockUser = { uid: "123", email: "test@test.com" };
-
-    createUserWithEmailAndPassword.mockResolvedValue({
-      user: mockUser,
-    });
-
-    const result = await signUpWithEmail(
-      "test@test.com",
-      "123456",
-      "applicant",
-      { displayName: "Test User" }
-    );
-
-    expect(createUserWithEmailAndPassword).toHaveBeenCalled();
-    expect(sendEmailVerification).toHaveBeenCalledWith(mockUser);
-    expect(updateProfile).toHaveBeenCalled();
-    expect(setDoc).toHaveBeenCalled();
-    expect(result).toEqual(mockUser);
-  });
-
-  test("signUpWithEmail throws error for invalid email", async () => {
-    await expect(
-      signUpWithEmail("bademail", "123456", "applicant")
-    ).rejects.toThrow("Please enter a valid email address");
-  });
-
-  test("signUpWithEmail throws error for weak password", async () => {
-    await expect(
-      signUpWithEmail("test@test.com", "123", "applicant")
-    ).rejects.toThrow("Password must be at least 6 characters");
-  });
-
-  /**
-   * =========================
-   * LOGIN WITH EMAIL
-   * =========================
-   */
-  test("loginWithEmail logs in and returns role", async () => {
-    const mockUser = {
-      uid: "123",
-      reload: jest.fn(),
-    };
-
-    signInWithEmailAndPassword.mockResolvedValue({
-      user: mockUser,
-    });
-
-    getDoc.mockResolvedValue({
-      exists: () => true,
-      data: () => ({ role: "admin" }),
-    });
-
-    const result = await loginWithEmail("test@test.com", "123456");
-
-    expect(signInWithEmailAndPassword).toHaveBeenCalled();
-    expect(mockUser.reload).toHaveBeenCalled();
-    expect(result.role).toBe("admin");
-  });
-
-  /**
-   * =========================
-   * RESEND VERIFICATION
-   * =========================
-   */
-  test("resendVerificationEmail sends email", async () => {
-    const mockUser = { uid: "123" };
-    auth.currentUser = mockUser;
-
-    await resendVerificationEmail();
-
-    expect(sendEmailVerification).toHaveBeenCalledWith(mockUser);
-  });
-
-  test("resendVerificationEmail throws if no user", async () => {
-    auth.currentUser = null;
-
-    await expect(resendVerificationEmail()).rejects.toThrow(
-      "No logged-in user found"
-    );
-  });
-
-  /**
-   * =========================
-   * GOOGLE SIGNUP
-   * =========================
-   */
-  test("signUpWithGoogle creates new user in DB if not exists", async () => {
-    const mockUser = { uid: "123", email: "google@test.com" };
-
+  test('creates new user in Firestore if not exists', async () => {
+    const mockUser = { uid: '123', email: 'google@test.com' };
     signInWithPopup.mockResolvedValue({ user: mockUser });
+    getDoc.mockResolvedValue({ exists: () => false });
 
-    getDoc.mockResolvedValue({
-      exists: () => false,
-    });
-
-    const result = await signUpWithGoogle("applicant");
+    const result = await signUpWithGoogle('applicant');
 
     expect(signInWithPopup).toHaveBeenCalled();
-    expect(setDoc).toHaveBeenCalled();
+    expect(setDoc).toHaveBeenCalledWith(expect.any(Object), expect.objectContaining({
+      uid: mockUser.uid,
+      email: mockUser.email,
+      role: 'applicant',
+    }));
     expect(result).toEqual(mockUser);
   });
 
-  test("signUpWithGoogle does not create user if already exists", async () => {
-    const mockUser = { uid: "123", email: "google@test.com" };
-
+  test('throws error if new user role not provided', async () => {
+    const mockUser = { uid: '456', email: 'new@test.com' };
     signInWithPopup.mockResolvedValue({ user: mockUser });
+    getDoc.mockResolvedValue({ exists: () => false });
 
-    getDoc.mockResolvedValue({
-      exists: () => true,
-    });
+    await expect(signUpWithGoogle()).rejects.toThrow(
+      'No account found. Please sign up first.'
+    );
+  });
 
-    await signUpWithGoogle("applicant");
+  test('does not create user if already exists', async () => {
+    const mockUser = { uid: '789', email: 'existing@test.com' };
+    signInWithPopup.mockResolvedValue({ user: mockUser });
+    getDoc.mockResolvedValue({ exists: () => true });
+
+    await signUpWithGoogle('applicant');
 
     expect(setDoc).not.toHaveBeenCalled();
   });

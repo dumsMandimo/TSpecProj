@@ -9,9 +9,9 @@ const NQF_LEVELS = [
   "NQF 4 — National Certificate (Matric)",
   "NQF 5 — Higher Certificate",
   "NQF 6 — Diploma / Advanced Certificate",
-  "NQF 7 — Bachelor’s Degree",
+  "NQF 7 — Bachelor's Degree",
   "NQF 8 — Honours / Postgrad Diploma",
-  "NQF 9 — Master’s Degree",
+  "NQF 9 — Master's Degree",
   "NQF 10 — Doctoral Degree",
 ];
 
@@ -47,11 +47,9 @@ export default function SignupApplicant() {
     e.preventDefault();
     setErrorMsg("");
 
-    // Prevent double submit early
     if (loading) return;
     setLoading(true);
 
-    // Validation
     if (
       !form.firstName.trim() ||
       !form.lastName.trim() ||
@@ -64,7 +62,7 @@ export default function SignupApplicant() {
     }
 
     try {
-      const user = await signUpWithGoogle("applicant", {
+      const { user, role } = await signUpWithGoogle("applicant", {
         firstName: form.firstName,
         lastName: form.lastName,
         province: form.province,
@@ -73,15 +71,18 @@ export default function SignupApplicant() {
 
       console.log("Applicant created:", user?.uid);
 
-      navigate("/dashboard/applicant");
+      // Already has an account with a different role
+      if (role !== "applicant") {
+        setErrorMsg("You already have an account. Please use the login page.");
+        setLoading(false);
+        return;
+      }
+
+      navigate("/applicant-dashboard");
 
     } catch (error) {
       console.error("Signup error:", error);
-
-      setErrorMsg(
-        error?.message || "Signup failed. Please try again."
-      );
-
+      setErrorMsg(error?.message || "Signup failed. Please try again.");
     } finally {
       setLoading(false);
     }

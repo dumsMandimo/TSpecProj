@@ -31,12 +31,10 @@ export default function SignupProvider() {
 
   const handleGoogleSignup = async (e) => {
     e.preventDefault();
-
     setErrorMsg("");
 
     if (loading) return;
 
-    // Validation
     if (
       !form.organisationName.trim() ||
       !form.contactName.trim() ||
@@ -51,7 +49,7 @@ export default function SignupProvider() {
     setLoading(true);
 
     try {
-      const user = await signUpWithGoogle("provider", {
+      const { user, role } = await signUpWithGoogle("provider", {
         organisationName: form.organisationName,
         contactName: form.contactName,
         sector: form.sector,
@@ -61,7 +59,14 @@ export default function SignupProvider() {
 
       console.log("Provider Google signup successful:", user?.uid);
 
-      navigate("/dashboard/provider");
+      // Already has an account with a different role
+      if (role !== "provider") {
+        setErrorMsg("You already have an account. Please use the login page.");
+        setLoading(false);
+        return;
+      }
+
+      navigate("/provider-dashboard");
 
     } catch (error) {
       console.error(error);

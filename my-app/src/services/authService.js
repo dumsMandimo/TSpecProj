@@ -1,51 +1,61 @@
-import {
-  signInWithPopup,
-  GoogleAuthProvider,
-} from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { auth, db } from './firebase';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
-import { auth, db } from "./firebase";
-import {
-  doc,
-  setDoc,
-  getDoc,
-} from "firebase/firestore";
-
-export const signUpWithGoogle = async (role, extraData = {}) => {
+export const signUpWithGoogle = async (role = null, extraData = {}) => {
   const provider = new GoogleAuthProvider();
 
   provider.setCustomParameters({
-    prompt: "select_account",
+    prompt: 'select_account',
   });
 
-  // Google login
-  const result = await signInWithPopup(auth, provider);
-  const user = result.user;
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    console.log("1. Google auth success:", user.uid);
 
-  if (!user?.uid || !user?.email) {
-    throw new Error("Google authentication failed");
-  }
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
+    console.log("2. Firestore check done. Exists?", userSnap.exists());
 
-  const userRef = doc(db, "users", user.uid);
-  const userSnap = await getDoc(userRef);
+    // Existing user — just return their role
+    if (userSnap.exists()) {
+      const existingRole = userSnap.data().role;
+      console.log("3. Existing user found, role:", existingRole);
 
-  // Create user only if they don't exist
-  if (!userSnap.exists()) {
+      if (!['applicant', 'provider', 'admin'].includes(existingRole)) {
+        throw new Error('Unknown role. Contact support.');
+      }
+
+      return { user, role: existingRole };
+    }
+
+    console.log("4. New user. Role passed:", role);
+
+    // New user — role must be provided (login page won't pass one)
+    if (!role) {
+      throw new Error('No account found. Please sign up first.');
+    }
+
+    if (role === 'admin') {
+      throw new Error('Admin accounts cannot be self-registered.');
+    }
+
+    console.log("5. Saving to Firestore...");
     await setDoc(userRef, {
       uid: user.uid,
       email: user.email,
-      role,
+      role: role,
+      emailVerified: user.emailVerified || true,
       ...extraData,
-      status: 'active',
       createdAt: new Date().toISOString(),
     });
-    return { user, role };
-  }
+    console.log("6. Saved successfully!");
 
-  const data = userSnap.data();
-//block removed users
-  if (data.status === 'removed'){
-    await auth.signOut();
-    throw new Error('account-removed');
+    return { user, role };
+
+  } catch (err) {
+    console.error("AUTH ERROR:", err);
+    throw new Error(err.message || 'Authentication failed. Please try again.');
   }
-  return { user, role: data.role };
 };

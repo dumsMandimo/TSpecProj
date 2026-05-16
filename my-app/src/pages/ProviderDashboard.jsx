@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { auth, db } from "../services/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
@@ -9,6 +12,33 @@ import CreateOpportunityForm from "../components/CreateOpportunityForm";
 
 export default function ProviderDashboard() {
   const [tab, setTab] = useState("overview");
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    async function checkProvider() {
+      // 1. Check if logged in
+      if (!auth.currentUser) {
+        navigate("/login");
+        return;
+      }
+
+      // 2. Check if provider
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists() || userSnap.data().role !== "provider") {
+        navigate("/login");
+        return;
+      }
+
+      setLoading(false);
+    }
+
+    checkProvider();
+  }, [navigate]);
+
+  if (loading) return <main style={{ padding: "24px" }}><p>Loading...</p></main>;
 
   return (
     <main style={{
