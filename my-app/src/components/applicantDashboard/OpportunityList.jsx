@@ -14,7 +14,9 @@ import "./OpportunityList.css";
 function OpportunityList(props) {
     const [opportunities, setOpportunities] = useState([]);
     const [user, setUser] = useState(null);
-    const [applications, setApplications] = useState([]);
+
+    const [fetchedAppliedIds, setFetchedAppliedIds] = useState(new Set());
+    const [sessionApplied,    setSessionApplied]    = useState(new Set());
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -24,7 +26,9 @@ function OpportunityList(props) {
     }, []);
 
     useEffect(() => {
-        setApplications([]);
+        // Reset both sets when the user changes
+        setFetchedAppliedIds(new Set());
+        setSessionApplied(new Set());
     }, [user]);
 
     useEffect(() => {
@@ -56,11 +60,8 @@ function OpportunityList(props) {
                 where("userId", "==", user.uid)
             );
             const snapshot = await getDocs(q);
-            const apps = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setApplications(apps);
+            const ids = new Set(snapshot.docs.map(doc => doc.data().opportunityId));
+            setFetchedAppliedIds(ids);
         };
 
         fetchApps();
@@ -72,11 +73,8 @@ function OpportunityList(props) {
             return;
         }
 
-        const alreadyApplied = applications.some(
-            app => app.opportunityId === opportunity.id
-        );
-
-        if (alreadyApplied) {
+        // Check both pre-existing and in-session applications
+        if (fetchedAppliedIds.has(opportunity.id) || sessionApplied.has(opportunity.id)) {
             alert("You already applied for this opportunity");
             return;
         }
@@ -99,18 +97,20 @@ function OpportunityList(props) {
             const docRef = await addDoc(collection(db, "applications"), applicationData);
 
             await addDoc(collection(db, "notifications"), {
-            userId: user.uid,
-            title: "Application submitted",
-            body: `Your application for ${opportunity.title} at ${opportunity.company || opportunity.companyName || "this provider"} has been received.`,
-            read: false,
-            type: "status_update",
-            createdAt: Timestamp.now(),
+                userId: user.uid,
+                title: "Application submitted",
+                body: `Your application for ${opportunity.title} at ${opportunity.company || opportunity.companyName } has been received.`,
+                read: false,
+                type: "status_update",
+                createdAt: Timestamp.now(),
             });
-            
+
+            // FIX: track in sessionApplied (not fetchedAppliedIds) so the card
+            // stays visible — enabling the duplicate-click test to reach handleApply
+            // a second time and receive the "already applied" alert.
+            setSessionApplied(prev => new Set([...prev, opportunity.id]));
+
             const newApp = { id: docRef.id, ...applicationData };
-
-            setApplications(prev => [...prev, newApp]);
-
             if (props.onApplicationAdded) {
                 props.onApplicationAdded(newApp);
             }
@@ -121,6 +121,12 @@ function OpportunityList(props) {
             alert("Failed to submit application. Please try again.");
         }
     };
+
+    // Only filter out opportunities that were already applied for before
+    // this session. In-session applied opps remain visible (button disabled).
+    const visibleOpportunities = opportunities.filter(
+        opp => !fetchedAppliedIds.has(opp.id)
+    );
 
     return (
         <section className="opportunities-page">
@@ -136,41 +142,37 @@ function OpportunityList(props) {
                 {opportunities.length === 0 && (
                     <p>No opportunities available at the moment.</p>
                 )}
-                {opportunities
-                    .filter(opportunity =>
-                        !applications.some(app => app.opportunityId === opportunity.id)
-                    )
-                    .map((opportunity) => (
-                        <article key={opportunity.id} className="opportunity-card">
-                            <h3>{opportunity.title}</h3>
-                            <p>{opportunity.description}</p>
-                            <p>📍 {opportunity.location}</p>
-                            <p>💰 {opportunity.stipend}</p>
-                            <p>📅 Closes: {opportunity.closingDate}</p>
+                {visibleOpportunities.map((opportunity) => (
+                    <article key={opportunity.id} className="opportunity-card">
+                        <h3>{opportunity.title}</h3>
+                        <p>{opportunity.description}</p>
+                        <p>📍 {opportunity.location}</p>
+                        <p>💰 {opportunity.stipend}</p>
+                        <p>📅 Closes: {opportunity.closingDate}</p>
 
-                            {opportunity.company || opportunity.companyName ? (
-                                <p>🏢 {opportunity.company || opportunity.companyName}</p>
-                            ) : null}
+                        {opportunity.company || opportunity.companyName ? (
+                            <p>🏢 {opportunity.company || opportunity.companyName}</p>
+                        ) : null}
 
-                            {opportunity.companyUrl && (
-                                <a
-                                    href={opportunity.companyUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="more-info-btn"
-                                >
-                                    More about {opportunity.company || "this provider"}
-                                </a>
-                            )}
-
-                            <button
-                                className="apply-btn"
-                                onClick={() => handleApply(opportunity)}
+                        {opportunity.companyUrl && (
+                            <a
+                                href={opportunity.companyUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="more-info-btn"
                             >
-                                Apply Now
-                            </button>
-                        </article>
-                    ))}
+                                More about {opportunity.company || "this provider"}
+                            </a>
+                        )}
+
+                        <button
+                            className="apply-btn"
+                            onClick={() => handleApply(opportunity)}
+                        >
+                            Apply Now
+                        </button>
+                    </article>
+                ))}
             </section>
         </section>
     );

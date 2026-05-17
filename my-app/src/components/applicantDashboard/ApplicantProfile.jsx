@@ -41,7 +41,6 @@ export default function ApplicantProfile() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          // Fetch from both collections simultaneously
           const [applicantSnap, userSnap] = await Promise.all([
             getDoc(doc(db, "applicants", user.uid)),
             getDoc(doc(db, "users", user.uid)),
@@ -53,7 +52,6 @@ export default function ApplicantProfile() {
           setProfile({
             id: user.uid,
             ...applicantData,
-            // Province lives in users, fallback to applicants if migrated
             province: userData.province || applicantData.province || "",
           });
         } catch (err) {
@@ -81,7 +79,6 @@ export default function ApplicantProfile() {
         cvUrl = await uploadCvToSupabase(newCv, user.uid);
       }
 
-      // Update applicants collection
       await updateDoc(doc(db, "applicants", user.uid), {
         name: profile.name,
         phone: profile.phone,
@@ -91,7 +88,6 @@ export default function ApplicantProfile() {
         cvUrl,
       });
 
-      // Sync province back to users collection
       await updateDoc(doc(db, "users", user.uid), {
         province: profile.province,
       });
@@ -165,8 +161,10 @@ export default function ApplicantProfile() {
             className="textarea"
           />
 
-          <label>Update CV (PDF)</label>
+          {/* FIX: added htmlFor + matching id so getByLabelText works */}
+          <label htmlFor="cv-upload">Update CV (PDF)</label>
           <input
+            id="cv-upload"
             type="file"
             accept=".pdf"
             onChange={(e) => setNewCv(e.target.files[0])}

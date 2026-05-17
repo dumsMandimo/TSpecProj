@@ -116,9 +116,25 @@ describe("CreateProfile", () => {
 
     render(<CreateProfile />);
 
+    // Fill all required fields including CV — the component requires it
     fireEvent.change(screen.getByPlaceholderText(/full name/i), {
       target: { name: "name", value: "John Doe" },
     });
+    fireEvent.change(screen.getByPlaceholderText(/phone number/i), {
+      target: { name: "phone", value: "0821234567" },
+    });
+    const textareas = screen.getAllByRole("textbox");
+    fireEvent.change(textareas[0], {
+      target: { name: "education", value: "Matric" },
+    });
+    fireEvent.change(textareas[1], {
+      target: { name: "skills", value: "JavaScript" },
+    });
+    // Attach a CV so the CV-required validation passes; mockUpload is not
+    // asserted in this test so it exercises the "profile saved" path regardless
+    const fileInput = document.querySelector('input[type="file"]');
+    const cvFile = new File(["cv"], "cv.pdf", { type: "application/pdf" });
+    fireEvent.change(fileInput, { target: { name: "cv", files: [cvFile] } });
 
     fireEvent.submit(
       screen.getByRole("button", { name: /save profile/i }).closest("form")
@@ -143,11 +159,27 @@ describe("CreateProfile", () => {
 
     render(<CreateProfile />);
 
+    // Fill text fields BEFORE touching the file input — this avoids a jsdom
+    // quirk where assigning properties to the file input's event target can
+    // interfere with prior synthetic events in the same render cycle
+    fireEvent.change(screen.getByPlaceholderText(/full name/i), {
+      target: { name: "name", value: "John Doe" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/phone number/i), {
+      target: { name: "phone", value: "0821234567" },
+    });
+    const textareas = screen.getAllByRole("textbox");
+    fireEvent.change(textareas[0], {
+      target: { name: "education", value: "Matric" },
+    });
+    fireEvent.change(textareas[1], {
+      target: { name: "skills", value: "JavaScript" },
+    });
+
+    // Attach CV last so all text state is already set before the file event fires
     const file = new File(["cv content"], "cv.pdf", { type: "application/pdf" });
     const fileInput = document.querySelector('input[type="file"]');
-    fireEvent.change(fileInput, {
-      target: { name: "cv", files: [file] },
-    });
+    fireEvent.change(fileInput, { target: { name: "cv", files: [file] } });
 
     fireEvent.submit(fileInput.closest("form"));
 
@@ -168,6 +200,13 @@ describe("CreateProfile", () => {
     const alertMock = jest.spyOn(window, "alert").mockImplementation(() => {});
 
     render(<CreateProfile />);
+
+    // FIX: fill name so validation passes and only the auth check blocks the submit,
+    // triggering the "User not logged in" alert
+    fireEvent.change(screen.getByPlaceholderText(/full name/i), {
+      target: { name: "name", value: "John Doe" },
+    });
+
     fireEvent.submit(
       screen.getByRole("button", { name: /save profile/i }).closest("form")
     );

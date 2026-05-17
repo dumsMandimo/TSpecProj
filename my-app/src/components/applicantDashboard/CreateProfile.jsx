@@ -38,7 +38,6 @@ export default function CreateProfile() {
       ...prev,
       [name]: files ? files[0] : value,
     }));
-    // Clear error on change
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -69,6 +68,14 @@ export default function CreateProfile() {
   const handleSave = async (e) => {
     e.preventDefault();
 
+    // FIX: check auth BEFORE validation so "no user logged in" alert fires
+    // even when the form has validation errors (e.g. empty required fields).
+    const user = auth.currentUser;
+    if (!user) {
+      alert("User not logged in");
+      return;
+    }
+
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -76,9 +83,6 @@ export default function CreateProfile() {
     }
 
     try {
-      const user = auth.currentUser;
-      if (!user) { alert("User not logged in"); return; }
-
       let cvUrl = null;
       if (profile.cv) {
         cvUrl = await uploadCvToSupabase(profile.cv, user.uid);
