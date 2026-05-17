@@ -7,7 +7,6 @@ import './signupPage.css';
 const ROLES = [
   { key: 'applicant', label: 'Applicant', desc: 'Looking for learnerships & internships' },
   { key: 'provider',  label: 'Provider',  desc: 'Employer or training organisation' },
-  
 ];
 
 export default function SignupPage() {
@@ -16,7 +15,6 @@ export default function SignupPage() {
   const forms = {
     applicant: <SignupApplicant />,
     provider:  <SignupProvider />,
-    
   };
 
   return (
