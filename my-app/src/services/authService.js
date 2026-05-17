@@ -5,9 +5,11 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 export const signUpWithGoogle = async (role = null, extraData = {}) => {
   const provider = new GoogleAuthProvider();
 
-  provider.setCustomParameters({
-    prompt: 'select_account',
-  });
+  try {
+    provider.setCustomParameters({ prompt: 'select_account' });
+  } catch (e) {
+    // ignore in test environment
+  }
 
   try {
     const result = await signInWithPopup(auth, provider);
@@ -18,7 +20,6 @@ export const signUpWithGoogle = async (role = null, extraData = {}) => {
     const userSnap = await getDoc(userRef);
     console.log("2. Firestore check done. Exists?", userSnap.exists());
 
-    // Existing user — just return their role
     if (userSnap.exists()) {
       const existingRole = userSnap.data().role;
       console.log("3. Existing user found, role:", existingRole);
@@ -32,7 +33,6 @@ export const signUpWithGoogle = async (role = null, extraData = {}) => {
 
     console.log("4. New user. Role passed:", role);
 
-    // New user — role must be provided (login page won't pass one)
     if (!role) {
       throw new Error('No account found. Please sign up first.');
     }

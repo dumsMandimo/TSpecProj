@@ -1,11 +1,12 @@
-const { signUpWithGoogle } = require('./authService');  // <-- fixed path
-const { signInWithPopup, GoogleAuthProvider } = require('firebase/auth');
+const { signUpWithGoogle } = require('./authService');
+const { signInWithPopup } = require('firebase/auth');
 const { doc, setDoc, getDoc } = require('firebase/firestore');
-const { auth, db } = require('./firebase');
 
 jest.mock('firebase/auth', () => ({
   signInWithPopup: jest.fn(),
-  GoogleAuthProvider: jest.fn(),
+  GoogleAuthProvider: jest.fn().mockImplementation(function () {
+    this.setCustomParameters = jest.fn();
+  }),
 }));
 
 jest.mock('firebase/firestore', () => ({
@@ -24,23 +25,47 @@ describe('Google Auth Tests', () => {
     jest.clearAllMocks();
   });
 
-  test('creates new user in Firestore if not exists', async () => {
+  // UAT 2.1 — New applicant signup saves to Firestore and returns correct role
+  test('creates new applicant in Firestore and returns { user, role }', async () => {
     const mockUser = { uid: '123', email: 'google@test.com' };
+    const mockDocRef = { id: '123' };
     signInWithPopup.mockResolvedValue({ user: mockUser });
     getDoc.mockResolvedValue({ exists: () => false });
+    setDoc.mockResolvedValue();
+    doc.mockReturnValue(mockDocRef);
 
     const result = await signUpWithGoogle('applicant');
 
     expect(signInWithPopup).toHaveBeenCalled();
-    expect(setDoc).toHaveBeenCalledWith(expect.any(Object), expect.objectContaining({
+    expect(setDoc).toHaveBeenCalledWith(mockDocRef, expect.objectContaining({
       uid: mockUser.uid,
       email: mockUser.email,
       role: 'applicant',
     }));
-    expect(result).toEqual(mockUser);
+    expect(result).toEqual({ user: mockUser, role: 'applicant' });
   });
 
-  test('throws error if new user role not provided', async () => {
+  // UAT 2.1 — New provider signup saves to Firestore and returns correct role
+  test('creates new provider in Firestore and returns { user, role }', async () => {
+    const mockUser = { uid: '124', email: 'provider@test.com' };
+    const mockDocRef = { id: '124' };
+    signInWithPopup.mockResolvedValue({ user: mockUser });
+    getDoc.mockResolvedValue({ exists: () => false });
+    setDoc.mockResolvedValue();
+    doc.mockReturnValue(mockDocRef);
+
+    const result = await signUpWithGoogle('provider');
+
+    expect(setDoc).toHaveBeenCalledWith(mockDocRef, expect.objectContaining({
+      uid: mockUser.uid,
+      email: mockUser.email,
+      role: 'provider',
+    }));
+    expect(result).toEqual({ user: mockUser, role: 'provider' });
+  });
+
+  // UAT 2.2 — Login with no role throws error for unknown user
+  test('throws error if new user has no role provided', async () => {
     const mockUser = { uid: '456', email: 'new@test.com' };
     signInWithPopup.mockResolvedValue({ user: mockUser });
     getDoc.mockResolvedValue({ exists: () => false });
@@ -50,13 +75,58 @@ describe('Google Auth Tests', () => {
     );
   });
 
-  test('does not create user if already exists', async () => {
+  // UAT 2.3 — Admin cannot self-register
+  test('throws error if someone tries to sign up as admin', async () => {
+    const mockUser = { uid: '999', email: 'admin@test.com' };
+    signInWithPopup.mockResolvedValue({ user: mockUser });
+    getDoc.mockResolvedValue({ exists: () => false });
+
+    await expect(signUpWithGoogle('admin')).rejects.toThrow(
+      'Admin accounts cannot be self-registered.'
+    );
+  });
+
+  // UAT 2.1 — Existing user login returns their role without saving again
+  test('returns existing applicant role without saving to Firestore', async () => {
     const mockUser = { uid: '789', email: 'existing@test.com' };
     signInWithPopup.mockResolvedValue({ user: mockUser });
-    getDoc.mockResolvedValue({ exists: () => true });
+    getDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({ role: 'applicant' }),
+    });
 
-    await signUpWithGoogle('applicant');
+    const result = await signUpWithGoogle();
 
     expect(setDoc).not.toHaveBeenCalled();
+    expect(result).toEqual({ user: mockUser, role: 'applicant' });
+  });
+
+  // UAT 2.1 — Existing admin login returns admin role
+  test('returns existing admin role without saving to Firestore', async () => {
+    const mockUser = { uid: '111', email: 'admin@test.com' };
+    signInWithPopup.mockResolvedValue({ user: mockUser });
+    getDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({ role: 'admin' }),
+    });
+
+    const result = await signUpWithGoogle();
+
+    expect(setDoc).not.toHaveBeenCalled();
+    expect(result).toEqual({ user: mockUser, role: 'admin' });
+  });
+
+  // UAT 2.2 — Unknown role in Firestore throws error
+  test('throws error if existing user has unknown role', async () => {
+    const mockUser = { uid: '222', email: 'unknown@test.com' };
+    signInWithPopup.mockResolvedValue({ user: mockUser });
+    getDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({ role: 'superuser' }),
+    });
+
+    await expect(signUpWithGoogle()).rejects.toThrow(
+      'Unknown role. Contact support.'
+    );
   });
 });

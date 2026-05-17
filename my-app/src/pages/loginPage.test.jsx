@@ -1,181 +1,103 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import LoginPage from './loginPage';
-
+import "@testing-library/jest-dom";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import LoginPage from "./loginPage";
 
 const mockNavigate = jest.fn();
 
-jest.mock('react-router-dom', () => ({
+jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
-// Mock Firebase auth
-jest.mock('firebase/auth', () => ({
-  signInWithEmailAndPassword: jest.fn(),
+jest.mock("../services/authService", () => ({
+  signUpWithGoogle: jest.fn(),
 }));
 
-// Mock auth instance
-jest.mock('../services/firebase', () => ({
-  auth: {},
-}));
+import { signUpWithGoogle } from "../services/authService";
 
-// Mock role service
-jest.mock('../services/userService', () => ({
-  getUserRole: jest.fn(),
-}));
+global.alert = jest.fn();
 
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { getUserRole } from '../services/userService';
+const renderComponent = () => render(<LoginPage />);
 
-describe('LoginPage', () => {
-
+describe("LoginPage Tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('renders login form', () => {
-    render(<LoginPage />);
-    
-    expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/password/i)).toBeInTheDocument();
+  // UAT 2.1 — Login page renders correctly
+  test("renders sign in button", () => {
+    renderComponent();
+    expect(screen.getByText("Sign in with Google")).toBeInTheDocument();
   });
 
-  test('shows alert if fields are empty', () => {
-    window.alert = jest.fn();
+  // UAT 2.1 — Admin redirects to admin dashboard
+  test("redirects admin to admin dashboard", async () => {
+    signUpWithGoogle.mockResolvedValue({ role: "admin" });
+    renderComponent();
 
-    render(<LoginPage />);
-
-    const button = screen.getByDisplayValue(/login/i);
-    fireEvent.click(button);
-
-    expect(window.alert).toHaveBeenCalledWith(
-      'Please enter email and password'
-    );
-  });
-
-  test('successful login redirects admin', async () => {
-    signInWithEmailAndPassword.mockResolvedValue({
-      user: { uid: '123' },
-    });
-
-    getUserRole.mockResolvedValue('admin');
-
-    render(<LoginPage />);
-
-    fireEvent.change(screen.getByPlaceholderText(/email/i), {
-      target: { value: 'TEST@EMAIL.COM' },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/password/i), {
-      target: { value: 'password123' },
-    });
-
-    fireEvent.click(screen.getByDisplayValue(/login/i));
+    fireEvent.click(screen.getByText("Sign in with Google"));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/dashboard/admin');
+      expect(mockNavigate).toHaveBeenCalledWith("/dashboard/admin");
     });
   });
 
-  test('successful login redirects provider', async () => {
-    signInWithEmailAndPassword.mockResolvedValue({
-      user: { uid: '123' },
-    });
+  // UAT 2.1 — Provider redirects to provider dashboard
+  test("redirects provider to provider dashboard", async () => {
+    signUpWithGoogle.mockResolvedValue({ role: "provider" });
+    renderComponent();
 
-    getUserRole.mockResolvedValue('provider');
-
-    render(<LoginPage />);
-
-    fireEvent.change(screen.getByPlaceholderText(/email/i), {
-      target: { value: 'test@email.com' },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/password/i), {
-      target: { value: 'password123' },
-    });
-
-    fireEvent.click(screen.getByDisplayValue(/login/i));
+    fireEvent.click(screen.getByText("Sign in with Google"));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/dashboard/provider');
+      expect(mockNavigate).toHaveBeenCalledWith("/provider-dashboard");
     });
   });
 
-  test('successful login redirects applicant (default)', async () => {
-    signInWithEmailAndPassword.mockResolvedValue({
-      user: { uid: '123' },
-    });
+  // UAT 2.1 — Applicant redirects to applicant dashboard
+  test("redirects applicant to applicant dashboard", async () => {
+    signUpWithGoogle.mockResolvedValue({ role: "applicant" });
+    renderComponent();
 
-    getUserRole.mockResolvedValue('applicant');
-
-    render(<LoginPage />);
-
-    fireEvent.change(screen.getByPlaceholderText(/email/i), {
-      target: { value: 'test@email.com' },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/password/i), {
-      target: { value: 'password123' },
-    });
-
-    fireEvent.click(screen.getByDisplayValue(/login/i));
+    fireEvent.click(screen.getByText("Sign in with Google"));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/dashboard/applicant');
+      expect(mockNavigate).toHaveBeenCalledWith("/applicant-dashboard");
     });
   });
 
-  test('shows alert if no role found', async () => {
-    window.alert = jest.fn();
+  // UAT 2.2 — Unknown role shows alert
+  test("shows alert for unknown role", async () => {
+    signUpWithGoogle.mockResolvedValue({ role: "unknown" });
+    renderComponent();
 
-    signInWithEmailAndPassword.mockResolvedValue({
-      user: { uid: '123' },
-    });
-
-    getUserRole.mockResolvedValue(null);
-
-    render(<LoginPage />);
-
-    fireEvent.change(screen.getByPlaceholderText(/email/i), {
-      target: { value: 'test@email.com' },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/password/i), {
-      target: { value: 'password123' },
-    });
-
-    fireEvent.click(screen.getByDisplayValue(/login/i));
+    fireEvent.click(screen.getByText("Sign in with Google"));
 
     await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith(
-        'No role found for this user. Contact admin.'
-      );
+      expect(global.alert).toHaveBeenCalledWith("Unknown role. Contact support.");
     });
   });
 
-  test('handles invalid credentials error', async () => {
-    window.alert = jest.fn();
+  // UAT 2.2 — Failed login shows error alert
+  test("shows alert on login failure", async () => {
+    signUpWithGoogle.mockRejectedValue(new Error("Google login failed. Please try again."));
+    renderComponent();
 
-    signInWithEmailAndPassword.mockRejectedValue({
-      code: 'auth/invalid-credential',
-    });
-
-    render(<LoginPage />);
-
-    fireEvent.change(screen.getByPlaceholderText(/email/i), {
-      target: { value: 'test@email.com' },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/password/i), {
-      target: { value: 'wrongpass' },
-    });
-
-    fireEvent.click(screen.getByDisplayValue(/login/i));
+    fireEvent.click(screen.getByText("Sign in with Google"));
 
     await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith(
-        'Invalid email or password.'
-      );
+      expect(global.alert).toHaveBeenCalledWith("Google login failed. Please try again.");
     });
   });
 
+  // UAT 2.1 — Button shows loading state while signing in
+  test("shows loading state while signing in", async () => {
+    signUpWithGoogle.mockImplementation(() => new Promise(() => {}));
+    renderComponent();
+
+    fireEvent.click(screen.getByText("Sign in with Google"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Signing in...")).toBeInTheDocument();
+    });
+  });
 });
