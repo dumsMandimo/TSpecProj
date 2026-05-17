@@ -91,6 +91,7 @@ export default function CreateProfile() {
       await setDoc(
         doc(db, "applicants", user.uid),
         {
+          applicantId: user.uid,
           name: profile.name,
           phone: profile.phone,
           education: profile.education,

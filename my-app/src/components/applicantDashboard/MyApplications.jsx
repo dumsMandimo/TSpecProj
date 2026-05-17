@@ -15,34 +15,41 @@ import "./MyApplications.css";
 
 const stages = ["Submitted", "Received", "Under Evaluation", "Final Decision"];
 
-// Derive stageIndex from status so manually changing
-// status in Firestore is enough — no need to also update stageIndex
+function normalizeStatus(status = "") {
+    if (!status) return "";
+    const lower = status.toLowerCase();
+    if (lower === "under evaluation") return "Under evaluation";
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+}
+
 function getStageIndex(status) {
-    switch (status) {
-        case "Submitted":       return 0;
-        case "Received":        return 1;
-        case "Under Evaluation":return 2;
-        case "Shortlisted":     return 3;
-        case "Accepted":        return 3;
-        case "Rejected":        return 3;
-        default:                return 0;
+    switch (normalizeStatus(status)) {
+        case "Submitted":        return 0;
+        case "Received":         return 1;
+        case "Pending":          return 1;
+        case "Under evaluation": return 2;
+        case "Shortlisted":      return 3;
+        case "Accepted":         return 3;
+        case "Rejected":         return 3;
+        default:                 return 0;
     }
 }
 
 const STATUS_MESSAGES = {
-    Received:           "Your application has been received and is under review.",
-    Pending:            "Your application is pending review.",
-    "Under Evaluation": "Your application is currently being evaluated.",
-    Shortlisted:        "Great news! You have been shortlisted.",
-    Accepted:           "Congratulations! Your application has been accepted.",
-    Rejected:           "Unfortunately your application was not successful this time.",
+    "Received":          "Your application has been received and is under review.",
+    "Pending":           "Your application is pending review.",
+    "Under evaluation":  "Your application is currently being evaluated.",
+    "Shortlisted":       "Great news! You have been shortlisted.",
+    "Accepted":          "Congratulations! Your application has been accepted.",
+    "Rejected":          "Unfortunately your application was not successful this time.",
 };
 
 function ProgressTracker({ status = "" }) {
-    const stageIndex = getStageIndex(status);
-    const isAccepted    = status === "Accepted";
-    const isRejected    = status === "Rejected";
-    const isShortlisted = status === "Shortlisted";
+    const normalized    = normalizeStatus(status);
+    const stageIndex    = getStageIndex(status);
+    const isAccepted    = normalized === "Accepted";
+    const isRejected    = normalized === "Rejected";
+    const isShortlisted = normalized === "Shortlisted";
 
     return (
         <section className="progress-container">
@@ -70,10 +77,9 @@ function ProgressTracker({ status = "" }) {
                                 : isShortlisted
                                 ? "Shortlisted"
                                 : "Final Decision"
-                            : stage === "Received" && status === "Pending"
-                            ? "Pending" 
+                            : stage === "Received" && normalized === "Pending"
+                            ? "Pending"
                             : stage}
-                            
                     </span>
                 </article>
             ))}
@@ -108,20 +114,20 @@ function MyApplications() {
                         ...d.data()
                     }));
 
-                    // Check each app for a status change and write a notification
                     for (const app of apps) {
                         const prev = prevApplicationsRef.current.find(
                             p => p.id === app.id
                         );
 
-                        const statusChanged = prev && prev.status !== app.status;
-                        const hasMessage    = STATUS_MESSAGES[app.status];
+                        const statusChanged = prev &&
+                            normalizeStatus(prev.status) !== normalizeStatus(app.status);
+                        const hasMessage = STATUS_MESSAGES[normalizeStatus(app.status)];
 
                         if (statusChanged && hasMessage) {
                             try {
                                 await addDoc(collection(db, "notifications"), {
                                     userId:        user.uid,
-                                    title:         `Application ${app.status}`,
+                                    title:         `Application ${normalizeStatus(app.status)}`,
                                     body:          `${app.title}: ${hasMessage}`,
                                     read:          false,
                                     type:          "status_update",
