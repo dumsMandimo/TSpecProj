@@ -30,6 +30,10 @@ export const signUpWithGoogle = async (role, extraData = {}) => {
   const userRef = doc(db, "users", user.uid);
   const userSnap = await getDoc(userRef);
 
+  console.log("Looking up UID:", user.uid);
+  console.log("Doc exists:", userSnap.exists());
+  console.log("Doc data:", userSnap.data());
+
   if (!userSnap.exists()) {
     await setDoc(userRef, {
       uid: user.uid,
