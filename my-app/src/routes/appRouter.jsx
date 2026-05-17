@@ -10,6 +10,8 @@ import Users from "../pages/admin/Users";
 
 import ApplicantDashboard from "../components/applicantDashboard/Dashboard";
 import ProviderDashboard from "../pages/ProviderDashboard/ProviderDashboard";
+import providerApproval from "../components/providerApproval";
+import PendingApproval from "../components/providerApproval";
 
 export default function AppRouter() {
   return (
@@ -28,6 +30,7 @@ export default function AppRouter() {
 
         <Route path="/dashboard/applicant" element={<ApplicantDashboard />} />
         <Route path="/dashboard/provider" element={<ProviderDashboard />} />
+        <Route path="/pending-approval" element={<PendingApproval/>} />
 
         <Route path="/" element={<Navigate to="/signup" replace />} />
         <Route path="*" element={<Navigate to="/signup" replace />} />

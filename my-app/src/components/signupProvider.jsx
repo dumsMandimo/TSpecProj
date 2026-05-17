@@ -80,7 +80,6 @@ export default function SignupProvider() {
         sector: form.sector,
         province: form.province,
         description: form.description,
-        status: "pending",         // <-- ADDED: sets pending status on signup
       });
 
       console.log("Provider signup successful:", user?.uid);

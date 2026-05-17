@@ -35,12 +35,14 @@ export const signUpWithGoogle = async (role, extraData = {}) => {
   console.log("Doc data:", userSnap.data());
 
   if (!userSnap.exists()) {
+    const status = role === "provider" ? "pending" : "active"; // <-- ADDED
+
     await setDoc(userRef, {
       uid: user.uid,
       email: user.email,
       role,
       ...extraData,
-      status: "active",
+      status,                                                   // <-- CHANGED
       createdAt: new Date().toISOString(),
     });
 
@@ -72,12 +74,14 @@ export const signUpWithEmail = async (
 
   const user = result.user;
 
+  const status = role === "provider" ? "pending" : "active";   // <-- ADDED
+
   await setDoc(doc(db, "users", user.uid), {
     uid: user.uid,
     email: user.email,
     role,
     ...extraData,
-    status: "active",
+    status,                                                     // <-- CHANGED
     createdAt: new Date().toISOString(),
   });
 
