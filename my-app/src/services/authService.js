@@ -10,6 +10,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  updateDoc,             
 } from "firebase/firestore";
 
 // GOOGLE SIGNUP
@@ -35,14 +36,14 @@ export const signUpWithGoogle = async (role, extraData = {}) => {
   console.log("Doc data:", userSnap.data());
 
   if (!userSnap.exists()) {
-    const status = role === "provider" ? "pending" : "active"; // <-- ADDED
+    const status = role === "provider" ? "pending" : "active";
 
     await setDoc(userRef, {
       uid: user.uid,
       email: user.email,
       role,
       ...extraData,
-      status,                                                   // <-- CHANGED
+      status,
       createdAt: new Date().toISOString(),
     });
 
@@ -54,6 +55,15 @@ export const signUpWithGoogle = async (role, extraData = {}) => {
   if (data.status === "removed") {
     await auth.signOut();
     throw new Error("account-removed");
+  }
+
+  // <-- ADDED: existing provider doc gets updated to pending
+  if (role === "provider" && data.status === "active") {
+    await updateDoc(userRef, {
+      ...extraData,
+      status: "pending",
+    });
+    return { user, role };
   }
 
   return { user, role: data.role };
@@ -74,14 +84,14 @@ export const signUpWithEmail = async (
 
   const user = result.user;
 
-  const status = role === "provider" ? "pending" : "active";   // <-- ADDED
+  const status = role === "provider" ? "pending" : "active";
 
   await setDoc(doc(db, "users", user.uid), {
     uid: user.uid,
     email: user.email,
     role,
     ...extraData,
-    status,                                                     // <-- CHANGED
+    status,
     createdAt: new Date().toISOString(),
   });
 
