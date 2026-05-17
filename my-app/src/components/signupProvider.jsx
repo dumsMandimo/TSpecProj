@@ -80,11 +80,12 @@ export default function SignupProvider() {
         sector: form.sector,
         province: form.province,
         description: form.description,
+        status: "pending",         // <-- ADDED: sets pending status on signup
       });
 
       console.log("Provider signup successful:", user?.uid);
 
-      navigate("/dashboard/provider");
+      navigate("/pending-approval"); // <-- CHANGED: was /dashboard/provider
     } catch (error) {
       console.error("Signup failed:", error);
       setErrorMsg(error?.message || "Signup failed. Please try again.");
