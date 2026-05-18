@@ -29,11 +29,11 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
-  const handleApprove = async (uid) => {
-    setActionLoading(uid);
+  const handleApprove = async (provider) => {                                  
+    setActionLoading(provider.id);                                             
     try {
-      await approveProvider(uid);
-      setProviders((prev) => prev.filter((p) => p.id !== uid));
+      await approveProvider(provider.id, provider);                           
+      setProviders((prev) => prev.filter((p) => p.id !== provider.id));       
     } catch (error) {
       console.error("Approve failed:", error);
     } finally {
@@ -41,11 +41,11 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleReject = async (uid) => {
-    setActionLoading(uid);
+  const handleReject = async (provider) => {                                   
+    setActionLoading(provider.id);                                           
     try {
-      await rejectProvider(uid);
-      setProviders((prev) => prev.filter((p) => p.id !== uid));
+      await rejectProvider(provider.id);
+      setProviders((prev) => prev.filter((p) => p.id !== provider.id));      
     } catch (error) {
       console.error("Reject failed:", error);
     } finally {
@@ -75,7 +75,6 @@ export default function AdminDashboard() {
         </article>
       </section>
 
-      {/* Pending providers section */}
       <section className="providers-section">
         <h2 className="providers-heading">
           Pending Providers
@@ -105,14 +104,14 @@ export default function AdminDashboard() {
                 <div className="provider-actions">
                   <button
                     className="btn-approve"
-                    onClick={() => handleApprove(provider.id)}
+                    onClick={() => handleApprove(provider)}                    
                     disabled={actionLoading === provider.id}
                   >
                     {actionLoading === provider.id ? "..." : "Approve"}
                   </button>
                   <button
                     className="btn-reject"
-                    onClick={() => handleReject(provider.id)}
+                    onClick={() => handleReject(provider)}                     
                     disabled={actionLoading === provider.id}
                   >
                     {actionLoading === provider.id ? "..." : "Reject"}

@@ -1,5 +1,10 @@
 import { db } from './firebase';
-import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';  // <-- ADDED doc, updateDoc
+import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
+import emailjs from '@emailjs/browser';                                        // <-- ADDED
+
+const EMAILJS_SERVICE_ID  = process.env.REACT_APP_EMAILJS_SERVICE_ID;
+const EMAILJS_TEMPLATE_ID = process.env.REACT_APP_EMAILJS_TEMPLATE_ID;
+const EMAILJS_PUBLIC_KEY  = process.env.REACT_APP_EMAILJS_PUBLIC_KEY;
 
 export async function getAdminDashboard() {
   try {
@@ -22,7 +27,6 @@ export async function getAdminDashboard() {
   }
 }
 
-// <-- ADDED: fetch all pending providers
 export async function getPendingProviders() {
   try {
     const snap = await getDocs(
@@ -35,17 +39,27 @@ export async function getPendingProviders() {
   }
 }
 
-// <-- ADDED: approve a provider
-export async function approveProvider(uid) {
+export async function approveProvider(uid, provider) {                         // <-- ADDED provider param
   try {
     await updateDoc(doc(db, 'users', uid), { status: 'approved' });
+
+    await emailjs.send(                                                        // <-- ADDED
+      EMAILJS_SERVICE_ID,
+      EMAILJS_TEMPLATE_ID,
+      {
+        to_email:          provider.email,
+        contact_name:      provider.contactName,
+        organisation_name: provider.organisationName,
+        app_url:           window.location.origin,
+      },
+      EMAILJS_PUBLIC_KEY
+    );
   } catch (error) {
     console.error('approveProvider error:', error);
     throw error;
   }
 }
 
-// <-- ADDED: reject a provider
 export async function rejectProvider(uid) {
   try {
     await updateDoc(doc(db, 'users', uid), { status: 'rejected' });
