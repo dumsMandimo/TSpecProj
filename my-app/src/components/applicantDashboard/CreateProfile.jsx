@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { db } from "../../firebase";
-import { auth } from "../../firebase";
+import { db, auth } from "../../firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
@@ -13,20 +12,11 @@ const supabase = createClient(
 
 const uploadCvToSupabase = async (file, userId) => {
   const fileName = `${userId}_${Date.now()}.pdf`;
-
   const { data, error } = await supabase.storage
     .from("cvs")
-    .upload(fileName, file, {
-      contentType: "application/pdf",
-      upsert: true,
-    });
-
+    .upload(fileName, file, { contentType: "application/pdf", upsert: true });
   if (error) throw new Error(error.message);
-
-  const { data: urlData } = supabase.storage
-    .from("cvs")
-    .getPublicUrl(fileName);
-
+  const { data: urlData } = supabase.storage.from("cvs").getPublicUrl(fileName);
   return urlData.publicUrl;
 };
 
@@ -39,7 +29,7 @@ export default function CreateProfile() {
     interests: "",
     cv: null,
   });
-
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -48,28 +38,60 @@ export default function CreateProfile() {
       ...prev,
       [name]: files ? files[0] : value,
     }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!profile.name.trim())
+      newErrors.name = "Full name is required.";
+
+    if (!profile.phone.trim()) {
+      newErrors.phone = "Phone number is required.";
+    } else if (!/^0\d{9}$/.test(profile.phone.trim())) {
+      newErrors.phone = "Phone must be a valid 10-digit SA number starting with 0.";
+    }
+
+    if (!profile.education.trim())
+      newErrors.education = "Education is required.";
+
+    if (!profile.skills.trim())
+      newErrors.skills = "Skills are required.";
+
+    if (!profile.cv)
+      newErrors.cv = "CV is required.";
+
+    return newErrors;
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
 
+    // FIX: check auth BEFORE validation so "no user logged in" alert fires
+    // even when the form has validation errors (e.g. empty required fields).
+    const user = auth.currentUser;
+    if (!user) {
+      alert("User not logged in");
+      return;
+    }
+
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     try {
-      const user = auth.currentUser;
-
-      if (!user) {
-        alert("User not logged in");
-        return;
-      }
-
       let cvUrl = null;
-
       if (profile.cv) {
         cvUrl = await uploadCvToSupabase(profile.cv, user.uid);
       }
 
       await setDoc(
-        doc(db, "users", user.uid),
+        doc(db, "applicants", user.uid),
         {
+          applicantId: user.uid,
           name: profile.name,
           phone: profile.phone,
           education: profile.education,
@@ -91,23 +113,39 @@ export default function CreateProfile() {
 
   return (
     <section className="page">
-      <form onSubmit={handleSave} className="card">
+      <form onSubmit={handleSave} className="profile-card">
         <h1 className="title">Create Profile</h1>
 
         <fieldset className="group">
           <legend>Personal Details</legend>
-          <input name="name" placeholder="Full Name" onChange={handleChange} className="input" />
-          <input name="phone" placeholder="Phone Number" onChange={handleChange} className="input" />
+          <input
+            name="name"
+            placeholder="Full Name *"
+            onChange={handleChange}
+            className="input"
+          />
+          {errors.name && <p className="error">{errors.name}</p>}
+
+          <input
+            name="phone"
+            placeholder="Phone Number * (e.g. 0821234567)"
+            onChange={handleChange}
+            className="input"
+            maxLength={10}
+          />
+          {errors.phone && <p className="error">{errors.phone}</p>}
         </fieldset>
 
         <fieldset className="group">
-          <legend>Education</legend>
+          <legend>Education *</legend>
           <textarea name="education" onChange={handleChange} className="textarea" />
+          {errors.education && <p className="error">{errors.education}</p>}
         </fieldset>
 
         <fieldset className="group">
-          <legend>Skills</legend>
+          <legend>Skills *</legend>
           <textarea name="skills" onChange={handleChange} className="textarea" />
+          {errors.skills && <p className="error">{errors.skills}</p>}
         </fieldset>
 
         <fieldset className="group">
@@ -116,7 +154,7 @@ export default function CreateProfile() {
         </fieldset>
 
         <fieldset className="group">
-          <legend>Upload CV (PDF)</legend>
+          <legend>Upload CV (PDF) *</legend>
           <input
             type="file"
             name="cv"
@@ -124,6 +162,7 @@ export default function CreateProfile() {
             onChange={handleChange}
             className="file"
           />
+          {errors.cv && <p className="error">{errors.cv}</p>}
         </fieldset>
 
         <button type="submit" className="button">Save Profile</button>

@@ -103,7 +103,7 @@
 /* STATUS DOTS */
 .ac__status-dot--green { background: #22c55e; }
 .ac__status-dot--amber { background: orange; }
-.ac__status-dot--blue  { background: orange; }
+.ac__status-dot--blue  { background: #3b82f6; }
 .ac__status-dot--red   { background: #ef4444; }
 .ac__status-dot--grey  { background: #6b7280; }
 
@@ -119,8 +119,8 @@
 }
 
 .ac__badge--blue {
-  background: rgba(255, 165, 0, 0.2);
-  color: orange;
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
 }
 
 .ac__badge--red {

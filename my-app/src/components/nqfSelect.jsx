@@ -134,7 +134,7 @@ export function SectorDropdown({ value, onChange, required }) {
   };
 
   return (
-    <section ref={ref} className="nqf-dropdown">
+    <section ref={ref} className="custom-dropdown">
       <input
         type="text"
         required={required}
@@ -145,22 +145,24 @@ export function SectorDropdown({ value, onChange, required }) {
 
       <button
         type="button"
-        className={`nqf-trigger ${open ? "open" : ""}`}
+        className={`custom-dropdown-trigger ${open ? "open" : ""}`}
         onClick={() => setOpen((o) => !o)}
       >
-        <span className={selected ? "" : "placeholder"}>
-          {selected || "Select sector"}
+        <span className={value ? "" : "placeholder"}>
+          {value || "Select sector"}
         </span>
-        <span className="nqf-chevron">{open ? "▲" : "▼"}</span>
+        <span className="custom-dropdown-chevron">{open ? "▲" : "▼"}</span>
       </button>
 
       {open && (
-        <ul className="nqf-list">
+        <ul className="custom-dropdown-list">
           {SECTORS.map((name) => (
             <li key={name}>
               <button
                 type="button"
-                className={`nqf-option ${selected === name ? "selected" : ""}`}
+                className={`custom-dropdown-option ${
+                  value === name ? "selected" : ""
+                }`}
                 onClick={() => pick(name)}
               >
                 {name}

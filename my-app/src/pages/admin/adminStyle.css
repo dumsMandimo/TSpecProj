@@ -29,3 +29,122 @@
     font-weight: bold;
     color: #111;
 }
+
+/* Pending providers */
+.providers-section {
+    margin-top: 40px;
+}
+
+.providers-heading {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.providers-badge {
+    background: #ff7b00;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.providers-empty {
+    color: #888;
+    font-size: 14px;
+}
+
+.providers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.provider-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 16px 20px;
+    border: 1px solid #ddd;
+    border-left: 5px solid #ff7b00;
+    background: #fff;
+    gap: 16px;
+}
+
+.provider-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 4px;
+}
+
+.provider-meta {
+    font-size: 13px;
+    color: #666;
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.meta-dot {
+    color: #ccc;
+}
+
+.provider-description {
+    font-size: 13px;
+    color: #444;
+    margin-bottom: 6px;
+    max-width: 600px;
+    line-height: 1.5;
+}
+
+.provider-email {
+    font-size: 12px;
+    color: #888;
+}
+
+.provider-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btn-approve {
+    padding: 8px 20px;
+    background: #ff7b00;
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-approve:hover {
+    background: #e06a00;
+}
+
+.btn-reject {
+    padding: 8px 20px;
+    background: #fff;
+    color: #111;
+    font-weight: 600;
+    font-size: 13px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.btn-reject:hover {
+    border-color: #111;
+}
+
+.btn-approve:disabled,
+.btn-reject:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

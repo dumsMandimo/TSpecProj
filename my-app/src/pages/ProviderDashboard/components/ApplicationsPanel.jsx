@@ -7,29 +7,29 @@ import { auth } from "../../../services/firebase";
 import "./ApplicationsPanel.css";
 
 const STATUS_LABELS = {
-  submitted:   "Pending Review",
+  submitted: "Pending Review",
   shortlisted: "Shortlisted",
-  accepted:    "Accepted",
-  rejected:    "Rejected",
+  accepted: "Accepted",
+  rejected: "Rejected",
 };
 
 const STATUS_COLORS = {
-  submitted:   "amber",
+  submitted: "amber",
   shortlisted: "blue",
-  accepted:    "green",
-  rejected:    "red",
+  accepted: "green",
+  rejected: "red",
 };
 
 const FILTERS = ["all", "submitted", "shortlisted", "accepted", "rejected"];
 
 export default function ApplicationsPanel({ initialFilter = "all" }) {
   const [applications, setApplications] = useState([]);
-  const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState(null);
-  const [updating, setUpdating]         = useState(null);
-  const [filter, setFilter]             = useState(initialFilter);
-  const [expanded, setExpanded]         = useState(null);
-  const [search, setSearch]             = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [updating, setUpdating] = useState(null);
+  const [filter, setFilter] = useState(initialFilter);
+  const [expanded, setExpanded] = useState(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const uid = auth.currentUser?.uid;
@@ -90,8 +90,7 @@ export default function ApplicationsPanel({ initialFilter = "all" }) {
 
   if (loading) {
     return (
-      <section className="ap-loading" aria-label="Loading applications">
-        <span className="ap-spinner" />
+      <section className="ap-loading">
         <p>Loading applications…</p>
       </section>
     );
@@ -106,7 +105,7 @@ export default function ApplicationsPanel({ initialFilter = "all" }) {
   }
 
   return (
-    <section className="ap" aria-label="Applications">
+    <section className="ap">
       <header className="ap__header">
         <section>
           <h2 className="ap__title">Applications</h2>
@@ -120,22 +119,14 @@ export default function ApplicationsPanel({ initialFilter = "all" }) {
         </output>
       </header>
 
-      {/* Search */}
-      <section
-        className="ap__search-wrap"
-        aria-label="Search applications"
-      >
-        <span className="ap__search-icon" aria-hidden="true">
-          🔍
-        </span>
-
+      {/* SEARCH */}
+      <section className="ap__search-wrap">
         <input
           className="ap__search"
           type="search"
           placeholder="Search by name, email or opportunity…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          aria-label="Search applications"
         />
 
         {search && (
@@ -143,18 +134,14 @@ export default function ApplicationsPanel({ initialFilter = "all" }) {
             className="ap__search-clear"
             onClick={() => setSearch("")}
             type="button"
-            aria-label="Clear search"
           >
             ✕
           </button>
         )}
       </section>
 
-      {/* Filters */}
-      <nav
-        className="ap__filters"
-        aria-label="Filter applications"
-      >
+      {/* FILTERS */}
+      <nav className="ap__filters">
         {FILTERS.map((f) => {
           const count =
             f === "all"
@@ -168,145 +155,100 @@ export default function ApplicationsPanel({ initialFilter = "all" }) {
                 filter === f ? " ap__filter-btn--active" : ""
               }`}
               onClick={() => setFilter(f)}
-              aria-pressed={filter === f}
               type="button"
             >
-              <span>
-                {f === "all" ? "All" : STATUS_LABELS[f]}
-              </span>
-
-              <output className="ap__filter-count">
-                {count}
-              </output>
+              {f === "all" ? "All" : STATUS_LABELS[f]} ({count})
             </button>
           );
         })}
       </nav>
 
+      {/* LIST */}
       {visible.length === 0 ? (
         <section className="ap__empty">
-          <p>
-            {search
-              ? `No results for "${search}"`
-              : `No ${
-                  filter !== "all"
-                    ? (STATUS_LABELS[filter] ?? filter).toLowerCase()
-                    : ""
-                } applications yet.`}
-          </p>
+          No applications found.
         </section>
       ) : (
         <ul className="ap__list">
           {visible.map((app) => (
             <li key={app.id} className="ap__item">
               <article
-                className={`ac${
+                className={`ac ${
                   expanded === app.id ? " ac--expanded" : ""
                 }`}
               >
-                <header>
-                  <button
-                    className="ac__summary"
-                    onClick={() =>
-                      setExpanded(
-                        expanded === app.id ? null : app.id
-                      )
-                    }
-                    aria-expanded={expanded === app.id}
-                    type="button"
-                  >
-                    <section className="ac__left">
-                      <span
-                        className={`ac__status-dot ac__status-dot--${
-                          STATUS_COLORS[app.status] ?? "grey"
-                        }`}
-                        aria-hidden="true"
-                      />
+                {/* HEADER */}
+                <button
+                  className="ac__summary"
+                  onClick={() =>
+                    setExpanded(expanded === app.id ? null : app.id)
+                  }
+                  type="button"
+                >
+                  <section className="ac__left">
+                    <span
+                      className={`ac__status-dot ac__status-dot--${
+                        STATUS_COLORS[app.status] ?? "grey"
+                      }`}
+                    />
 
-                      <section>
-                        <h3 className="ac__name">
-                          {app.applicantName}
-                        </h3>
-                        <p className="ac__meta">
-                          {app.opportunityTitle}
-                        </p>
-                      </section>
+                    <section>
+                      <h3 className="ac__name">
+                        {app.applicantName}
+                      </h3>
+                      <p className="ac__meta">
+                        {app.opportunityTitle}
+                      </p>
                     </section>
+                  </section>
 
-                    <section className="ac__right">
-                      <span
-                        className={`ac__badge ac__badge--${
-                          STATUS_COLORS[app.status] ?? "grey"
-                        }`}
-                      >
-                        {STATUS_LABELS[app.status] ?? app.status}
-                      </span>
+                  <section className="ac__right">
+                    <span
+                      className={`ac__badge ac__badge--${
+                        STATUS_COLORS[app.status] ?? "grey"
+                      }`}
+                    >
+                      {STATUS_LABELS[app.status] ?? app.status}
+                    </span>
 
-                      <span className="ac__chevron" aria-hidden="true">
-                        {expanded === app.id ? "▲" : "▼"}
-                      </span>
-                    </section>
-                  </button>
-                </header>
+                    <span className="ac__chevron">
+                      {expanded === app.id ? "▲" : "▼"}
+                    </span>
+                  </section>
+                </button>
 
+                {/* BODY */}
                 {expanded === app.id && (
                   <main className="ac__body">
-                    {/* Contact */}
+                    {/* CONTACT */}
                     <section className="ac__section">
-                      <h4 className="ac__section-title">Contact</h4>
+                      <h4>Contact</h4>
 
                       {app.applicantEmail && (
-                        <p className="ac__detail-row">
-                          <span className="ac__detail-label">Email</span>
-                          <a
-                            href={`mailto:${app.applicantEmail}`}
-                            className="ac__link"
-                          >
+                        <p>
+                          <a href={`mailto:${app.applicantEmail}`}>
                             {app.applicantEmail}
                           </a>
                         </p>
                       )}
 
                       {app.applicantPhone && (
-                        <p className="ac__detail-row">
-                          <span className="ac__detail-label">Phone</span>
-                          <a
-                            href={`tel:${app.applicantPhone}`}
-                            className="ac__link"
-                          >
+                        <p>
+                          <a href={`tel:${app.applicantPhone}`}>
                             {app.applicantPhone}
                           </a>
                         </p>
                       )}
                     </section>
 
-                    {/* Profile */}
-                    {(app.education || app.skills || app.interests) && (
-                      <section className="ac__section">
-                        <h4 className="ac__section-title">Profile</h4>
+                    {/* PROFILE */}
+                    <section className="ac__section">
+                      <h4>Profile</h4>
 
-                        {app.education && (
-                          <p className="ac__detail-row">
-                            <span className="ac__detail-label">Education</span>
-                            <span>{app.education}</span>
-                          </p>
-                        )}
-
-                        {app.skills && (
-                          <p className="ac__detail-row">
-                            <span className="ac__detail-label">Skills</span>
-                            <span>{app.skills}</span>
-                          </p>
-                        )}
-
-                        {app.interests && (
-                          <p className="ac__detail-row">
-                            <span className="ac__detail-label">Interests</span>
-                            <span>{app.interests}</span>
-                          </p>
-                        )}
-                      </section>
-                    )}
+                      {app.education && <p>{app.education}</p>}
+                      {app.skills && <p>{app.skills}</p>}
+                      {app.interests && <p>{app.interests}</p>}
+                    </section>
 
                     {/* CV */}
                     <section className="ac__section">
@@ -316,55 +258,31 @@ export default function ApplicationsPanel({ initialFilter = "all" }) {
                           href={app.cvUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          download
                         >
-                          ⬇ Download CV
+                          Download CV
                         </a>
                       ) : (
-                        <p className="ac__no-cv">No CV uploaded.</p>
+                        <p>No CV uploaded.</p>
                       )}
                     </section>
 
-                    {/* Actions */}
+                    {/* ACTIONS */}
                     <section className="ac__section">
-                      <h4 className="ac__section-title">Update Status</h4>
-
-                      <nav
-                        className="ac__actions"
-                        aria-label={`Actions for ${app.applicantName}`}
-                      >
-                        {[
-                          { status: "accepted",    label: "✓ Accept" },
-                          { status: "shortlisted", label: "★ Shortlist" },
-                          { status: "rejected",    label: "✕ Reject" },
-                        ].map(({ status, label }) => (
+                      {["accepted", "shortlisted", "rejected"].map(
+                        (status) => (
                           <button
                             key={status}
-                            className={`ac__action-btn ac__action-btn--${status}${
-                              app.status === status
-                                ? " ac__action-btn--current"
-                                : ""
-                            }`}
                             onClick={() =>
                               handleStatusChange(app.id, status)
                             }
                             disabled={
-                              updating === app.id || app.status === status
+                              updating === app.id ||
+                              app.status === status
                             }
-                            type="button"
                           >
-                            {updating === app.id ? "Updating…" : label}
+                            {status}
                           </button>
-                        ))}
-                      </nav>
-
-                      {app.status !== "submitted" && (
-                        <p className="ac__current-status">
-                          Current:{" "}
-                          <strong>
-                            {STATUS_LABELS[app.status] ?? app.status}
-                          </strong>
-                        </p>
+                        )
                       )}
                     </section>
                   </main>

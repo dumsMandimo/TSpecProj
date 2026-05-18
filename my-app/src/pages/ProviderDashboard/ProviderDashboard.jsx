@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../../services/firebase";
+import { auth, db } from "../../services/firebase";       
 import { signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";         
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
 import OverviewCards from "./components/OverviewCards";
@@ -24,9 +25,47 @@ export default function ProviderDashboard() {
 
   useEffect(() => {
     const user = auth.currentUser;
+<<<<<<< HEAD
     if (!user) { navigate("/login"); return; }
     setProviderName(user?.displayName || user?.email || "Provider");
     setProviderUid(user.uid);
+=======
+
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    const checkStatus = async () => {                          
+      const snap = await getDoc(doc(db, "users", user.uid));
+
+      if (!snap.exists()) {
+        navigate("/login");
+        return;
+      }
+
+      const { status, role } = snap.data();
+
+      if (role !== "provider") {
+        navigate("/login");
+        return;
+      }
+
+      if (status === "pending") {
+        navigate("/pending-approval");
+        return;
+      }
+
+      if (status === "rejected") {
+        navigate("/login");
+        return;
+      }
+
+      setProviderName(user.displayName || user.email);
+    };
+
+    checkStatus();
+>>>>>>> origin/main
   }, [navigate]);
 
   useEffect(() => {
