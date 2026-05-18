@@ -1,0 +1,192 @@
+:root {
+  --color-primary: orange;
+  --color-bg: #0b0b0b;
+  --color-surface: #141414;
+  --color-text: #ffffff;
+  --color-muted: #b3b3b3;
+  --color-border: #2a2a2a;
+}
+
+/* ── ApplicationsPanel ───────────────────────────────────────────────────── */
+
+.ap {
+  padding: 0 0 2rem;
+}
+
+/* HEADER */
+.ap__title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.ap__subtitle {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.ap__total-chip {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-muted);
+}
+
+/* ── SEARCH ──────────────────────────────────────────────────────────────── */
+
+.ap__search {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.ap__search:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+/* clear button */
+.ap__search-clear {
+  color: var(--color-muted);
+}
+
+.ap__search-clear:hover {
+  color: var(--color-primary);
+}
+
+/* ── FILTERS ─────────────────────────────────────────────────────────────── */
+
+.ap__filter-btn {
+  border: 1.5px solid var(--color-border);
+  color: var(--color-muted);
+  background: transparent;
+}
+
+.ap__filter-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.ap__filter-btn--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #000;
+}
+
+.ap__filter-count {
+  background: rgba(255, 165, 0, 0.2);
+  color: var(--color-text);
+}
+
+/* ── LOADING / EMPTY ────────────────────────────────────────────────────── */
+
+.ap__empty {
+  background: var(--color-surface);
+  border: 1.5px dashed var(--color-border);
+  color: var(--color-muted);
+}
+
+/* ── CARD BASE ───────────────────────────────────────────────────────────── */
+
+.ac {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+}
+
+.ac:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.ac--expanded {
+  border-color: var(--color-primary);
+}
+
+/* STATUS DOTS */
+.ac__status-dot--green { background: #22c55e; }
+.ac__status-dot--amber { background: orange; }
+.ac__status-dot--blue  { background: #3b82f6; }
+.ac__status-dot--red   { background: #ef4444; }
+.ac__status-dot--grey  { background: #6b7280; }
+
+/* BADGES */
+.ac__badge--green {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.ac__badge--amber {
+  background: rgba(255, 165, 0, 0.2);
+  color: orange;
+}
+
+.ac__badge--blue {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.ac__badge--red {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.ac__badge--grey {
+  background: #2a2a2a;
+  color: var(--color-muted);
+}
+
+/* TEXT */
+.ac__name {
+  color: var(--color-text);
+}
+
+.ac__meta {
+  color: var(--color-muted);
+}
+
+/* LINKS */
+.ac__link {
+  color: var(--color-primary);
+}
+
+/* CV BUTTON */
+.ac__cv-btn {
+  background: var(--color-primary);
+  color: #000;
+}
+
+.ac__cv-btn:hover {
+  background: #ff8c00;
+}
+
+/* ACTION BUTTONS */
+.ac__action-btn--accepted {
+  background: rgba(255, 165, 0, 0.2);
+  color: orange;
+  border: 1px solid orange;
+}
+
+.ac__action-btn--accepted:hover:not(:disabled) {
+  background: orange;
+  color: #000;
+}
+
+.ac__action-btn--shortlisted {
+  background: rgba(255, 165, 0, 0.2);
+  color: orange;
+  border: 1px solid orange;
+}
+
+.ac__action-btn--shortlisted:hover:not(:disabled) {
+  background: orange;
+  color: #000;
+}
+
+.ac__action-btn--rejected {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.ac__action-btn--rejected:hover:not(:disabled) {
+  background: #ef4444;
+  color: #000;
+}

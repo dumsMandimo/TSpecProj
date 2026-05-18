@@ -1,0 +1,214 @@
+:root {
+  --color-primary: orange;
+  --color-bg: #0b0b0b;
+  --color-surface: #141414;
+  --color-text: #ffffff;
+  --color-muted: #b3b3b3;
+  --color-border: #2a2a2a;
+  --color-danger: #dc2626;
+  --color-success: #22c55e;
+}
+
+/* ── LISTINGS PANEL ───────────────────────────────────────────── */
+
+.lp {
+  padding: 0 0 2rem;
+}
+
+.lp__title {
+  color: var(--color-text);
+}
+
+.lp__subtitle {
+  color: var(--color-muted);
+}
+
+.lp__summary-chip {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-muted);
+}
+
+/* ── FILTERS ─────────────────────────────────────────────────── */
+
+.lp__filter-btn {
+  border: 1.5px solid var(--color-border);
+  background: transparent;
+  color: var(--color-muted);
+}
+
+.lp__filter-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* FIXED: remove blue */
+.lp__filter-btn--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #000;
+}
+
+.lp__filter-count {
+  background: rgba(255, 165, 0, 0.2);
+  color: var(--color-text);
+}
+
+/* ── EMPTY / LOADING ─────────────────────────────────────────── */
+
+.lp__empty {
+  background: var(--color-surface);
+  border: 1.5px dashed var(--color-border);
+  color: var(--color-muted);
+}
+
+.lp-spinner {
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary); /* FIXED */
+}
+
+/* ── CARD BASE ──────────────────────────────────────────────── */
+
+.lc {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+}
+
+.lc:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.lc--expanded {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 20px rgba(255, 165, 0, 0.15);
+}
+
+/* STATUS DOTS */
+.lc__status-dot--green { background: #22c55e; }
+.lc__status-dot--amber { background: orange; }
+.lc__status-dot--grey  { background: #6b7280; }
+
+/* BADGES */
+.lc__badge--green {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.lc__badge--amber {
+  background: rgba(255, 165, 0, 0.2);
+  color: orange;
+}
+
+.lc__badge--grey {
+  background: #2a2a2a;
+  color: var(--color-muted);
+}
+
+/* TEXT */
+.lc__title {
+  color: var(--color-text);
+}
+
+.lc__meta {
+  color: var(--color-muted);
+}
+
+/* EXPIRY */
+.lc__expired-tag {
+  background: rgba(220, 38, 38, 0.15);
+  color: var(--color-danger);
+}
+
+/* BODY */
+.lc__body {
+  border-top: 1px solid var(--color-border);
+}
+
+/* DETAILS */
+.lc__detail-label {
+  color: var(--color-muted);
+}
+
+.lc__description {
+  color: var(--color-text);
+}
+
+/* STATUS NOTES */
+.lc__status-note--pending {
+  background: rgba(255, 165, 0, 0.15);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.lc__status-note--closed {
+  background: var(--color-surface);
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+}
+
+/* BUTTONS */
+.lc__btn--edit {
+  background: var(--color-primary);
+  color: #000;
+}
+
+.lc__btn--edit:hover {
+  background: #ff8c00;
+}
+
+.lc__btn--delete {
+  background: rgba(220, 38, 38, 0.15);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+}
+
+.lc__btn--delete:hover {
+  background: var(--color-danger);
+  color: #fff;
+}
+
+.lc__btn--save {
+  background: var(--color-primary);
+  color: #000;
+}
+
+.lc__btn--save:hover {
+  background: #ff8c00;
+}
+
+.lc__btn--cancel {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+/* CONFIRM BOX */
+.lc__confirm-delete {
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid var(--color-danger);
+}
+
+.lc__confirm-delete p {
+  color: var(--color-danger);
+}
+
+/* EDIT INPUTS */
+.lc__edit-input,
+.lc__edit-select,
+.lc__edit-textarea {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.lc__edit-input:focus,
+.lc__edit-select:focus,
+.lc__edit-textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255, 165, 0, 0.15);
+}
+
+/* LINKS FIX (if any exist) */
+a {
+  color: var(--color-primary);
+}

@@ -11,6 +11,11 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "./firebase";
 
+/**
+ * ================================
+ * GET USER ROLE
+ * ================================
+ */
 export const getUserRole = async (uid) => {
   try {
     const userRef = doc(db, "users", uid);
@@ -23,6 +28,11 @@ export const getUserRole = async (uid) => {
   }
 };
 
+/**
+ * ================================
+ * GET USER PROFILE
+ * ================================
+ */
 export const getUserProfile = async (uid) => {
   try {
     const userRef = doc(db, "users", uid);
@@ -35,10 +45,16 @@ export const getUserProfile = async (uid) => {
   }
 };
 
+/**
+ * ================================
+ * FETCH ALL OPPORTUNITIES (for applicants to browse)
+ * ================================
+ * Returns a real-time listener — call unsubscribe() on cleanup.
+ */
 export const subscribeToOpportunities = (onData, onError) => {
   const q = query(
     collection(db, "opportunities"),
-    where("status", "==", "approved")
+    where("status", "==", "approved")  // ✅ applicants only see admin-approved listings
   );
 
   return onSnapshot(
@@ -51,6 +67,13 @@ export const subscribeToOpportunities = (onData, onError) => {
   );
 };
 
+/**
+ * ================================
+ * FETCH THIS USER'S APPLICATIONS (real-time)
+ * ================================
+ * Scoped to the logged-in applicant by applicantId.
+ * Returns unsubscribe function — call it in useEffect cleanup.
+ */
 export const subscribeToMyApplications = (onData, onError) => {
   const user = auth.currentUser;
   if (!user) {
@@ -60,7 +83,7 @@ export const subscribeToMyApplications = (onData, onError) => {
 
   const q = query(
     collection(db, "applications"),
-    where("applicantId", "==", user.uid)
+    where("applicantId", "==", user.uid)   // ✅ correct field — matches what applyToOpportunity saves
   );
 
   return onSnapshot(
@@ -73,10 +96,17 @@ export const subscribeToMyApplications = (onData, onError) => {
   );
 };
 
+/**
+ * ================================
+ * APPLY TO AN OPPORTUNITY
+ * ================================
+ * Saves ALL fields needed by both applicant and provider dashboards.
+ */
 export const applyToOpportunity = async (opportunity) => {
   const user = auth.currentUser;
   if (!user) throw new Error("User not authenticated.");
 
+  // Prevent duplicate applications
   const existingQuery = query(
     collection(db, "applications"),
     where("applicantId", "==", user.uid),
@@ -85,23 +115,33 @@ export const applyToOpportunity = async (opportunity) => {
   const existingSnap = await getDocs(existingQuery);
   if (!existingSnap.empty) throw new Error("Already applied to this opportunity.");
 
+  // Fetch applicant's name from users collection
   const userSnap = await getDoc(doc(db, "users", user.uid));
-  const applicantName = userSnap.exists()
-    ? userSnap.data().name || user.displayName || user.email
-    : user.displayName || user.email;
+  const applicantName =
+    userSnap.exists()
+      ? userSnap.data().name || user.displayName || user.email
+      : user.displayName || user.email;
 
   await addDoc(collection(db, "applications"), {
-    applicantId: user.uid,
-    opportunityId: opportunity.id,
-    providerUid: opportunity.providerUid,
-    applicantName,
-    opportunityTitle: opportunity.title,
-    title: opportunity.title,
-    company: opportunity.providerName || "Unknown Provider",
-    location: opportunity.location || "",
-    type: opportunity.type || "",
-    status: "Submitted",
-    stageIndex: 0,
-    appliedAt: serverTimestamp(),
+    // --- Links (the bridge between applicant & provider) ---
+    applicantId:      user.uid,                                        // ✅ who applied
+    opportunityId:    opportunity.id,                                  // ✅ what they applied to
+    providerUid:      opportunity.providerUid,                         // ✅ whose listing it is
+
+    // --- Display fields for ApplicationsPanel (provider sees these) ---
+    applicantName:    applicantName,                                   // ✅ shown in provider's ApplicationsPanel
+    opportunityTitle: opportunity.title,                               // ✅ shown in provider's ApplicationsPanel
+
+    // --- Display fields for MyApplications (applicant sees these) ---
+    title:            opportunity.title,                               // ✅ shown on applicant's application card
+    company:          opportunity.providerName || "Unknown Provider",  // ✅ shown on applicant's application card
+    location:         opportunity.location || "",
+    type:             opportunity.type || "",
+
+    // --- Status tracking ---
+    status:           "Submitted",
+    stageIndex:       0,                                               // ✅ maps to ProgressTracker stages
+
+        appliedAt:        serverTimestamp(),  // ✅ Firestore timestamp
   });
 };

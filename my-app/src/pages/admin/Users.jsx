@@ -1,15 +1,20 @@
-// src/pages/admin/Users.jsx
+
 import { useState, useEffect } from 'react';
 import { db } from '../../services/firebase';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { collection, getDocs, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import './Users.css';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState('all');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('active'); // 'active' | 'removed'
   const [search, setSearch] = useState('');
+  const [removingId, setRemovingId] = useState(null);
+
+  const currentAdminUid = getAuth().currentUser?.uid;
 
   useEffect(() => {
     fetchUsers();
@@ -33,24 +38,50 @@ export default function Users() {
     }
   }
 
-  // Filter by role
-  const byRole = filter === 'all'
-    ? users
-    : users.filter(u => u.role === filter);
+  // UAT-12.2: Soft-delete — set status: "removed" instead of deleting
+  async function handleRemove(userId) {
+    const confirmed = window.confirm(
+      'Are you sure you want to remove this user? They will lose access to the platform.'
+    );
+    if (!confirmed) return;
 
-  // Filter by search (name or email)
+    setRemovingId(userId);
+    try {
+      await updateDoc(doc(db, 'users', userId), { status: 'removed' });
+      setUsers(prev =>
+        prev.map(u => u.id === userId ? { ...u, status: 'removed' } : u)
+      );
+    } catch (err) {
+      console.error('Failed to remove user:', err);
+      alert('Failed to remove user. Please try again.');
+    } finally {
+      setRemovingId(null);
+    }
+  }
+
+  // UAT-12.4: Filter by status tab first
+  const byStatus = statusFilter === 'removed'
+    ? users.filter(u => u.status === 'removed')
+    : users.filter(u => u.status !== 'removed');
+
+  // Then filter by role
+  const byRole = roleFilter === 'all'
+    ? byStatus
+    : byStatus.filter(u => u.role === roleFilter);
+
+  // Then filter by search
   const filtered = byRole.filter(u => {
     const fullName = `${u.firstName} ${u.lastName}`.toLowerCase();
     const term = search.toLowerCase();
-    return fullName.includes(term) || u.email.toLowerCase().includes(term);
+    return fullName.includes(term) || u.email?.toLowerCase().includes(term);
   });
 
-  // Counts for summary cards
-  const totalApplicants = users.filter(u => u.role === 'applicant').length;
-  const totalProviders = users.filter(u => u.role === 'provider').length;
-  const totalAdmins = users.filter(u => u.role === 'admin').length;
+  // Counts — exclude admins since they are hardcoded
+  const activeUsers = users.filter(u => u.status !== 'removed' && u.role !== 'admin');
+  const totalApplicants = activeUsers.filter(u => u.role === 'applicant').length;
+  const totalProviders = activeUsers.filter(u => u.role === 'provider').length;
+  const totalRemoved = users.filter(u => u.status === 'removed').length;
 
-  // Format the ISO date string into a readable date
   function formatDate(dateStr) {
     if (!dateStr) return 'N/A';
     return new Date(dateStr).toLocaleDateString('en-ZA', {
@@ -82,7 +113,7 @@ export default function Users() {
       <header className="page-header">
         <h1>Users</h1>
         <p className="page-subheading">
-          <strong>{users.length}</strong> registered users on the platform
+          <strong>{activeUsers.length}</strong> registered users on the platform
         </p>
       </header>
 
@@ -90,7 +121,7 @@ export default function Users() {
       <section aria-label="User statistics" className="stats-grid">
         <article className="stat-card">
           <h2>Total Users</h2>
-          <p className="stat-number">{users.length}</p>
+          <p className="stat-number">{activeUsers.length}</p>
         </article>
         <article className="stat-card">
           <h2>Applicants</h2>
@@ -100,13 +131,33 @@ export default function Users() {
           <h2>Providers</h2>
           <p className="stat-number">{totalProviders}</p>
         </article>
-        <article className="stat-card">
-          <h2>Admins</h2>
-          <p className="stat-number">{totalAdmins}</p>
+        <article className="stat-card stat-card--removed">
+          <h2>Removed</h2>
+          <p className="stat-number">{totalRemoved}</p>
         </article>
       </section>
 
-      {/* Search and filter controls */}
+      {/* UAT-12.4: Status filter tabs (Active / Removed) */}
+      <section aria-label="Filter users by status" className="status-tabs">
+        <button
+          onClick={() => setStatusFilter('active')}
+          aria-pressed={statusFilter === 'active'}
+          className={`status-tab ${statusFilter === 'active' ? 'status-tab--active' : ''}`}
+        >
+          Active
+          <span className="tab-count">{activeUsers.length}</span>
+        </button>
+        <button
+          onClick={() => setStatusFilter('removed')}
+          aria-pressed={statusFilter === 'removed'}
+          className={`status-tab ${statusFilter === 'removed' ? 'status-tab--removed' : ''}`}
+        >
+          Removed
+          <span className="tab-count">{totalRemoved}</span>
+        </button>
+      </section>
+
+      {/* Search and role filter controls */}
       <section aria-label="Search and filter users" className="controls">
         <label htmlFor="user-search" className="sr-only">Search users by name or email</label>
         <input
@@ -120,12 +171,12 @@ export default function Users() {
 
         <nav aria-label="Filter users by role">
           <ul className="filter-list" role="list">
-            {['all', 'applicant', 'provider', 'admin'].map(f => (
+            {['all', 'applicant', 'provider'].map(f => (
               <li key={f}>
                 <button
-                  onClick={() => setFilter(f)}
-                  aria-pressed={filter === f}
-                  className={`filter-btn ${filter === f ? 'filter-btn--active' : ''}`}
+                  onClick={() => setRoleFilter(f)}
+                  aria-pressed={roleFilter === f}
+                  className={`filter-btn ${roleFilter === f ? 'filter-btn--active' : ''}`}
                 >
                   {f.charAt(0).toUpperCase() + f.slice(1)}
                 </button>
@@ -139,13 +190,13 @@ export default function Users() {
       <section aria-label="Users list">
         {filtered.length === 0 ? (
           <p className="empty-state">
-            No {filter === 'all' ? '' : filter} users found
+            No {roleFilter === 'all' ? '' : roleFilter} users found
             {search ? ` matching "${search}"` : ''}.
           </p>
         ) : (
           <table className="users-table">
             <caption className="sr-only">
-              List of registered users filtered by {filter}
+              List of {statusFilter} users filtered by {roleFilter}
             </caption>
             <thead>
               <tr>
@@ -155,11 +206,12 @@ export default function Users() {
                 <th scope="col">Province</th>
                 <th scope="col">Qualification</th>
                 <th scope="col">Joined</th>
+                <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map(user => (
-                <tr key={user.uid}>
+                <tr key={user.id}>
                   <td>{user.firstName} {user.lastName}</td>
                   <td>
                     <a href={`mailto:${user.email}`} className="email-link">
@@ -177,6 +229,19 @@ export default function Users() {
                     <time dateTime={user.createdAt}>
                       {formatDate(user.createdAt)}
                     </time>
+                  </td>
+                  <td>
+                    {/* UAT-12.1 & UAT-12.5: Show Remove only for other active users */}
+                    {user.id !== currentAdminUid && user.status !== 'removed' && (
+                      <button
+                        className="remove-btn"
+                        onClick={() => handleRemove(user.id)}
+                        disabled={removingId === user.id}
+                        aria-label={`Remove ${user.firstName} ${user.lastName}`}
+                      >
+                        {removingId === user.id ? 'Removing...' : 'Remove'}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "./loginPage.css";
 
 import { signUpWithGoogle } from "../services/authService";
-import { getUserRole } from "../services/userService";
+import { db } from "../services/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -13,52 +14,35 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const user = await signUpWithGoogle();
+      // Step 1: Sign in with Google
+      const { user } = await signUpWithGoogle(); // don't pass role, we just want login
 
-      console.log("Logged in user:", user.uid);
+      if (!user) throw new Error("Google authentication failed.");
 
-      let role = null;
+      // Step 2: Fetch role from Firestore
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
 
-      try {
-        role = await getUserRole(user.uid);
-        console.log("Role fetched:", role);
-
-        if (role) {
-          localStorage.setItem("role", role);
-        }
-      } catch (err) {
-        console.error("Role fetch error:", err);
-
-        alert("We couldn't verify your account. Please sign up first.");
-        navigate("/signup");
-        return;
+      if (!snap.exists()) {
+        throw new Error("No account found. Please sign up first.");
       }
 
-      if (!role) {
-        console.warn("No role found for user:", user.uid);
+      const role = snap.data().role;
+      console.log("Fetched role from Firestore:", role);
 
-        alert("We couldn't find your account. Please sign up first.");
-        navigate("/signup");
-        return;
-      }
+      if (!role) throw new Error("User role not found.");
 
-      console.log("Navigating based on role:", role);
+      const normalizedRole = role.toLowerCase();
 
-      if (role === "admin") {
-        navigate("/dashboard/admin");
-      } else if (role === "provider") {
-        navigate("/dashboard/provider");
-      } else {
-        navigate("/dashboard/applicant");
-      }
+      // Step 3: Navigate based on role
+      if (normalizedRole === "admin") navigate("/dashboard/admin");
+      else if (normalizedRole === "provider") navigate("/dashboard/provider");
+      else if (normalizedRole === "applicant") navigate("/dashboard/applicant");
+      else alert("Unknown role. Contact support.");
 
     } catch (error) {
       console.error("GOOGLE LOGIN ERROR:", error);
-
-      // Always show friendly message regardless of exact backend wording
-      alert("We couldn't complete login. Please make sure you have an account or sign up first.");
-
-      navigate("/signup");
+      alert(error.message || "Google login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -66,7 +50,6 @@ export default function LoginPage() {
 
   return (
     <main className="login-page">
-
       <aside className="login-left">
         <header className="brand">
           <span className="brand-mark">UBUNTU</span>
@@ -93,7 +76,6 @@ export default function LoginPage() {
         <p className="subtitle">Welcome back!</p>
 
         <section className="form-panel">
-
           <button
             onClick={handleGoogleLogin}
             className="btn"
@@ -101,11 +83,8 @@ export default function LoginPage() {
           >
             {loading ? "Signing in..." : "Sign in with Google"}
           </button>
-
         </section>
-
       </section>
-
     </main>
   );
 }

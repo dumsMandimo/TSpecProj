@@ -1,10 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-<<<<<<< HEAD
-import { signUpWithEmail, signUpWithGoogle } from '../services/authService';
-=======
 import { signUpWithGoogle } from '../services/authService';
->>>>>>> dev-auth-fix
 
 const SECTORS = [
   'Agriculture','Construction','Education','Energy','Finance',
@@ -20,19 +16,11 @@ const PROVINCES = [
 export default function SignupProvider() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-<<<<<<< HEAD
-=======
   const [errorMsg, setErrorMsg] = useState("");
->>>>>>> dev-auth-fix
 
   const [form, setForm] = useState({
     organisationName: '',
     contactName: '',
-<<<<<<< HEAD
-    email: '',
-    password: '',
-=======
->>>>>>> dev-auth-fix
     sector: '',
     province: '',
     description: '',
@@ -41,51 +29,6 @@ export default function SignupProvider() {
   const set = (field) => (e) =>
     setForm({ ...form, [field]: e.target.value });
 
-<<<<<<< HEAD
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const cleanEmail = form.email.trim().toLowerCase();
-
-      const user = await signUpWithEmail(
-        cleanEmail,
-        form.password,
-        "provider",
-        {
-          organisationName: form.organisationName,
-          contactName: form.contactName,
-          sector: form.sector,
-          province: form.province,
-          description: form.description,
-        }
-      );
-
-      console.log("Provider created:", user);
-
-      navigate("/dashboard/provider");
-    } catch (error) {
-      console.error(error);
-      alert("Provider signup failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignup = async () => {
-    setLoading(true);
-
-    try {
-      const user = await signUpWithGoogle("provider");
-
-      console.log("Google provider user:", user);
-
-      navigate("/dashboard/provider");
-    } catch (error) {
-      console.error(error);
-      alert("Google signup failed");
-=======
   const handleGoogleSignup = async () => {
     if (loading) return;
 
@@ -117,20 +60,13 @@ export default function SignupProvider() {
     } catch (error) {
       console.error("Provider signup failed:", error);
       setErrorMsg("Provider signup failed. Please try again.");
->>>>>>> dev-auth-fix
     } finally {
       setLoading(false);
     }
   };
 
   return (
-<<<<<<< HEAD
-    <form onSubmit={handleSubmit}>
-      <fieldset>
-        <legend>Organisation details</legend>
-
-=======
-    <form>
+    <form noValidate>
       <fieldset>
         <legend>Organisation details</legend>
 
@@ -140,7 +76,6 @@ export default function SignupProvider() {
           </p>
         )}
 
->>>>>>> dev-auth-fix
         <label>
           Organisation name
           <input
@@ -191,46 +126,12 @@ export default function SignupProvider() {
         </label>
       </fieldset>
 
-<<<<<<< HEAD
-      <fieldset>
-        <legend>Login details</legend>
-
-        <label>
-          Work email
-          <input
-            type="email"
-            value={form.email}
-            onChange={set('email')}
-            required
-          />
-        </label>
-
-        <label>
-          Password
-          <input
-            type="password"
-            value={form.password}
-            onChange={set('password')}
-            minLength={8}
-            required
-          />
-        </label>
-      </fieldset>
-
-      <button type="submit" disabled={loading}>
-        {loading ? "Creating..." : "Register organisation"}
-      </button>
-
-      <button type="button" onClick={handleGoogleSignup} disabled={loading}>
-        {loading ? "Signing in..." : "Sign up with Google"}
-=======
       <button
         type="button"
         onClick={handleGoogleSignup}
         disabled={loading}
       >
-        {loading ? "Signing in..." : "Continue with Google"}
->>>>>>> dev-auth-fix
+        {loading ? "Signing up..." : "Continue with Google"}
       </button>
     </form>
   );
