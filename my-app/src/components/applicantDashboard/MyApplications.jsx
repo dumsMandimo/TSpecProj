@@ -1,148 +1,97 @@
-import { useEffect, useState } from "react";
-import {
-    collection,
-    doc,
-    updateDoc,
-    query,
-    where,
-    getDoc,
-    onSnapshot
-} from "firebase/firestore";
-import { db, auth } from "../../firebase";
-import { onAuthStateChanged } from "firebase/auth";
 import "./MyApplications.css";
-
+import { TYPE_LABELS } from "./opportunityConstants";
 
 const stages = ["Submitted", "Received", "Under Evaluation", "Final Decision"];
 
-
 function ProgressTracker({ stageIndex = 0, status = "" }) {
-    const isAccepted = status === "Accepted";
-    const isRejected = status === "Rejected";
-    const isShortlisted = status === "Shortlisted";
+  const isAccepted = status === "accepted" || status === "Accepted";
+  const isRejected = status === "rejected" || status === "Rejected";
+  const isShortlisted = status === "shortlisted" || status === "Shortlisted";
 
-    return (
-        <section className="progress-container">
-            {stages.map((stage, index) => (
-                <article key={index} className="progress-step">
-                    <span
-                        className={`circle ${
-                            index <= stageIndex ? "active" : ""
-                        } ${
-                            stage === "Final Decision" && isAccepted
-                                ? "accepted"
-                                : stage === "Final Decision" && isRejected
-                                ? "rejected"
-                                 : stage === "Final Decision" && isShortlisted
-                                ? "shortlisted"
-                                : ""
-                        }`}
-                    />
-                    <span className="stage-label">
-                        {stage === "Final Decision"
-                            ? isAccepted
-                                ? "Accepted"
-                                : isRejected
-                                ? "Rejected"
-                                : isShortlisted
-                                ? "Shortlisted"
-                                : "Final Decision"
-                            : stage}
-                    </span>
-                </article>
-            ))}
-        </section>
-    );
+  return (
+    <div className="progress-tracker" role="list" aria-label="Application progress">
+      {stages.map((stage, index) => {
+        const isFinal = stage === "Final Decision";
+        const circleClass = [
+          "progress-tracker__dot",
+          index <= stageIndex ? "progress-tracker__dot--active" : "",
+          isFinal && isAccepted ? "progress-tracker__dot--accepted" : "",
+          isFinal && isRejected ? "progress-tracker__dot--rejected" : "",
+          isFinal && isShortlisted ? "progress-tracker__dot--shortlisted" : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        const label =
+          isFinal && isAccepted
+            ? "Accepted"
+            : isFinal && isRejected
+            ? "Rejected"
+            : isFinal && isShortlisted
+            ? "Shortlisted"
+            : stage;
+
+        return (
+          <div key={stage} className="progress-tracker__step" role="listitem">
+            <span className={circleClass} aria-hidden="true" />
+            <span
+              className={`progress-tracker__label ${
+                index <= stageIndex ? "progress-tracker__label--active" : ""
+              }`}
+            >
+              {label}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
-function MyApplications() {
-    const [applications, setApplications] = useState([]);
-    const [userName, setUserName] = useState("");
+function MyApplications({ applications = [] }) {
+  return (
+    <section className="applicant-panel" aria-label="My applications">
+      <header className="applicant-panel__header">
+        <h2 className="applicant-panel__title">My Applications</h2>
+        <p className="applicant-panel__subtitle">
+          Track the status of your submissions
+        </p>
+      </header>
 
-    useEffect(() => {
-        let unsubscribeSnapshot = null;
-
-        const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
-            if (!user) return;
-
-           
-            const q = query(
-                collection(db, "applications"),
-                where("userId", "==", user.uid)
-            );
-
-            unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
-                const apps = snapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-
-                setApplications(apps);
-            });
-
-           
-            const userRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userRef);
-
-            if (userSnap.exists()) {
-                setUserName(userSnap.data().name || "User");
-            }
-        });
-
-        return () => {
-            unsubscribeAuth();
-            if (unsubscribeSnapshot) unsubscribeSnapshot();
-        };
-    }, []);
-
-   
-    const updateApplicationStatus = async (applicationId, newStatus) => {
-        const applicationRef = doc(db, "applications", applicationId);
-
-        let stageIndex;
-        if (newStatus === "Accepted" || newStatus === "Rejected") {
-            stageIndex = stages.indexOf("Final Decision");
-        } else {
-            stageIndex = stages.indexOf(newStatus);
-        }
-
-        try {
-            await updateDoc(applicationRef, {
-                status: newStatus,
-                stageIndex
-            });
-        } catch (error) {
-            console.error("Error updating status:", error);
-        }
-    }
-
-    return (
-        <section className="applications-page">
-            <header className="applications-header">
-                <p className="eyebrow">Career Dashboard</p>
-                <h1 className="applications-title">My Applications</h1>
-                <h2 className="applications-subtitle">
-                    Welcome back, {userName}
-                </h2>
-            </header>
-
-            <section className="applications-grid">
-                {applications.map((application) => (
-                    <article key={application.id} className="application-card">
-                        <h3>{application.title}</h3>
-                        <p>{application.company}</p>
-
-                        <ProgressTracker
-                            stageIndex={application.stageIndex ?? 0}
-                            status={application.status}
-                        />
-
-                        
-                    </article>
-                ))}
-            </section>
-        </section>
-    );
+      {applications.length === 0 ? (
+        <p className="applicant-panel__empty">
+          No applications yet. Browse opportunities below to get started.
+        </p>
+      ) : (
+        <ul className="applicant-panel__grid">
+          {applications.map((application) => (
+            <li key={application.id}>
+              <article className="application-card">
+                <header className="application-card__header">
+                  <h3 className="application-card__title">{application.title}</h3>
+                  {application.type && (
+                    <span className="application-card__type">
+                      {TYPE_LABELS[application.type] ?? application.type}
+                    </span>
+                  )}
+                </header>
+                <div className="application-card__meta">
+                  <p className="application-card__company">{application.company}</p>
+                  {application.location && (
+                    <p className="application-card__location">{application.location}</p>
+                  )}
+                </div>
+                <ProgressTracker
+                  stageIndex={application.stageIndex ?? 0}
+                  status={application.status}
+                />
+              </article>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
 }
 
 export default MyApplications;

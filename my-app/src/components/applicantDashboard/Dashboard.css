@@ -1,21 +1,176 @@
-.dashboard-page {
-    min-height: 100vh;
-    background: #060606;
-    padding: 2rem 1rem;
-    font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+.applicant-dashboard {
+  --ad-bg: #060606;
+  --ad-surface: #0f0f0f;
+  --ad-panel: #121212;
+  --ad-border: rgba(255, 255, 255, 0.08);
+  --ad-border-hover: rgba(255, 138, 31, 0.45);
+  --ad-orange: #ff8a1f;
+  --ad-orange-soft: rgba(255, 138, 31, 0.15);
+  --ad-text: #ffffff;
+  --ad-text-muted: rgba(255, 255, 255, 0.65);
+  --ad-radius: 14px;
+  --ad-radius-sm: 10px;
+  --ad-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  --ad-max-width: 1080px;
+
+  min-height: 100vh;
+  background: var(--ad-bg);
+  color: var(--ad-text);
+  font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
 }
 
-.profile-button {
-  margin-top: 2rem;
-  padding: 0.75rem 1.5rem;
-  background: #ff8a1f;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
+.applicant-dashboard__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(6, 6, 6, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--ad-border);
+}
+
+.applicant-dashboard__brand {
+  min-width: 0;
+}
+
+.applicant-dashboard__eyebrow {
+  margin: 0;
+  color: var(--ad-orange);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  font-size: 0.7rem;
+}
+
+.applicant-dashboard__title {
+  margin: 0.2rem 0 0;
+  font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ad-text);
+}
+
+.applicant-dashboard__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.applicant-dashboard__greeting {
+  font-size: 0.9rem;
+  color: var(--ad-text-muted);
+  white-space: nowrap;
+}
+
+.applicant-dashboard__greeting strong {
+  color: var(--ad-text);
+  font-weight: 600;
+}
+
+.applicant-dashboard__logout-btn {
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--ad-radius-sm);
+  border: 1px solid var(--ad-border);
+  background: var(--ad-panel);
+  color: var(--ad-text);
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.profile-button:hover {
-  background: #ff8a1f;
+.applicant-dashboard__logout-btn:hover {
+  background: var(--ad-orange-soft);
+  border-color: var(--ad-border-hover);
+  color: var(--ad-orange);
+}
+
+.applicant-dashboard__content {
+  max-width: var(--ad-max-width);
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+/* Shared panel styles used by child sections */
+.applicant-panel {
+  background: var(--ad-surface);
+  border: 1px solid var(--ad-border);
+  border-radius: var(--ad-radius);
+  padding: 1.5rem;
+  box-shadow: var(--ad-shadow);
+}
+
+.applicant-panel__header {
+  margin-bottom: 1.25rem;
+}
+
+.applicant-panel__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ad-text);
+}
+
+.applicant-panel__subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  color: var(--ad-text-muted);
+}
+
+.applicant-panel__empty {
+  margin: 0;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--ad-text-muted);
+  font-size: 0.95rem;
+  border: 1px dashed var(--ad-border);
+  border-radius: var(--ad-radius-sm);
+  background: var(--ad-panel);
+}
+
+.applicant-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (max-width: 640px) {
+  .applicant-dashboard__header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+  }
+
+  .applicant-dashboard__actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .applicant-dashboard__greeting {
+    white-space: normal;
+    font-size: 0.85rem;
+  }
+
+  .applicant-dashboard__content {
+    padding: 1.25rem 1rem 2.5rem;
+  }
+
+  .applicant-panel {
+    padding: 1.15rem;
+  }
+
+  .applicant-panel__grid {
+    grid-template-columns: 1fr;
+  }
 }
