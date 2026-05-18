@@ -24,49 +24,44 @@ export default function ProviderDashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = auth.currentUser;
-<<<<<<< HEAD
-    if (!user) { navigate("/login"); return; }
-    setProviderName(user?.displayName || user?.email || "Provider");
-    setProviderUid(user.uid);
-=======
+  const user = auth.currentUser;
 
-    if (!user) {
+  if (!user) {
+    navigate("/login");
+    return;
+  }
+
+  const checkStatus = async () => {
+    const snap = await getDoc(doc(db, "users", user.uid));
+
+    if (!snap.exists()) {
       navigate("/login");
       return;
     }
 
-    const checkStatus = async () => {                          
-      const snap = await getDoc(doc(db, "users", user.uid));
+    const { status, role } = snap.data();
 
-      if (!snap.exists()) {
-        navigate("/login");
-        return;
-      }
+    if (role !== "provider") {
+      navigate("/login");
+      return;
+    }
 
-      const { status, role } = snap.data();
+    if (status === "pending") {
+      navigate("/pending-approval");
+      return;
+    }
 
-      if (role !== "provider") {
-        navigate("/login");
-        return;
-      }
+    if (status === "rejected") {
+      navigate("/login");
+      return;
+    }
 
-      if (status === "pending") {
-        navigate("/pending-approval");
-        return;
-      }
+    setProviderName(user.displayName || user.email || "Provider");
+    setProviderUid(user.uid);
+  };
 
-      if (status === "rejected") {
-        navigate("/login");
-        return;
-      }
-
-      setProviderName(user.displayName || user.email);
-    };
-
-    checkStatus();
->>>>>>> origin/main
-  }, [navigate]);
+  checkStatus();
+}, [navigate]);
 
   useEffect(() => {
     const uid = auth.currentUser?.uid;
