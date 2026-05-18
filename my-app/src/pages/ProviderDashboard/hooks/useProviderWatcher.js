@@ -9,7 +9,6 @@ import {
   serverTimestamp,
   doc,
   getDoc,
-  Timestamp,
 } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 
@@ -20,16 +19,6 @@ export function useProviderWatcher(providerUid) {
   useEffect(() => {
     if (!providerUid) return;
 
-    // ── Load last known statuses from localStorage ────────────────────────────
-    const storageKey     = `listing_statuses_${providerUid}`;
-    const appStorageKey  = `known_applications_${providerUid}`;
-
-    const savedStatuses = JSON.parse(localStorage.getItem(storageKey) || "{}");
-    const savedAppIds   = JSON.parse(localStorage.getItem(appStorageKey) || "[]");
-
-    prevListingStatuses.current  = savedStatuses;
-    knownApplicationIds.current  = new Set(savedAppIds);
-
     // ── 1. Watch listings for status changes ──────────────────────────────────
     const listingsQuery = query(
       collection(db, "opportunities"),
@@ -37,46 +26,35 @@ export function useProviderWatcher(providerUid) {
     );
 
     const unsubListings = onSnapshot(listingsQuery, async (snapshot) => {
-      const updatedStatuses = { ...prevListingStatuses.current };
-
       for (const change of snapshot.docChanges()) {
         const listing    = { id: change.doc.id, ...change.doc.data() };
         const prevStatus = prevListingStatuses.current[listing.id];
         const newStatus  = listing.status;
 
-        updatedStatuses[listing.id] = newStatus;
+        prevListingStatuses.current[listing.id] = newStatus;
 
-        // Fire if status changed from what we last knew
-        // This catches changes that happened while the app was closed
-        if (prevStatus && prevStatus !== newStatus) {
-          if (newStatus === "approved") {
-            await safeWriteNotification({
-              userId: providerUid,
-              type:   "listing_approved",
-              title:  `Listing approved: ${listing.title}`,
-              body:   `Your listing "${listing.title}" has been approved and is now visible to applicants.`,
-            });
-          }
+        // Skip first load — don't fire for already-existing statuses
+        if (prevStatus === undefined) continue;
+        if (prevStatus === newStatus) continue;
 
-          if (newStatus === "rejected") {
-            await safeWriteNotification({
-              userId: providerUid,
-              type:   "listing_rejected",
-              title:  `Listing rejected: ${listing.title}`,
-              body:   `Your listing "${listing.title}" was not approved by an admin. Please review and resubmit.`,
-            });
-          }
+        if (newStatus === "approved") {
+          await safeWriteNotification({
+            userId: providerUid,
+            type:   "listing_approved",
+            title:  `Listing approved: ${listing.title}`,
+            body:   `Your listing "${listing.title}" has been approved and is now visible to applicants.`,
+          });
         }
 
-        // If no previous record at all, just record current status silently
-        if (!prevStatus) {
-          updatedStatuses[listing.id] = newStatus;
+        if (newStatus === "rejected") {
+          await safeWriteNotification({
+            userId: providerUid,
+            type:   "listing_rejected",
+            title:  `Listing rejected: ${listing.title}`,
+            body:   `Your listing "${listing.title}" was not approved by an admin. Please review and resubmit.`,
+          });
         }
       }
-
-      // Save updated statuses to localStorage for next session
-      prevListingStatuses.current = updatedStatuses;
-      localStorage.setItem(storageKey, JSON.stringify(updatedStatuses));
     });
 
     // ── 2. Watch applications for new submissions ─────────────────────────────
@@ -102,18 +80,18 @@ export function useProviderWatcher(providerUid) {
       );
 
       const unsubApps = onSnapshot(appsQuery, async (snapshot) => {
-        const newIds = [];
+        // First snapshot — just record existing IDs, don't notify
+        if (knownApplicationIds.current === null) {
+          knownApplicationIds.current = new Set(snapshot.docs.map((d) => d.id));
+          return;
+        }
 
         for (const change of snapshot.docChanges()) {
           if (change.type !== "added") continue;
 
           const appId = change.doc.id;
-
-          // Already knew about this one — skip
           if (knownApplicationIds.current.has(appId)) continue;
-
           knownApplicationIds.current.add(appId);
-          newIds.push(appId);
 
           const app              = change.doc.data();
           const opportunityTitle = opportunityTitleMap[app.opportunityId] ?? "an opportunity";
@@ -147,14 +125,6 @@ export function useProviderWatcher(providerUid) {
             applicationId: appId,
           });
         }
-
-        // Save updated known application IDs to localStorage
-        if (newIds.length > 0) {
-          localStorage.setItem(
-            appStorageKey,
-            JSON.stringify([...knownApplicationIds.current])
-          );
-        }
       });
 
       return unsubApps;
@@ -176,15 +146,14 @@ export function useProviderWatcher(providerUid) {
 
 async function safeWriteNotification({ userId, type, title, body, applicationId = null }) {
   try {
-    const fiveMinutesAgo = Timestamp.fromMillis(Date.now() - 5 * 60 * 1000);
-
+    // Check if an identical notification already exists — prevents duplicates
+    // if the admin's code also writes the same notification
     const existing = await getDocs(
       query(
         collection(db, "notifications"),
-        where("userId",    "==", userId),
-        where("type",      "==", type),
-        where("title",     "==", title),
-        where("createdAt", ">",  fiveMinutesAgo)
+        where("userId", "==", userId),
+        where("type",   "==", type),
+        where("title",  "==", title)
       )
     );
 
@@ -202,8 +171,6 @@ async function safeWriteNotification({ userId, type, title, body, applicationId 
       createdAt: serverTimestamp(),
       ...(applicationId ? { applicationId } : {}),
     });
-
-    console.log("Notification written:", title);
   } catch (err) {
     console.error("Failed to write notification:", err);
   }
