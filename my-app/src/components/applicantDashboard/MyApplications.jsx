@@ -1,94 +1,89 @@
 import "./MyApplications.css";
-import { TYPE_LABELS } from "./opportunityConstants";
+import { useEffect, useState } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { db, auth } from "../../firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 const stages = ["Submitted", "Received", "Under Evaluation", "Final Decision"];
 
 function ProgressTracker({ stageIndex = 0, status = "" }) {
-  const isAccepted = status === "accepted" || status === "Accepted";
-  const isRejected = status === "rejected" || status === "Rejected";
+  const isAccepted    = status === "accepted"    || status === "Accepted";
+  const isRejected    = status === "rejected"    || status === "Rejected";
   const isShortlisted = status === "shortlisted" || status === "Shortlisted";
 
   return (
-    <div className="progress-tracker" role="list" aria-label="Application progress">
-      {stages.map((stage, index) => {
-        const isFinal = stage === "Final Decision";
-        const circleClass = [
-          "progress-tracker__dot",
-          index <= stageIndex ? "progress-tracker__dot--active" : "",
-          isFinal && isAccepted ? "progress-tracker__dot--accepted" : "",
-          isFinal && isRejected ? "progress-tracker__dot--rejected" : "",
-          isFinal && isShortlisted ? "progress-tracker__dot--shortlisted" : "",
-        ]
-          .filter(Boolean)
-          .join(" ");
-
-        const label =
-          isFinal && isAccepted
-            ? "Accepted"
-            : isFinal && isRejected
-            ? "Rejected"
-            : isFinal && isShortlisted
-            ? "Shortlisted"
-            : stage;
-
-        return (
-          <div key={stage} className="progress-tracker__step" role="listitem">
-            <span className={circleClass} aria-hidden="true" />
-            <span
-              className={`progress-tracker__label ${
-                index <= stageIndex ? "progress-tracker__label--active" : ""
-              }`}
-            >
-              {label}
-            </span>
-          </div>
-        );
-      })}
-    </div>
+    <section className="progress-container">
+      {stages.map((stage, index) => (
+        <article key={index} className="progress-step">
+          <span
+            className={`circle ${index <= stageIndex ? "active" : ""} ${
+              stage === "Final Decision" && isAccepted
+                ? "accepted"
+                : stage === "Final Decision" && isRejected
+                ? "rejected"
+                : stage === "Final Decision" && isShortlisted
+                ? "shortlisted"
+                : ""
+            }`}
+          />
+          <span className="stage-label">
+            {stage === "Final Decision"
+              ? isAccepted
+                ? "Accepted"
+                : isRejected
+                ? "Rejected"
+                : isShortlisted
+                ? "Shortlisted"
+                : "Final Decision"
+              : stage}
+          </span>
+        </article>
+      ))}
+    </section>
   );
 }
 
+// ✅ Receives applications as a prop from Dashboard — no internal fetch needed
 function MyApplications({ applications = [] }) {
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      if (!user) return;
+      const userSnap = await getDoc(doc(db, "users", user.uid));
+      if (userSnap.exists()) {
+        setUserName(userSnap.data().name || user.displayName || "User");
+      }
+    });
+    return () => unsubscribeAuth();
+  }, []);
+
   return (
-    <section className="applicant-panel" aria-label="My applications">
-      <header className="applicant-panel__header">
-        <h2 className="applicant-panel__title">My Applications</h2>
-        <p className="applicant-panel__subtitle">
-          Track the status of your submissions
-        </p>
+    <section className="applications-page">
+      <header className="applications-header">
+        <p className="eyebrow">Career Dashboard</p>
+        <h1 className="applications-title">My Applications</h1>
+        <h2 className="applications-subtitle">Welcome back, {userName}</h2>
       </header>
 
       {applications.length === 0 ? (
-        <p className="applicant-panel__empty">
-          No applications yet. Browse opportunities below to get started.
-        </p>
+        <p className="applications-empty">No applications yet. Browse opportunities below!</p>
       ) : (
-        <ul className="applicant-panel__grid">
+        <section className="applications-grid">
           {applications.map((application) => (
-            <li key={application.id}>
-              <article className="application-card">
-                <header className="application-card__header">
-                  <h3 className="application-card__title">{application.title}</h3>
-                  {application.type && (
-                    <span className="application-card__type">
-                      {TYPE_LABELS[application.type] ?? application.type}
-                    </span>
-                  )}
-                </header>
-                <div className="application-card__meta">
-                  <p className="application-card__company">{application.company}</p>
-                  {application.location && (
-                    <p className="application-card__location">{application.location}</p>
-                  )}
-                </div>
-                <ProgressTracker
-                  stageIndex={application.stageIndex ?? 0}
-                  status={application.status}
-                />
-              </article>
-            </li>
+            <article key={application.id} className="application-card">
+              <h3>{application.title}</h3>           {/* ✅ saved by applyToOpportunity */}
+              <p>{application.company}</p>           {/* ✅ saved by applyToOpportunity */}
+              <p className="application-card__location">{application.location}</p>
+              <p className="application-card__type">{application.type}</p>
+
+              <ProgressTracker
+                stageIndex={application.stageIndex ?? 0}
+                status={application.status}
+              />
+            </article>
           ))}
-        </ul>
+        </section>
       )}
     </section>
   );
