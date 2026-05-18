@@ -2,9 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./loginPage.css";
 
-import { signUpWithGoogle } from "../services/authService";
-import { db } from "../services/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { signInWithGoogle } from "../services/authService";
+import { getUserRole } from "../services/userService";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -14,35 +13,37 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Step 1: Sign in with Google
-      const { user } = await signUpWithGoogle(); // don't pass role, we just want login
+      // 1. Authenticate user via Google
+      const { user, exists } = await signInWithGoogle();
+      console.log("Logged in user:", user.uid);
 
-      if (!user) throw new Error("Google authentication failed.");
-
-      // Step 2: Fetch role from Firestore
-      const userRef = doc(db, "users", user.uid);
-      const snap = await getDoc(userRef);
-
-      if (!snap.exists()) {
-        throw new Error("No account found. Please sign up first.");
+      // 2. Check if user exists in Firestore
+      if (!exists) {
+        alert("No account found. Please sign up first.");
+        return;
       }
 
-      const role = snap.data().role;
-      console.log("Fetched role from Firestore:", role);
+      // 3. Fetch role from Firestore
+      const role = await getUserRole(user.uid);
 
-      if (!role) throw new Error("User role not found.");
+      if (!role) {
+        alert("No role assigned. Contact support.");
+        return;
+      }
 
-      const normalizedRole = role.toLowerCase();
+      console.log("Navigating based on role:", role);
 
-      // Step 3: Navigate based on role
-      if (normalizedRole === "admin") navigate("/dashboard/admin");
-      else if (normalizedRole === "provider") navigate("/dashboard/provider");
-      else if (normalizedRole === "applicant") navigate("/dashboard/applicant");
-      else alert("Unknown role. Contact support.");
+      // 4. Store role locally
+      localStorage.setItem("role", role);
+
+      // 5. Redirect based on role
+      if (role === "admin") navigate("/dashboard/admin");
+      else if (role === "provider") navigate("/dashboard/provider");
+      else navigate("/dashboard/applicant");
 
     } catch (error) {
       console.error("GOOGLE LOGIN ERROR:", error);
-      alert(error.message || "Google login failed. Please try again.");
+      alert("Google login failed: " + error.message);
     } finally {
       setLoading(false);
     }

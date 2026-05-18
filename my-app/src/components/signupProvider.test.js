@@ -1,145 +1,133 @@
 import "@testing-library/jest-dom";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import SignupProvider from "./signupProvider";
-import { signUpWithEmail, signUpWithGoogle } from "../services/authService";
-import { BrowserRouter } from "react-router-dom";
-
-// ================= MOCKS =================
-jest.mock("../services/authService", () => ({
-  signUpWithEmail: jest.fn(),
-  signUpWithGoogle: jest.fn(),
-}));
 
 const mockNavigate = jest.fn();
 
 jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
-  BrowserRouter: ({ children }) => children,
 }));
 
-global.localStorage = {
-  setItem: jest.fn(),
-};
+jest.mock("../services/authService", () => ({
+  signUpWithGoogle: jest.fn(),
+}));
 
-global.console = {
-  ...console,
-  log: jest.fn(),
-  error: jest.fn(),
-};
+import { signUpWithGoogle } from "../services/authService";
 
-// ================= RENDER =================
-const renderComponent = () => {
-  render(
-    <BrowserRouter>
-      <SignupProvider />
-    </BrowserRouter>
-  );
-};
+global.alert = jest.fn();
 
-// ================= TESTS =================
-describe("SignupProvider", () => {
+const renderComponent = () => render(<SignupProvider />);
+
+describe("SignupProvider Tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  // ---------------- RENDER ----------------
-  test("renders provider signup form", () => {
-    renderComponent();
+  // Renders correctly
+  test("renders all form fields", () => {
+  renderComponent();
+  expect(screen.getByText("Organisation details")).toBeInTheDocument();
+  expect(screen.getByText(/Organisation name/i)).toBeInTheDocument();
+  expect(screen.getByText(/Contact person/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/Sector/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/Province/i)).toBeInTheDocument();
+  expect(screen.getByText(/Description/i)).toBeInTheDocument();
+});
 
-    expect(screen.getByText("Organisation details")).toBeInTheDocument();
-    expect(screen.getByText("Login details")).toBeInTheDocument();
-    expect(screen.getByText("Register organisation")).toBeInTheDocument();
+  // Renders button
+  test("renders continue with google button", () => {
+    renderComponent();
+    expect(screen.getByRole("button", { name: /Continue with Google/i })).toBeInTheDocument();
   });
 
-  // ---------------- PASSWORD VALIDATION ----------------
-  test("shows error if password is too short", async () => {
+  // UAT 2.2 — Shows error if fields are empty
+  test("shows error if fields are empty on submit", async () => {
     renderComponent();
-
-    fireEvent.change(screen.getByLabelText(/Work email/i), {
-      target: { value: "provider@test.com" },
-    });
-
-    fireEvent.change(screen.getByLabelText(/Password/i), {
-      target: { value: "123" }, // too short
-    });
-
-    fireEvent.click(screen.getByText("Register organisation"));
-
-    expect(await screen.findByText(/at least 8 characters/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Continue with Google/i }));
+    expect(await screen.findByText("Please fill in all required fields before continuing.")).toBeInTheDocument();
   });
 
-  // ---------------- SUCCESS SIGNUP ----------------
+  // UAT 2.1 — Successful provider signup navigates to provider dashboard
   test("successful signup navigates to provider dashboard", async () => {
-    signUpWithEmail.mockResolvedValue({ user: { uid: "123" } });
-
+    signUpWithGoogle.mockResolvedValue({ user: { uid: "123" }, role: "provider" });
     renderComponent();
 
     fireEvent.change(screen.getByLabelText(/Organisation name/i), {
       target: { value: "Test Org" },
     });
-
     fireEvent.change(screen.getByLabelText(/Contact person/i), {
       target: { value: "John Doe" },
     });
-
     fireEvent.change(screen.getByLabelText(/Sector/i), {
       target: { value: "ICT" },
     });
-
     fireEvent.change(screen.getByLabelText(/Province/i), {
       target: { value: "Gauteng" },
     });
-
-    fireEvent.change(screen.getByLabelText(/Work email/i), {
-      target: { value: "provider@test.com" },
+    fireEvent.change(screen.getByLabelText(/Description/i), {
+      target: { value: "We provide learnerships" },
     });
 
-    fireEvent.change(screen.getByLabelText(/Password/i), {
-      target: { value: "12345678" },
-    });
-
-    fireEvent.click(screen.getByText("Register organisation"));
+    fireEvent.click(screen.getByRole("button", { name: /Continue with Google/i }));
 
     await waitFor(() => {
-      expect(signUpWithEmail).toHaveBeenCalled();
-      expect(mockNavigate).toHaveBeenCalledWith("/dashboard/provider");
+      expect(mockNavigate).toHaveBeenCalledWith("/provider-dashboard");
     });
   });
 
-  // ---------------- GOOGLE SIGNUP ----------------
-  test("google signup navigates to provider dashboard", async () => {
-    signUpWithGoogle.mockResolvedValue({ user: { uid: "google123" } });
-
+  // UAT 2.3 — Duplicate account shows error
+  test("shows error if user already has an account with different role", async () => {
+    signUpWithGoogle.mockResolvedValue({ user: { uid: "123" }, role: "applicant" });
     renderComponent();
 
-    fireEvent.click(screen.getByText("Sign up with Google"));
+    fireEvent.change(screen.getByLabelText(/Organisation name/i), {
+      target: { value: "Test Org" },
+    });
+    fireEvent.change(screen.getByLabelText(/Contact person/i), {
+      target: { value: "John Doe" },
+    });
+    fireEvent.change(screen.getByLabelText(/Sector/i), {
+      target: { value: "ICT" },
+    });
+    fireEvent.change(screen.getByLabelText(/Province/i), {
+      target: { value: "Gauteng" },
+    });
+    fireEvent.change(screen.getByLabelText(/Description/i), {
+      target: { value: "We provide learnerships" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Continue with Google/i }));
 
     await waitFor(() => {
-      expect(signUpWithGoogle).toHaveBeenCalledWith("provider");
-      expect(mockNavigate).toHaveBeenCalledWith("/dashboard/provider");
+      expect(screen.getByText("You already have an account. Please use the login page.")).toBeInTheDocument();
     });
   });
 
-  // ---------------- ERROR HANDLING ----------------
-  test("shows error on signup failure", async () => {
-    signUpWithEmail.mockRejectedValue({
-      code: "auth/email-already-in-use",
-    });
-
+  // UAT 2.2 — Signup failure shows error
+  test("shows error message on signup failure", async () => {
+    signUpWithGoogle.mockRejectedValue(new Error("Signup failed. Please try again."));
     renderComponent();
 
-    fireEvent.change(screen.getByLabelText(/Work email/i), {
-      target: { value: "provider@test.com" },
+    fireEvent.change(screen.getByLabelText(/Organisation name/i), {
+      target: { value: "Test Org" },
+    });
+    fireEvent.change(screen.getByLabelText(/Contact person/i), {
+      target: { value: "John Doe" },
+    });
+    fireEvent.change(screen.getByLabelText(/Sector/i), {
+      target: { value: "ICT" },
+    });
+    fireEvent.change(screen.getByLabelText(/Province/i), {
+      target: { value: "Gauteng" },
+    });
+    fireEvent.change(screen.getByLabelText(/Description/i), {
+      target: { value: "We provide learnerships" },
     });
 
-    fireEvent.change(screen.getByLabelText(/Password/i), {
-      target: { value: "12345678" },
+    fireEvent.click(screen.getByRole("button", { name: /Continue with Google/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Signup failed. Please try again.")).toBeInTheDocument();
     });
-
-    fireEvent.click(screen.getByText("Register organisation"));
-
-    expect(
-      await screen.findByText(/already exists/i)
-    ).toBeInTheDocument();
   });
 });

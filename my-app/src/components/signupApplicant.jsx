@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { NqfDropdown } from "../components/nqfSelect.jsx";
 import { signUpWithGoogle } from "../services/authService";
 
 const NQF_LEVELS = [
@@ -10,9 +9,9 @@ const NQF_LEVELS = [
   "NQF 4 — National Certificate (Matric)",
   "NQF 5 — Higher Certificate",
   "NQF 6 — Diploma / Advanced Certificate",
-  "NQF 7 — Bachelor’s Degree",
+  "NQF 7 — Bachelor's Degree",
   "NQF 8 — Honours / Postgrad Diploma",
-  "NQF 9 — Master’s Degree",
+  "NQF 9 — Master's Degree",
   "NQF 10 — Doctoral Degree",
 ];
 
@@ -41,37 +40,58 @@ export default function SignupApplicant() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const set = (field) => (e) =>
-    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  const setField = (field) => (e) =>
+    setForm({ ...form, [field]: e.target.value });
 
-  // GOOGLE SIGNUP ONLY
-  const handleGoogleSignup = async () => {
+  const handleGoogleSignup = async (e) => {
+    e.preventDefault();
     setErrorMsg("");
 
     if (loading) return;
     setLoading(true);
 
+    // Validate required fields
+    if (
+      !form.firstName.trim() ||
+      !form.lastName.trim() ||
+      !form.province ||
+      !form.qualification
+    ) {
+      setErrorMsg("Please fill in all required fields before continuing.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const user = await signUpWithGoogle("applicant", {
+      const { user, role } = await signUpWithGoogle("applicant", {
         firstName: form.firstName,
         lastName: form.lastName,
         province: form.province,
         qualification: form.qualification,
       });
 
-      console.log("Google user created:", user?.uid);
+      console.log("Applicant created:", user?.uid);
+      console.log("Role returned:", role);
 
+      // Prevent login if role is not applicant
+      if (!role || role.toLowerCase() !== "applicant") {
+        setErrorMsg("You already have an account. Please use the login page.");
+        setLoading(false);
+        return;
+      }
+
+      // Navigate to the correct applicant dashboard
       navigate("/dashboard/applicant/createProfile");
     } catch (error) {
-      console.error("Google signup failed:", error);
-      setErrorMsg(error?.message || "Google sign-in failed.");
+      console.error("Signup error:", error);
+      setErrorMsg(error?.message || "Signup failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form noValidate>
+    <form onSubmit={handleGoogleSignup}>
       <fieldset>
         <legend>Personal details</legend>
 
@@ -84,9 +104,8 @@ export default function SignupApplicant() {
         <label>
           First name
           <input
-            type="text"
             value={form.firstName}
-            onChange={set("firstName")}
+            onChange={setField("firstName")}
             required
           />
         </label>
@@ -94,20 +113,15 @@ export default function SignupApplicant() {
         <label>
           Last name
           <input
-            type="text"
             value={form.lastName}
-            onChange={set("lastName")}
+            onChange={setField("lastName")}
             required
           />
         </label>
 
         <label>
           Province
-          <select
-            value={form.province}
-            onChange={set("province")}
-            required
-          >
+          <select value={form.province} onChange={setField("province")} required>
             <option value="">Select province</option>
             {PROVINCES.map((p) => (
               <option key={p} value={p}>
@@ -118,21 +132,24 @@ export default function SignupApplicant() {
         </label>
 
         <label>
-          Highest qualification
-          <NqfDropdown
+          Qualification
+          <select
             value={form.qualification}
-            onChange={set("qualification")}
+            onChange={setField("qualification")}
             required
-          />
+          >
+            <option value="">Select NQF level</option>
+            {NQF_LEVELS.map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
         </label>
       </fieldset>
 
-      <button
-        type="button"
-        onClick={handleGoogleSignup}
-        disabled={loading}
-      >
-        {loading ? "Signing in..." : "Continue with Google"}
+      <button type="submit" disabled={loading}>
+        {loading ? "Signing up..." : "Continue with Google"}
       </button>
     </form>
   );

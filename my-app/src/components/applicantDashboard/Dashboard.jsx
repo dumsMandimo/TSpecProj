@@ -3,7 +3,7 @@ import MyApplications from "./MyApplications";
 import OpportunityList from "./OpportunityList";
 import NotificationBell from "./NotificationBell";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { db, auth } from "../../firebase";
 import {
     collection,
@@ -19,11 +19,15 @@ const DAYS_BEFORE = 7;
 
 function Dashboard() {
     const navigate = useNavigate();
+    const [applications, setApplications] = useState([]);
+    const [opportunities, setOpportunities] = useState([]);
 
-    
     useEffect(() => {
         const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
-            if (!user) return;
+            if (!user) {
+                navigate("/login");
+                return;
+            }
 
             try {
                 // Fetch the user's existing applications
@@ -48,71 +52,36 @@ function Dashboard() {
                 for (const oppDoc of oppsSnap.docs) {
                     const opp = oppDoc.data();
 
-                    // Skip opportunities the user already applied for
                     if (appliedOpportunityIds.includes(oppDoc.id)) continue;
-
                     if (!opp.closingDate) continue;
 
                     const closing  = new Date(opp.closingDate);
-                    const diffMs   = closing - today;
-                    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                    const diffDays = Math.ceil((closing - today) / (1000 * 60 * 60 * 24));
 
-                    // Skip expired opportunities
                     if (diffDays < 0) continue;
 
-                    if (diffDays <= DAYS_BEFORE) {
-                        // FIX: closing_soon branch — send this instead of new_opportunity
-                        // when the deadline is within 7 days.
-                        const existingSnap = await getDocs(query(
-                            collection(db, "notifications"),
-                            where("userId",        "==", user.uid),
-                            where("type",          "==", "closing_soon"),
-                            where("opportunityId", "==", oppDoc.id)
-                        ));
+                    const type = diffDays <= DAYS_BEFORE ? "closing_soon" : "new_opportunity";
 
-                        const alreadySentToday = existingSnap.docs.some(d => {
-                            const createdAt = d.data().createdAt?.toDate();
-                            return createdAt && createdAt >= startOfDay;
-                        });
+                    const existingSnap = await getDocs(query(
+                        collection(db, "notifications"),
+                        where("userId", "==", user.uid),
+                        where("type", "==", type),
+                        where("opportunityId", "==", oppDoc.id)
+                    ));
 
-                        if (alreadySentToday) continue;
+                    if (!existingSnap.empty) continue;
 
-                        await addDoc(collection(db, "notifications"), {
-                            userId:        user.uid,
-                            title:         "Opportunity closing soon!",
-                            body:          `${opp.title} at ${opp.company || opp.companyName || "a provider"} closes in ${diffDays} day${diffDays === 1 ? "" : "s"}. Don't miss out — apply before it's too late!`,
-                            read:          false,
-                            type:          "closing_soon",
-                            opportunityId: oppDoc.id,
-                            createdAt:     Timestamp.now(),
-                        });
-
-                        console.log(`Closing soon notification sent for: ${opp.title}`);
-
-                    } else {
-                        // FIX: new_opportunity branch — only reached when closing date
-                        // is MORE than 7 days away (not closing soon).
-                        const existingSnap = await getDocs(query(
-                            collection(db, "notifications"),
-                            where("userId",        "==", user.uid),
-                            where("type",          "==", "new_opportunity"),
-                            where("opportunityId", "==", oppDoc.id)
-                        ));
-
-                        if (!existingSnap.empty) continue;
-
-                        await addDoc(collection(db, "notifications"), {
-                            userId:        user.uid,
-                            title:         "New opportunity available!",
-                            body:          `${opp.title} at ${opp.company || opp.companyName || "a provider"} is now open for applications. Apply before ${opp.closingDate}!`,
-                            read:          false,
-                            type:          "new_opportunity",
-                            opportunityId: oppDoc.id,
-                            createdAt:     Timestamp.now(),
-                        });
-
-                        console.log(`New opportunity notification sent for: ${opp.title}`);
-                    }
+                    await addDoc(collection(db, "notifications"), {
+                        userId:        user.uid,
+                        title:         type === "closing_soon" ? "Opportunity closing soon!" : "New opportunity available!",
+                        body:          type === "closing_soon"
+                            ? `${opp.title} at ${opp.company || opp.companyName || "a provider"} closes in ${diffDays} day${diffDays === 1 ? "" : "s"}. Don't miss out — apply before it's too late!`
+                            : `${opp.title} at ${opp.company || opp.companyName || "a provider"} is now open for applications. Apply before ${opp.closingDate}!`,
+                        read:          false,
+                        type,
+                        opportunityId: oppDoc.id,
+                        createdAt:     Timestamp.now(),
+                    });
                 }
             } catch (err) {
                 console.error("Error sending notifications:", err);
@@ -120,7 +89,7 @@ function Dashboard() {
         });
 
         return () => unsubscribeAuth();
-    }, []);
+    }, [navigate]);
 
     return (
         <main className="dashboard-page">
@@ -128,8 +97,8 @@ function Dashboard() {
                 <NotificationBell />
             </header>
 
-            <MyApplications />
-            <OpportunityList />
+            <MyApplications applications={applications} />
+            <OpportunityList opportunities={opportunities} />
 
             <button
                 className="profile-button"
