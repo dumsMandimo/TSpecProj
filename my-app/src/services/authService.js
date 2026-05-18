@@ -10,6 +10,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  updateDoc,             
 } from "firebase/firestore";
 
 // GOOGLE SIGNUP
@@ -30,13 +31,19 @@ export const signUpWithGoogle = async (role, extraData = {}) => {
   const userRef = doc(db, "users", user.uid);
   const userSnap = await getDoc(userRef);
 
+  console.log("Looking up UID:", user.uid);
+  console.log("Doc exists:", userSnap.exists());
+  console.log("Doc data:", userSnap.data());
+
   if (!userSnap.exists()) {
+    const status = role === "provider" ? "pending" : "active";
+
     await setDoc(userRef, {
       uid: user.uid,
       email: user.email,
       role,
       ...extraData,
-      status: "active",
+      status,
       createdAt: new Date().toISOString(),
     });
 
@@ -48,6 +55,15 @@ export const signUpWithGoogle = async (role, extraData = {}) => {
   if (data.status === "removed") {
     await auth.signOut();
     throw new Error("account-removed");
+  }
+
+  // <-- ADDED: existing provider doc gets updated to pending
+  if (role === "provider" && data.status === "active") {
+    await updateDoc(userRef, {
+      ...extraData,
+      status: "pending",
+    });
+    return { user, role };
   }
 
   return { user, role: data.role };
@@ -68,12 +84,14 @@ export const signUpWithEmail = async (
 
   const user = result.user;
 
+  const status = role === "provider" ? "pending" : "active";
+
   await setDoc(doc(db, "users", user.uid), {
     uid: user.uid,
     email: user.email,
     role,
     ...extraData,
-    status: "active",
+    status,
     createdAt: new Date().toISOString(),
   });
 

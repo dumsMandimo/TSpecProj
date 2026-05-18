@@ -14,6 +14,8 @@ import ApplicantProfile from '../components/applicantDashboard/ApplicantProfile'
 import CreateProfile from '../components/applicantDashboard/CreateProfile';
 
 import ProviderDashboard from "../pages/ProviderDashboard/ProviderDashboard";
+import providerApproval from "../components/providerApproval";
+import PendingApproval from "../components/providerApproval";
 
 export default function AppRouter() {
   return (
@@ -36,6 +38,7 @@ export default function AppRouter() {
         <Route path="/dashboard/applicant/notifications/:notificationId" element={<NotificationDetail />} />
 
         <Route path="/dashboard/provider" element={<ProviderDashboard />} />
+        <Route path="/pending-approval" element={<PendingApproval/>} />
 
         <Route path="/" element={<Navigate to="/signup" replace />} />
         <Route path="*" element={<Navigate to="/signup" replace />} />

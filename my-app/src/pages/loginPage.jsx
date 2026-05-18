@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import "./loginPage.css";
 
 import { signUpWithGoogle } from "../services/authService";
-import { getUserRole } from "../services/userService";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -13,26 +12,22 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // 1. Authenticate user (Google login)
-      const user = await signUpWithGoogle();
+      // 1. Authenticate user and get role in one call
+      const { user, role } = await signUpWithGoogle();
 
       console.log("Logged in user:", user.uid);
+      console.log("Navigating based on role:", role);
 
-      // 2. Fetch role from Firestore
-      const role = await getUserRole(user.uid);
-
-      // 3. If no role → user never signed up properly
+      // 2. If no role → user never signed up properly
       if (!role) {
         alert("No account found. Please sign up first.");
         return;
       }
 
-      console.log("Navigating based on role:", role);
-
-      // 4. Store role locally
+      // 3. Store role locally
       localStorage.setItem("role", role);
 
-      // 5. Redirect user
+      // 4. Redirect user
       if (role === "admin") {
         navigate("/dashboard/admin");
       } else if (role === "provider") {
@@ -44,7 +39,9 @@ export default function LoginPage() {
     } catch (error) {
       console.error("GOOGLE LOGIN ERROR:", error);
 
-      if (error.message === "Role is required for new users") {
+      if (error.message === "account-removed") {
+        alert("Your account has been removed. Please contact support.");
+      } else if (error.message === "Role is required for new users") {
         alert("No account found. Please sign up first.");
       } else {
         alert("Google login failed: " + error.message);
@@ -85,7 +82,6 @@ export default function LoginPage() {
         <p className="subtitle">Welcome back!</p>
 
         <section className="form-panel">
-
           <button
             onClick={handleGoogleLogin}
             className="btn"
@@ -93,9 +89,7 @@ export default function LoginPage() {
           >
             {loading ? "Signing in..." : "Sign in with Google"}
           </button>
-
         </section>
-
       </section>
 
     </main>
