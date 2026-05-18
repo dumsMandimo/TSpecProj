@@ -1,50 +1,111 @@
-/* Navbar.css */
+:root {
+  --color-primary: orange;
+  --color-bg: #0b0b0b;
+  --color-surface: #141414;
+  --color-surface-2: #1a1a1a;
+  --color-text: #ffffff;
+  --color-muted: #b3b3b3;
+  --color-border: #2a2a2a;
+  --color-danger: #dc2626;
+}
+
+/* ── NAVBAR ───────────────────────────────────────────────────────────── */
 
 .navbar {
-  height: 64px;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 32px;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(8px);
 }
 
-.navbar__title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
-  margin: 0;
+/* ── GREETING ─────────────────────────────────────────────────────────── */
+
+.navbar__greeting {
+  font-size: 13.5px;
+  color: var(--color-muted);
+  font-weight: 400;
 }
+
+.navbar__greeting strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* ── RIGHT SIDE ───────────────────────────────────────────────────────── */
 
 .navbar__actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
-.navbar__user {
-  font-size: 14px;
-  color: #6b7280;
-  max-width: 200px;
+/* ── USER CHIP ─────────────────────────────────────────────────────────── */
+
+.navbar__user-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 4px 12px 4px 4px;
+}
+
+/* AVATAR */
+.navbar__avatar {
+  width: 28px;
+  height: 28px;
+  background: var(--color-primary);
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* USER NAME */
+.navbar__user-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+  max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* ── LOGOUT BUTTON ─────────────────────────────────────────────────────── */
+
 .navbar__logout-btn {
-  padding: 8px 18px;
+  padding: 7px 16px;
+  background: transparent;
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  color: #374151;
-  font-size: 14px;
+  font-family: inherit;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: all 0.15s ease;
 }
 
+/* hover */
 .navbar__logout-btn:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
+  background: rgba(255, 165, 0, 0.1);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* active click */
+.navbar__logout-btn:active {
+  transform: scale(0.98);
 }
