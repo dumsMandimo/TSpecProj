@@ -81,8 +81,7 @@ export default function SignupApplicant() {
       }
 
       // Navigate to the correct applicant dashboard
-      navigate("/dashboard/applicant");
-
+      navigate("/dashboard/applicant/createProfile");
     } catch (error) {
       console.error("Signup error:", error);
       setErrorMsg(error?.message || "Signup failed. Please try again.");
