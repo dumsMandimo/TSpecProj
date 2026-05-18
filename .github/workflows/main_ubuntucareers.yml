@@ -13,11 +13,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
+          node-version: "22.x"
+      - name: Clear npm cache # <-- ADD THIS
+        run: npm cache clean --force
       - name: Install dependencies
         working-directory: ./my-app
         run: npm install
-      - name: Fix permissions        # <-- ADDED
+      - name: Fix permissions # <-- ADDED
         working-directory: ./my-app
         run: chmod +x node_modules/.bin/react-scripts
       - name: Run tests with coverage
@@ -41,11 +43,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
+          node-version: "22.x"
       - name: Install dependencies
         working-directory: ./my-app
         run: npm install
-      - name: Fix permissions        # <-- ADDED
+      - name: Fix permissions # <-- ADDED
         working-directory: ./my-app
         run: chmod +x node_modules/.bin/react-scripts
       - name: Build React app
@@ -69,7 +71,7 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'UbuntuCareers'
-          slot-name: 'Production'
+          app-name: "UbuntuCareers"
+          slot-name: "Production"
           package: ./deploy-package
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69C9B4F571244BB0AA7474BC29A01C9C }}
