@@ -18,7 +18,7 @@ jobs:
         run: npm cache clean --force
       - name: Install dependencies
         working-directory: ./my-app
-        run: npm ci
+        run: npm install
       - name: Fix permissions # <-- ADDED
         working-directory: ./my-app
         run: chmod +x node_modules/.bin/react-scripts
