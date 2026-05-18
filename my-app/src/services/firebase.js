@@ -2,10 +2,22 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-console.log("Firebase API KEY:", process.env.REACT_APP_FIREBASE_API_KEY);
-console.log("FIREBASE ENV VALUES:");
-console.log("API KEY:", process.env.REACT_APP_FIREBASE_API_KEY);
-console.log("AUTH DOMAIN:", process.env.REACT_APP_FIREBASE_AUTH_DOMAIN);
+const requiredEnv = [
+  "REACT_APP_FIREBASE_API_KEY",
+  "REACT_APP_FIREBASE_AUTH_DOMAIN",
+  "REACT_APP_FIREBASE_PROJECT_ID",
+  "REACT_APP_FIREBASE_STORAGE_BUCKET",
+  "REACT_APP_FIREBASE_MESSAGING_SENDER_ID",
+  "REACT_APP_FIREBASE_APP_ID",
+];
+
+const missingEnv = requiredEnv.filter((key) => !process.env[key]);
+if (missingEnv.length > 0) {
+  throw new Error(
+    `Missing Firebase env vars: ${missingEnv.join(", ")}. ` +
+      "Copy my-app/.env.example to my-app/.env and add your Firebase web app config, then restart the dev server."
+  );
+}
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,

@@ -1,30 +1,29 @@
-export default function Sidebar({ setTab }) {
-  return (
-    <aside style={{
-      width: "240px",
-      background: "#111827",
-      color: "white",
-      padding: "20px"
-    }}>
-      <h2 style={{ marginBottom: "20px" }}>Provider</h2>
+import "./Sidebar.css";
 
+const NAV_ITEMS = [
+  { id: "overview", label: "Overview" },
+  { id: "listings", label: "Listings" },
+  { id: "applications", label: "Applications" },
+  { id: "create", label: "Post Opportunity" },
+];
+
+export default function Sidebar({ activeTab, setTab }) {
+  return (
+    <aside className="provider-sidebar" aria-label="Provider navigation">
+      <p className="provider-sidebar__brand">Provider</p>
       <nav>
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {["overview", "listings", "applications", "create"].map((t) => (
-            <li key={t} style={{ marginBottom: "10px" }}>
+        <ul className="provider-sidebar__nav">
+          {NAV_ITEMS.map(({ id, label }) => (
+            <li key={id}>
               <button
-                onClick={() => setTab(t)}
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  background: "#1f2937",
-                  color: "white",
-                  border: "none"
-                }}
+                type="button"
+                className={`provider-sidebar__btn ${
+                  activeTab === id ? "provider-sidebar__btn--active" : ""
+                }`}
+                onClick={() => setTab(id)}
+                aria-current={activeTab === id ? "page" : undefined}
               >
-                {t.toUpperCase()}
+                {label}
               </button>
             </li>
           ))}
