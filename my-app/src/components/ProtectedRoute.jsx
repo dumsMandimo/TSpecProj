@@ -1,14 +1,4 @@
 import { Navigate } from "react-router-dom";
-<<<<<<< HEAD
-import { useAuth } from "../context/AuthContext";
-
-export default function ProtectedRoute({ children, allowedRoles = [] }) {
-  const { user, role, loading } = useAuth();
-
-  if (loading) return <div>Loading...</div>;
-  if (!user) return <Navigate to="/login" replace />;
-  if (!role) return <Navigate to="/login" replace />;
-=======
 import { useEffect, useState } from "react";
 import { auth, db } from "../services/firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -65,7 +55,6 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
   }
 
   // Role not allowed
->>>>>>> d8db91e1a2df0b0b6aaa46a41b4380a4801be230
   if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
     return <Navigate to="/login" replace />;
   }
