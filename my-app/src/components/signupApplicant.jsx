@@ -1,6 +1,6 @@
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { signUpWithGoogle } from '../services/authService';
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { signUpWithGoogle } from "../services/authService";
 
 const NQF_LEVELS = [
   "NQF 1 — General Certificate",
@@ -40,7 +40,7 @@ export default function SignupApplicant() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const set = (field) => (e) =>
+  const setField = (field) => (e) =>
     setForm({ ...form, [field]: e.target.value });
 
   const handleGoogleSignup = async (e) => {
@@ -50,6 +50,7 @@ export default function SignupApplicant() {
     if (loading) return;
     setLoading(true);
 
+    // Validate required fields
     if (
       !form.firstName.trim() ||
       !form.lastName.trim() ||
@@ -70,15 +71,17 @@ export default function SignupApplicant() {
       });
 
       console.log("Applicant created:", user?.uid);
+      console.log("Role returned:", role);
 
-      // Already has an account with a different role
-      if (role !== "applicant") {
+      // Prevent login if role is not applicant
+      if (!role || role.toLowerCase() !== "applicant") {
         setErrorMsg("You already have an account. Please use the login page.");
         setLoading(false);
         return;
       }
 
-      navigate("/applicant-dashboard");
+      // Navigate to the correct applicant dashboard
+      navigate("/dashboard/applicant");
 
     } catch (error) {
       console.error("Signup error:", error);
@@ -103,7 +106,7 @@ export default function SignupApplicant() {
           First name
           <input
             value={form.firstName}
-            onChange={set("firstName")}
+            onChange={setField("firstName")}
             required
           />
         </label>
@@ -112,14 +115,14 @@ export default function SignupApplicant() {
           Last name
           <input
             value={form.lastName}
-            onChange={set("lastName")}
+            onChange={setField("lastName")}
             required
           />
         </label>
 
         <label>
           Province
-          <select value={form.province} onChange={set("province")} required>
+          <select value={form.province} onChange={setField("province")} required>
             <option value="">Select province</option>
             {PROVINCES.map((p) => (
               <option key={p} value={p}>
@@ -133,7 +136,7 @@ export default function SignupApplicant() {
           Qualification
           <select
             value={form.qualification}
-            onChange={set("qualification")}
+            onChange={setField("qualification")}
             required
           >
             <option value="">Select NQF level</option>

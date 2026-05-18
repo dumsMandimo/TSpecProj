@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "./loginPage.css";
 
 import { signUpWithGoogle } from "../services/authService";
+import { db } from "../services/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -12,11 +14,30 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { role } = await signUpWithGoogle();
+      // Step 1: Sign in with Google
+      const { user } = await signUpWithGoogle(); // don't pass role, we just want login
 
-      if (role === "admin") navigate("/dashboard/admin");
-      else if (role === "provider") navigate("/provider-dashboard");
-      else if (role === "applicant") navigate("/applicant-dashboard");
+      if (!user) throw new Error("Google authentication failed.");
+
+      // Step 2: Fetch role from Firestore
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+
+      if (!snap.exists()) {
+        throw new Error("No account found. Please sign up first.");
+      }
+
+      const role = snap.data().role;
+      console.log("Fetched role from Firestore:", role);
+
+      if (!role) throw new Error("User role not found.");
+
+      const normalizedRole = role.toLowerCase();
+
+      // Step 3: Navigate based on role
+      if (normalizedRole === "admin") navigate("/dashboard/admin");
+      else if (normalizedRole === "provider") navigate("/dashboard/provider");
+      else if (normalizedRole === "applicant") navigate("/dashboard/applicant");
       else alert("Unknown role. Contact support.");
 
     } catch (error) {

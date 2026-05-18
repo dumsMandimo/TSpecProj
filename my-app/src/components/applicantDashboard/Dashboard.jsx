@@ -1,61 +1,59 @@
+// Dashboard.jsx (Applicant side)
 import "./Dashboard.css";
 import MyApplications from "./MyApplications";
 import OpportunityList from "./OpportunityList";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { db } from "../../firebase";
-import { auth } from "../../firebase";
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { subscribeToOpportunities, subscribeToMyApplications } from "../../services/userService";
 
 function Dashboard() {
-    const navigate = useNavigate();
-    const [applications, setApplications] = useState([]);
-    const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [opportunities, setOpportunities] = useState([]);
+  const [applications, setApplications] = useState([]);
 
-    useEffect(() => {
-        async function checkApplicant() {
-            // 1. Check if logged in
-            if (!auth.currentUser) {
-                navigate("/login");
-                return;
-            }
+  useEffect(() => {
+    // 1. Check if logged in
+    const user = window.firebaseAuth?.currentUser; // if you still want auth check
+    if (!user) {
+      navigate("/login");
+      return;
+    }
 
-            // 2. Check if applicant
-            const userRef = doc(db, "users", auth.currentUser.uid);
-            const userSnap = await getDoc(userRef);
-
-            if (!userSnap.exists() || userSnap.data().role !== "applicant") {
-                navigate("/login");
-                return;
-            }
-
-            // 3. Role check passed — fetch applications
-            const querySnapshot = await getDocs(collection(db, "applications"));
-            const data = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setApplications(data);
-            setLoading(false);
-        }
-
-        checkApplicant();
-    }, [navigate]);
-
-    if (loading) return <main className="dashboard-page"><p>Loading...</p></main>;
-
-    return (
-        <main className="dashboard-page">
-            <MyApplications name="Peace" applications={applications} />
-            <OpportunityList applications={applications} />
-            <button
-                className="profile-button"
-                onClick={() => navigate("/dashboard/myProfile")}
-            >
-                My Profile
-            </button>
-        </main>
+    // 2. Real-time listener — applicant sees new provider listings instantly
+    const unsubOpportunities = subscribeToOpportunities(
+      (data) => setOpportunities(data),
+      (err) => console.error("Opportunities error:", err)
     );
+
+    // 3. Real-time listener — applicant sees their own application status updates instantly
+    const unsubApplications = subscribeToMyApplications(
+      (data) => setApplications(data),
+      (err) => console.error("Applications error:", err)
+    );
+
+    // 4. Cleanup listeners on unmount
+    return () => {
+      unsubOpportunities();
+      unsubApplications();
+    };
+  }, [navigate]);
+
+  return (
+    <main className="dashboard-page">
+      {/* Applicant's own submitted applications + status tracking */}
+      <MyApplications applications={applications} />
+
+      {/* All opportunities posted by providers */}
+      <OpportunityList opportunities={opportunities} />
+
+      <button
+        className="profile-button"
+        onClick={() => navigate("/dashboard/myProfile")}
+      >
+        My Profile
+      </button>
+    </main>
+  );
 }
 
 export default Dashboard;

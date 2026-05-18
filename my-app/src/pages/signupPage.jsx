@@ -5,8 +5,16 @@ import SignupProvider from '../components/signupProvider';
 import './signupPage.css';
 
 const ROLES = [
-  { key: 'applicant', label: 'Applicant', desc: 'Looking for learnerships & internships' },
-  { key: 'provider',  label: 'Provider',  desc: 'Employer or training organisation' },
+  {
+    key: 'applicant',
+    label: 'Applicant',
+    desc: 'Looking for learnerships & internships',
+  },
+  {
+    key: 'provider',
+    label: 'Provider',
+    desc: 'Employer or training organisation',
+  },
 ];
 
 export default function SignupPage() {
@@ -14,12 +22,11 @@ export default function SignupPage() {
 
   const forms = {
     applicant: <SignupApplicant />,
-    provider:  <SignupProvider />,
+    provider: <SignupProvider />,
   };
 
   return (
     <main className="signup-page">
-
       <aside className="signup-left">
         <header className="brand">
           <span className="brand-mark">UBUNTU</span>
@@ -27,14 +34,35 @@ export default function SignupPage() {
         </header>
 
         <section className="hero">
-          <h1>Connect.<br />Learn.<br />Grow.</h1>
-          <p>South Africa's platform linking work-seekers with SETA-accredited learnerships, apprenticeships and internships.</p>
+          <h1>
+            Connect.
+            <br />
+            Learn.
+            <br />
+            Grow.
+          </h1>
+
+          <p>
+            South Africa&apos;s platform linking work-seekers with
+            SETA-accredited learnerships, apprenticeships and internships.
+          </p>
         </section>
 
         <ul className="stats">
-          <li><strong>12k+</strong><span>Opportunities</span></li>
-          <li><strong>800+</strong><span>Providers</span></li>
-          <li><strong>9</strong><span>Provinces</span></li>
+          <li>
+            <strong>12k+</strong>
+            <span>Opportunities</span>
+          </li>
+
+          <li>
+            <strong>800+</strong>
+            <span>Providers</span>
+          </li>
+
+          <li>
+            <strong>9</strong>
+            <span>Provinces</span>
+          </li>
         </ul>
       </aside>
 
@@ -70,10 +98,10 @@ export default function SignupPage() {
         </section>
 
         <p className="login-prompt">
-          Already have an account? <Link to="/login">Sign in</Link>
+          Already have an account?{' '}
+          <Link to="/login">Sign in</Link>
         </p>
       </section>
-
     </main>
   );
 }
