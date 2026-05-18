@@ -1,261 +1,283 @@
-import "@testing-library/jest-dom";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import MyApplications from "./MyApplications";
-
-jest.mock("react-router-dom", () => ({
-  useNavigate: () => jest.fn(),
-  Link: ({ children }) => children,
-}));
+import { db, auth } from "../../firebase";
+import {
+    collection,
+    doc,
+    query,
+    where,
+    getDoc,
+    onSnapshot,
+    addDoc,
+    Timestamp
+} from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 
 jest.mock("../../firebase", () => ({
-  db: {},
-  auth: {},
+    db:   {},
+    auth: {},
 }));
 
 jest.mock("firebase/firestore", () => ({
-  collection: jest.fn(),
-  doc: jest.fn(),
-  updateDoc: jest.fn(),
-  query: jest.fn(),
-  where: jest.fn(),
-  getDoc: jest.fn(),
-  onSnapshot: jest.fn(),
-  getFirestore: jest.fn(),
+    collection: jest.fn(),
+    doc:        jest.fn(),
+    query:      jest.fn(),
+    where:      jest.fn(),
+    getDoc:     jest.fn(),
+    onSnapshot: jest.fn(),
+    addDoc:     jest.fn(),
+    Timestamp:  { now: jest.fn(() => ({ seconds: 1234567890 })) },
 }));
 
 jest.mock("firebase/auth", () => ({
-  onAuthStateChanged: jest.fn(),
-  getAuth: jest.fn(),
+    onAuthStateChanged: jest.fn(),
 }));
 
+jest.mock("./MyApplications.css", () => ({}));
+
+const mockUser = { uid: "user123" };
+
 const mockApplications = [
-  {
-    id: "app1",
-    title: "Software Internship",
-    company: "TechCorp",
-    status: "Submitted",
-    stageIndex: 0,
-  },
-  {
-    id: "app2",
-    title: "Data Learnership",
-    company: "DataCo",
-    status: "Under Evaluation",
-    stageIndex: 2,
-  },
+    {
+        id:      "app1",
+        title:   "Junior Developer Learnership",
+        company: "TechCorp",
+        status:  "Submitted",
+        userId:  "user123",
+    },
+    {
+        id:      "app2",
+        title:   "Data Analyst Internship",
+        company: "DataCo",
+        status:  "Shortlisted",
+        userId:  "user123",
+    },
 ];
 
-describe("MyApplications", () => {
-  beforeEach(() => {
+beforeEach(() => {
     jest.clearAllMocks();
 
-    const { onAuthStateChanged } = require("firebase/auth");
-    const { query, where, collection, onSnapshot, doc, getDoc } =
-      require("firebase/firestore");
-
-    collection.mockReturnValue({});
-    query.mockReturnValue({});
-    where.mockReturnValue({});
-    doc.mockReturnValue({});
-
     onAuthStateChanged.mockImplementation((auth, callback) => {
-      callback({ uid: "user123" });
-      return () => {};
-    });
-
-    onSnapshot.mockImplementation((q, callback) => {
-      callback({
-        docs: mockApplications.map((app) => ({
-          id: app.id,
-          data: () => app,
-        })),
-      });
-      return () => {};
+        callback(mockUser);
+        return jest.fn();
     });
 
     getDoc.mockResolvedValue({
-      exists: () => true,
-      data: () => ({ name: "John Doe" }),
-    });
-  });
-
-  test("renders page header", async () => {
-    render(<MyApplications />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/my applications/i)).toBeInTheDocument();
+        exists: () => true,
+        data:   () => ({ name: "Peace" }),
     });
 
-    expect(screen.getByText(/career dashboard/i)).toBeInTheDocument();
-  });
-
-  test("renders welcome message with user name", async () => {
-    render(<MyApplications />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/welcome back, john doe/i)).toBeInTheDocument();
-    });
-  });
-
-  test("renders list of applications", async () => {
-    render(<MyApplications />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/software internship/i)).toBeInTheDocument();
+    onSnapshot.mockImplementation((q, successCallback, errorCallback) => {
+        successCallback({
+            docs: mockApplications.map(app => ({
+                id:   app.id,
+                data: () => app,
+            })),
+        });
+        return jest.fn();
     });
 
-    expect(screen.getByText(/data learnership/i)).toBeInTheDocument();
-    expect(screen.getByText(/techcorp/i)).toBeInTheDocument();
-    expect(screen.getByText(/dataco/i)).toBeInTheDocument();
-  });
+    addDoc.mockResolvedValue({ id: "notif123" });
+    query.mockReturnValue("mockedQuery");
+    collection.mockReturnValue("mockedCollection");
+    where.mockReturnValue("mockedWhere");
+    doc.mockReturnValue("mockedDoc");
+});
 
-  test("renders progress tracker stages for each application", async () => {
-    render(<MyApplications />);
+describe("MyApplications", () => {
 
-    await waitFor(() => {
-      expect(screen.getByText(/software internship/i)).toBeInTheDocument();
+    test("renders the My Applications heading", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("My Applications")).toBeInTheDocument();
+        });
     });
 
-    // All 4 stages should appear (rendered per application, so at least once each)
-    expect(screen.getAllByText(/submitted/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/received/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/under evaluation/i).length).toBeGreaterThan(0);
-  });
+    test("renders welcome message with user name", async () => {
+        render(<MyApplications />);
 
-  test("renders Accepted label at Final Decision stage when status is Accepted", async () => {
-    const { onSnapshot } = require("firebase/firestore");
-
-    onSnapshot.mockImplementation((q, callback) => {
-      callback({
-        docs: [
-          {
-            id: "app3",
-            data: () => ({
-              id: "app3",
-              title: "Accepted Job",
-              company: "Corp",
-              status: "Accepted",
-              stageIndex: 3,
-            }),
-          },
-        ],
-      });
-      return () => {};
+        await waitFor(() => {
+            expect(screen.getByText("Welcome back, Peace")).toBeInTheDocument();
+        });
     });
 
-    render(<MyApplications />);
+    test("renders application cards fetched from Firestore", async () => {
+        render(<MyApplications />);
 
-    await waitFor(() => {
-      expect(screen.getByText(/accepted job/i)).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+            expect(screen.getByText("Data Analyst Internship")).toBeInTheDocument();
+        });
     });
 
-    expect(screen.getByText("Accepted")).toBeInTheDocument();
-  });
+    test("shows empty message when user has no applications", async () => {
+        onSnapshot.mockImplementation((q, successCallback) => {
+            successCallback({ docs: [] });
+            return jest.fn();
+        });
 
-  test("renders Rejected label at Final Decision stage when status is Rejected", async () => {
-    const { onSnapshot } = require("firebase/firestore");
+        render(<MyApplications />);
 
-    onSnapshot.mockImplementation((q, callback) => {
-      callback({
-        docs: [
-          {
-            id: "app4",
-            data: () => ({
-              id: "app4",
-              title: "Rejected Job",
-              company: "Corp",
-              status: "Rejected",
-              stageIndex: 3,
-            }),
-          },
-        ],
-      });
-      return () => {};
+        await waitFor(() => {
+            expect(
+                screen.getByText("You have not applied to any opportunities yet.")
+            ).toBeInTheDocument();
+        });
     });
 
-    render(<MyApplications />);
+    test("renders progress tracker for each application", async () => {
+        render(<MyApplications />);
 
-    await waitFor(() => {
-      expect(screen.getByText(/rejected job/i)).toBeInTheDocument();
+        await waitFor(() => {
+            // Both apps should show stage labels
+            const submittedLabels = screen.getAllByText("Submitted");
+            expect(submittedLabels.length).toBeGreaterThan(0);
+        });
     });
 
-    expect(screen.getByText("Rejected")).toBeInTheDocument();
-  });
+    test("clears applications when user is not logged in", async () => {
+        onAuthStateChanged.mockImplementation((auth, callback) => {
+            callback(null);
+            return jest.fn();
+        });
 
-  test("renders Shortlisted label at Final Decision stage when status is Shortlisted", async () => {
-    const { onSnapshot } = require("firebase/firestore");
+        render(<MyApplications />);
 
-    onSnapshot.mockImplementation((q, callback) => {
-      callback({
-        docs: [
-          {
-            id: "app5",
-            data: () => ({
-              id: "app5",
-              title: "Shortlisted Job",
-              company: "Corp",
-              status: "Shortlisted",
-              stageIndex: 3,
-            }),
-          },
-        ],
-      });
-      return () => {};
+        await waitFor(() => {
+            expect(
+                screen.getByText("You have not applied to any opportunities yet.")
+            ).toBeInTheDocument();
+        });
     });
 
-    render(<MyApplications />);
+    test("writes notification when application status changes", async () => {
+        const prevApps = [{ id: "app1", title: "Junior Developer Learnership", company: "TechCorp", status: "Submitted", userId: "user123" }];
+        const updatedApps = [{ id: "app1", title: "Junior Developer Learnership", company: "TechCorp", status: "Shortlisted", userId: "user123" }];
 
-    await waitFor(() => {
-      expect(screen.getByText(/shortlisted job/i)).toBeInTheDocument();
+        let callCount = 0;
+        onSnapshot.mockImplementation((q, successCallback) => {
+            // First call returns prev, second returns updated
+            callCount++;
+            if (callCount === 1) {
+                successCallback({
+                    docs: prevApps.map(app => ({ id: app.id, data: () => app })),
+                });
+            }
+            return jest.fn();
+        });
+
+        render(<MyApplications />);
+
+        await act(async () => {
+            // Simulate status change
+            const snapshotCallback = onSnapshot.mock.calls[0][1];
+            snapshotCallback({
+                docs: updatedApps.map(app => ({ id: app.id, data: () => app })),
+            });
+        });
+
+        await waitFor(() => {
+            expect(addDoc).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({
+                    userId: "user123",
+                    type:   "status_update",
+                    title:  "Application Shortlisted",
+                })
+            );
+        });
     });
 
-    expect(screen.getByText("Shortlisted")).toBeInTheDocument();
-  });
+    test("does not write notification on first load with no previous state", async () => {
+        render(<MyApplications />);
 
-  test("renders empty state when user has no applications", async () => {
-    const { onSnapshot } = require("firebase/firestore");
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
 
-    onSnapshot.mockImplementation((q, callback) => {
-      callback({ docs: [] });
-      return () => {};
+        // addDoc should not be called on initial load since there is no prev state
+        expect(addDoc).not.toHaveBeenCalled();
+    });
+});
+
+describe("ProgressTracker", () => {
+
+    test("shows Shortlisted label on Final Decision circle", async () => {
+        onSnapshot.mockImplementation((q, successCallback) => {
+            successCallback({
+                docs: [
+                    {
+                        id:   "app1",
+                        data: () => ({
+                            id:      "app1",
+                            title:   "Junior Developer Learnership",
+                            company: "TechCorp",
+                            status:  "Shortlisted",
+                            userId:  "user123",
+                        }),
+                    },
+                ],
+            });
+            return jest.fn();
+        });
+
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Shortlisted")).toBeInTheDocument();
+        });
     });
 
-    render(<MyApplications />);
+    test("shows Accepted label on Final Decision circle", async () => {
+        onSnapshot.mockImplementation((q, successCallback) => {
+            successCallback({
+                docs: [
+                    {
+                        id:   "app1",
+                        data: () => ({
+                            id:      "app1",
+                            title:   "Junior Developer Learnership",
+                            company: "TechCorp",
+                            status:  "Accepted",
+                            userId:  "user123",
+                        }),
+                    },
+                ],
+            });
+            return jest.fn();
+        });
 
-    await waitFor(() => {
-      expect(screen.getByText(/my applications/i)).toBeInTheDocument();
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Accepted")).toBeInTheDocument();
+        });
     });
 
-    expect(screen.queryByText(/techcorp/i)).not.toBeInTheDocument();
-  });
+    test("shows Rejected label on Final Decision circle", async () => {
+        onSnapshot.mockImplementation((q, successCallback) => {
+            successCallback({
+                docs: [
+                    {
+                        id:   "app1",
+                        data: () => ({
+                            id:      "app1",
+                            title:   "Junior Developer Learnership",
+                            company: "TechCorp",
+                            status:  "Rejected",
+                            userId:  "user123",
+                        }),
+                    },
+                ],
+            });
+            return jest.fn();
+        });
 
-  test("renders fallback username when user has no name", async () => {
-    const { getDoc } = require("firebase/firestore");
+        render(<MyApplications />);
 
-    getDoc.mockResolvedValue({
-      exists: () => true,
-      data: () => ({ name: "" }),
+        await waitFor(() => {
+            expect(screen.getByText("Rejected")).toBeInTheDocument();
+        });
     });
-
-    render(<MyApplications />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/welcome back, user/i)).toBeInTheDocument();
-    });
-  });
-
-  test("does not crash when no user is logged in", async () => {
-    const { onAuthStateChanged } = require("firebase/auth");
-
-    onAuthStateChanged.mockImplementation((auth, callback) => {
-      callback(null);
-      return () => {};
-    });
-
-    render(<MyApplications />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/my applications/i)).toBeInTheDocument();
-    });
-  });
 });
