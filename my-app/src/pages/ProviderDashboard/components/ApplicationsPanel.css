@@ -1,160 +1,192 @@
-/* ApplicationsPanel.css */
-
-.applications-panel__header {
-  margin-bottom: 20px;
+:root {
+  --color-primary: orange;
+  --color-bg: #0b0b0b;
+  --color-surface: #141414;
+  --color-text: #ffffff;
+  --color-muted: #b3b3b3;
+  --color-border: #2a2a2a;
 }
 
-.applications-panel__title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #111827;
-  margin: 0 0 4px;
+/* ── ApplicationsPanel ───────────────────────────────────────────────────── */
+
+.ap {
+  padding: 0 0 2rem;
 }
 
-.applications-panel__subtitle {
-  font-size: 14px;
-  color: #6b7280;
-  margin: 0;
+/* HEADER */
+.ap__title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text);
 }
 
-.applications-panel__list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.ap__subtitle {
+  font-size: 0.85rem;
+  color: var(--color-muted);
 }
 
-.applications-panel__loading,
-.applications-panel__empty {
-  font-size: 14px;
-  color: #6b7280;
-  padding: 12px 0;
+.ap__total-chip {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-muted);
 }
 
-.applications-panel__error {
-  font-size: 14px;
-  color: #dc2626;
+/* ── SEARCH ──────────────────────────────────────────────────────────────── */
+
+.ap__search {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text);
 }
 
-/* Card */
-
-.application-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-left: 4px solid #f97316;
-  border-radius: 12px;
-  padding: 16px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  transition: box-shadow 0.15s;
+.ap__search:focus {
+  border-color: var(--color-primary);
+  outline: none;
 }
 
-.application-card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+/* clear button */
+.ap__search-clear {
+  color: var(--color-muted);
 }
 
-.application-card__info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
+.ap__search-clear:hover {
+  color: var(--color-primary);
 }
 
-.application-card__name {
-  font-size: 15px;
-  font-weight: 600;
-  color: #111827;
-  margin: 0;
-}
+/* ── FILTERS ─────────────────────────────────────────────────────────────── */
 
-.application-card__meta {
-  font-size: 13px;
-  color: #6b7280;
-  margin: 0;
-}
-
-/* Inline status pill */
-
-.application-card__status {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 20px;
-}
-
-.application-card__status--received {
-  background: #eff6ff;
-  color: #1d4ed8;
-}
-
-.application-card__status--shortlisted {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.application-card__status--accepted {
-  background: #dcfce7;
-  color: #16a34a;
-}
-
-.application-card__status--rejected {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-/* Action buttons */
-
-.application-card__actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.application-card__btn {
-  padding: 7px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: opacity 0.15s, background 0.15s;
-}
-
-.application-card__btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.application-card__btn--accept {
-  background: #f97316;
-  color: #ffffff;
-  border-color: #f97316;
-}
-
-.application-card__btn--accept:hover:not(:disabled) {
-  background: #ea6a08;
-}
-
-.application-card__btn--shortlist {
+.ap__filter-btn {
+  border: 1.5px solid var(--color-border);
+  color: var(--color-muted);
   background: transparent;
-  color: #f97316;
-  border-color: #f97316;
 }
 
-.application-card__btn--shortlist:hover:not(:disabled) {
-  background: #fff7ed;
+.ap__filter-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
-.application-card__btn--reject {
-  background: #111827;
-  color: #ffffff;
-  border-color: #111827;
+.ap__filter-btn--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #000;
 }
 
-.application-card__btn--reject:hover:not(:disabled) {
-  background: #1f2937;
+.ap__filter-count {
+  background: rgba(255, 165, 0, 0.2);
+  color: var(--color-text);
+}
+
+/* ── LOADING / EMPTY ────────────────────────────────────────────────────── */
+
+.ap__empty {
+  background: var(--color-surface);
+  border: 1.5px dashed var(--color-border);
+  color: var(--color-muted);
+}
+
+/* ── CARD BASE ───────────────────────────────────────────────────────────── */
+
+.ac {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+}
+
+.ac:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.ac--expanded {
+  border-color: var(--color-primary);
+}
+
+/* STATUS DOTS */
+.ac__status-dot--green { background: #22c55e; }
+.ac__status-dot--amber { background: orange; }
+.ac__status-dot--blue  { background: orange; }
+.ac__status-dot--red   { background: #ef4444; }
+.ac__status-dot--grey  { background: #6b7280; }
+
+/* BADGES */
+.ac__badge--green {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.ac__badge--amber {
+  background: rgba(255, 165, 0, 0.2);
+  color: orange;
+}
+
+.ac__badge--blue {
+  background: rgba(255, 165, 0, 0.2);
+  color: orange;
+}
+
+.ac__badge--red {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.ac__badge--grey {
+  background: #2a2a2a;
+  color: var(--color-muted);
+}
+
+/* TEXT */
+.ac__name {
+  color: var(--color-text);
+}
+
+.ac__meta {
+  color: var(--color-muted);
+}
+
+/* LINKS */
+.ac__link {
+  color: var(--color-primary);
+}
+
+/* CV BUTTON */
+.ac__cv-btn {
+  background: var(--color-primary);
+  color: #000;
+}
+
+.ac__cv-btn:hover {
+  background: #ff8c00;
+}
+
+/* ACTION BUTTONS */
+.ac__action-btn--accepted {
+  background: rgba(255, 165, 0, 0.2);
+  color: orange;
+  border: 1px solid orange;
+}
+
+.ac__action-btn--accepted:hover:not(:disabled) {
+  background: orange;
+  color: #000;
+}
+
+.ac__action-btn--shortlisted {
+  background: rgba(255, 165, 0, 0.2);
+  color: orange;
+  border: 1px solid orange;
+}
+
+.ac__action-btn--shortlisted:hover:not(:disabled) {
+  background: orange;
+  color: #000;
+}
+
+.ac__action-btn--rejected {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.ac__action-btn--rejected:hover:not(:disabled) {
+  background: #ef4444;
+  color: #000;
 }
