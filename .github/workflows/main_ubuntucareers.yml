@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: "20.x"
           cache: npm
-          cache-dependency-path: my-app
+          cache-dependency-path: ./my-app/package-lock.json
 
       - name: Install dependencies
         working-directory: ./my-app
