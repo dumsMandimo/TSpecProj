@@ -61,7 +61,7 @@ export default function SignupApplicant() {
 
       console.log("Google user created:", user?.uid);
 
-      navigate("/dashboard/createProfile");
+      navigate("/dashboard/applicant/createProfile");
     } catch (error) {
       console.error("Google signup failed:", error);
       setErrorMsg(error?.message || "Google sign-in failed.");
