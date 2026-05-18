@@ -1,8 +1,9 @@
 import "@testing-library/jest-dom";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import Dashboard from "./Dashboard";
 
 const mockNavigate = jest.fn();
+const mockSignOut = jest.fn();
 
 jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
@@ -15,23 +16,33 @@ jest.mock("../../firebase", () => ({
 }));
 
 jest.mock("firebase/firestore", () => ({
-  collection: jest.fn(),
-  getDocs: jest.fn(),
-  getFirestore: jest.fn(),
+  doc: jest.fn(),
+  getDoc: jest.fn(),
 }));
 
 jest.mock("firebase/auth", () => ({
-  onAuthStateChanged: jest.fn(),
-  getAuth: jest.fn(),
+  onAuthStateChanged: jest.fn((auth, callback) => {
+    callback({ uid: "user1", displayName: "Peace" });
+    return jest.fn();
+  }),
+  signOut: (...args) => mockSignOut(...args),
+}));
+
+jest.mock("../../services/userService", () => ({
+  subscribeToOpportunities: jest.fn((onData) => {
+    onData([]);
+    return jest.fn();
+  }),
+  subscribeToMyApplications: jest.fn((onData) => {
+    onData([]);
+    return jest.fn();
+  }),
 }));
 
 jest.mock("./MyApplications", () => ({
   __esModule: true,
-  default: ({ name, applications }) => (
-    <div data-testid="my-applications">
-      <span>Hello {name}</span>
-      <span>Apps: {applications.length}</span>
-    </div>
+  default: ({ applications }) => (
+    <div data-testid="my-applications">Apps: {applications.length}</div>
   ),
 }));
 
@@ -43,9 +54,12 @@ jest.mock("./OpportunityList", () => ({
 describe("Dashboard", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    const { getDocs, collection } = require("firebase/firestore");
-    collection.mockReturnValue({});
-    getDocs.mockResolvedValue({ docs: [] });
+    mockSignOut.mockResolvedValue(undefined);
+    const { getDoc } = require("firebase/firestore");
+    getDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({ name: "Peace" }),
+    });
   });
 
   test("renders dashboard page", async () => {
@@ -58,7 +72,7 @@ describe("Dashboard", () => {
   test("renders MyApplications child component", async () => {
     render(<Dashboard />);
     await waitFor(() => {
-      expect(screen.getByText(/hello peace/i)).toBeInTheDocument();
+      expect(screen.getByTestId("my-applications")).toBeInTheDocument();
     });
   });
 
@@ -69,38 +83,34 @@ describe("Dashboard", () => {
     });
   });
 
-  test("renders My Profile button", async () => {
+  test("renders Logout button", async () => {
     render(<Dashboard />);
     await waitFor(() => {
-      expect(screen.getByText(/my profile/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /logout/i })).toBeInTheDocument();
     });
   });
 
-  test("navigates to profile on button click", async () => {
+  test("logs out and navigates to login on button click", async () => {
     render(<Dashboard />);
 
     await waitFor(() => {
-      expect(screen.getByText(/my profile/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /logout/i })).toBeInTheDocument();
     });
 
-    screen.getByText(/my profile/i).click();
-    expect(mockNavigate).toHaveBeenCalledWith("/dashboard/myProfile");
+    fireEvent.click(screen.getByRole("button", { name: /logout/i }));
+
+    await waitFor(() => {
+      expect(mockSignOut).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith("/login");
+    });
   });
 
-  test("fetches applications from Firestore on mount", async () => {
-    const { getDocs } = require("firebase/firestore");
-
-    const mockApps = [
-      { id: "app1", data: () => ({ title: "Internship", status: "Submitted" }) },
-      { id: "app2", data: () => ({ title: "Learnership", status: "Received" }) },
-    ];
-
-    getDocs.mockResolvedValue({ docs: mockApps });
-
+  test("shows welcome message with user name", async () => {
     render(<Dashboard />);
 
     await waitFor(() => {
-      expect(screen.getByText(/apps: 2/i)).toBeInTheDocument();
+      expect(screen.getByText(/welcome/i)).toBeInTheDocument();
+      expect(screen.getByText("Peace")).toBeInTheDocument();
     });
   });
 });

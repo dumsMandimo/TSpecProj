@@ -1,46 +1,39 @@
-export default function OverviewCards() {
+export default function OverviewCards({ setTab }) {
   const stats = [
-    { label: "Listings", value: 3 },
-    { label: "Applications", value: 12 },
-    { label: "Shortlisted", value: 4 },
-    { label: "Accepted", value: 2 }
+    { id: "listings", label: "Listings", value: 3, hint: "Active opportunities" },
+    { id: "applications", label: "Applications", value: 12, hint: "Total submissions" },
+    { id: "applications", label: "Shortlisted", value: 4, hint: "Under review" },
+    { id: "applications", label: "Accepted", value: 2, hint: "Successful placements" },
   ];
 
   return (
-    <section style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
-      {stats.map((item, i) => (
-        <article key={i} style={card}>
-          <header>
-            <h4 style={{ margin: 0, color: "#111827", fontSize: "14px" }}>
-              {item.label}
-            </h4>
-          </header>
+    <section aria-label="Dashboard overview">
+      <header className="dash-panel__header">
+        <h2 className="dash-panel__title">Overview</h2>
+        <p className="dash-panel__subtitle">
+          A quick snapshot of your listings and applicant activity
+        </p>
+      </header>
 
-          <p style={{
-            margin: "8px 0 0 0",
-            fontSize: "24px",
-            fontWeight: "bold",
-            color: "#f97316"
-          }}>
-            {item.value}
-          </p>
-
-          <small style={{ color: "#6b7280" }}>
-            Overview metric
-          </small>
-        </article>
-      ))}
+      <div className="dash-stat-grid">
+        {stats.map((item) => (
+          <article
+            key={item.label}
+            className="dash-stat-card"
+            role="button"
+            tabIndex={0}
+            onClick={() => setTab?.(item.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") setTab?.(item.id);
+            }}
+            style={{ cursor: setTab ? "pointer" : "default" }}
+          >
+            <p className="dash-stat-card__label">{item.label}</p>
+            <p className="dash-stat-card__value">{item.value}</p>
+            <span className="dash-stat-card__hint">{item.hint}</span>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }
-
-
-
-const card = {
-  background: "white",
-  padding: "16px",
-  borderRadius: "12px",
-  boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
-  borderLeft: "5px solid #f97316",
-  textAlign: "left"
-};
