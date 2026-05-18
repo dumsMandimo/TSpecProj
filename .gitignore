@@ -6,10 +6,10 @@
 .pnp.js
 
 # testing
-/coverage
+coverage/
 
 # production
-/build
+build/
 
 # environment variables
 .env
@@ -24,3 +24,4 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+my-app/node_modules/
