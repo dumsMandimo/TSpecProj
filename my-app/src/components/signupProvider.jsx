@@ -1,23 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signUpWithGoogle } from "../services/authService";
-
-const SECTORS = [
-  "Agriculture",
-  "Construction",
-  "Education",
-  "Energy",
-  "Finance",
-  "Healthcare",
-  "Hospitality",
-  "ICT",
-  "Manufacturing",
-  "Mining",
-  "Public Service",
-  "Retail",
-  "Transport",
-  "Other",
-];
+import { SectorDropdown } from "./nqfSelect";
 
 const PROVINCES = [
   "Eastern Cape",
@@ -99,9 +83,7 @@ export default function SignupProvider() {
         <legend>Organisation details</legend>
 
         {errorMsg && (
-          <p style={{ color: "red", marginBottom: "10px" }}>
-            {errorMsg}
-          </p>
+          <p style={{ color: "red", marginBottom: "10px" }}>{errorMsg}</p>
         )}
 
         <label>
@@ -126,27 +108,16 @@ export default function SignupProvider() {
 
         <label>
           Sector
-          <select
+          <SectorDropdown
             value={form.sector}
             onChange={set("sector")}
             required
-          >
-            <option value="">Select sector</option>
-            {SECTORS.map((sector) => (
-              <option key={sector} value={sector}>
-                {sector}
-              </option>
-            ))}
-          </select>
+          />
         </label>
 
         <label>
           Province
-          <select
-            value={form.province}
-            onChange={set("province")}
-            required
-          >
+          <select value={form.province} onChange={set("province")} required>
             <option value="">Select province</option>
             {PROVINCES.map((province) => (
               <option key={province} value={province}>
@@ -167,11 +138,7 @@ export default function SignupProvider() {
         </label>
       </fieldset>
 
-      <button
-        type="button"
-        onClick={handleGoogleSignup}
-        disabled={loading}
-      >
+      <button type="button" onClick={handleGoogleSignup} disabled={loading}>
         {loading ? "Signing up..." : "Continue with Google"}
       </button>
     </form>
