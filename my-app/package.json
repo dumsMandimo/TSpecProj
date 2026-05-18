@@ -5,6 +5,7 @@
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@react-native-firebase/app": "^24.0.0",
+    "@supabase/supabase-js": "^2.106.0",
     "cra-template": "1.3.0",
     "express": "^4.22.1",
     "firebase": "^12.12.1",
@@ -65,7 +66,11 @@
     "babel-jest": "^29.7.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^27.5.1",
+<<<<<<< HEAD
     "jest-environment-jsdom": "^30.3.0",
     "supertest": "^7.2.2"
+=======
+    "jest-environment-jsdom": "^30.3.0"
+>>>>>>> c9fe06154bde0b86987e4db13604449edac52267
   }
 }

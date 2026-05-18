@@ -99,7 +99,7 @@ function OpportunityList(props) {
             await addDoc(collection(db, "notifications"), {
                 userId: user.uid,
                 title: "Application submitted",
-                body: `Your application for ${opportunity.title} has been received.`,
+                body: `Your application for ${opportunity.title} has been submitted.`,
                 read: false,
                 type: "status_update",
                 createdAt: Timestamp.now(),
