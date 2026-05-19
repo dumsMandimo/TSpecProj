@@ -131,21 +131,13 @@
   font-weight: 600;
 }
 
-<<<<<<< HEAD
-.progress-tracker__dot--rejected + .progress-tracker__label,
+<.progress-tracker__dot--rejected + .progress-tracker__label,
 .progress-tracker__step:has(.progress-tracker__dot--rejected) .progress-tracker__label {
   color: #e74c3c;
   font-weight: 600;
 }
-
 .progress-tracker__dot--shortlisted + .progress-tracker__label,
 .progress-tracker__step:has(.progress-tracker__dot--shortlisted) .progress-tracker__label {
   color: #f1c40f;
   font-weight: 600;
 }
-=======
-.circle.shortlisted + .stage-label {
-    color: #f1c40f;
-    font-weight: 600;
-}
->>>>>>> c9fe06154bde0b86987e4db13604449edac52267
