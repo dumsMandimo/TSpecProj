@@ -1,4 +1,48 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+// ── Mock Firebase ─────────────────────────────────────────────────────────────
+// IMPORTANT: jest.mock() is hoisted above ALL variable declarations by Babel.
+// Any `const mockX = jest.fn()` defined outside the factory will be undefined
+// when the factory runs. Solution: define fns inside the factory and retrieve
+// them afterwards with jest.requireMock().
+
+jest.mock("firebase/firestore", () => ({
+  collection:      jest.fn((_, name) => ({ name })),
+  query:           jest.fn((...args) => args),
+  where:           jest.fn((...args) => args),
+  onSnapshot:      jest.fn((...args) => args),
+  addDoc:          jest.fn(),
+  updateDoc:       jest.fn(),
+  deleteDoc:       jest.fn(),
+  getDoc:          jest.fn(),
+  getDocs:         jest.fn(),
+  serverTimestamp: jest.fn(() => "SERVER_TS"),
+  Timestamp:       { fromMillis: (ms) => ({ toMillis: () => ms }) },
+  doc:             jest.fn((_db, col, id) => ({ path: `${col}/${id}` })),
+}));
+
+jest.mock("./firebase", () => ({
+  db:   {},
+  auth: {
+    currentUser: {
+      uid:         "provider-uid-123",
+      email:       "provider@test.com",
+      displayName: "Test Provider",
+    },
+  },
+}));
+
+jest.mock("@emailjs/browser", () => ({
+  default: { send: jest.fn().mockResolvedValue({}) },
+}));
+
+// ── Pull mock refs AFTER jest.mock() declarations ─────────────────────────────
+// jest.requireMock() returns the mocked module so we can call .mockX() on fns.
+const firestoreMock = jest.requireMock("firebase/firestore");
+const mockAddDoc          = firestoreMock.addDoc;
+const mockUpdateDoc       = firestoreMock.updateDoc;
+const mockDeleteDoc       = firestoreMock.deleteDoc;
+const mockGetDoc          = firestoreMock.getDoc;
+const mockGetDocs         = firestoreMock.getDocs;
+
 import {
   writeNotification,
   markNotificationRead,
@@ -14,50 +58,12 @@ import {
   notifyProviderNewApplication,
 } from "./providerService";
 
-// ── Mock Firebase ─────────────────────────────────────────────────────────────
-
-const mockAddDoc    = vi.fn();
-const mockUpdateDoc = vi.fn();
-const mockDeleteDoc = vi.fn();
-const mockGetDoc    = vi.fn();
-const mockGetDocs   = vi.fn();
-const mockOnSnapshot = vi.fn();
-const mockServerTimestamp = vi.fn(() => "SERVER_TS");
-const mockDoc       = vi.fn((_db, col, id) => ({ path: `${col}/${id}` }));
-const mockCollection = vi.fn((_, name) => ({ name }));
-const mockQuery     = vi.fn((...args) => args);
-const mockWhere     = vi.fn((...args) => args);
-
-vi.mock("firebase/firestore", () => ({
-  collection:      (...args) => mockCollection(...args),
-  query:           (...args) => mockQuery(...args),
-  where:           (...args) => mockWhere(...args),
-  onSnapshot:      (...args) => mockOnSnapshot(...args),
-  addDoc:          (...args) => mockAddDoc(...args),
-  updateDoc:       (...args) => mockUpdateDoc(...args),
-  deleteDoc:       (...args) => mockDeleteDoc(...args),
-  getDoc:          (...args) => mockGetDoc(...args),
-  getDocs:         (...args) => mockGetDocs(...args),
-  serverTimestamp: () => mockServerTimestamp(),
-  Timestamp:       { fromMillis: (ms) => ({ toMillis: () => ms }) },
-  doc:             (...args) => mockDoc(...args),
-}));
-
-vi.mock("./firebase", () => ({
-  db:   {},
-  auth: { currentUser: { uid: "provider-uid-123", email: "provider@test.com", displayName: "Test Provider" } },
-}));
-
-vi.mock("@emailjs/browser", () => ({
-  default: { send: vi.fn().mockResolvedValue({}) },
-}));
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const makeSnap = (docs) => ({
   docs: docs.map((d) => ({ id: d.id, data: () => d, exists: () => true })),
   size: docs.length,
-  forEach: (fn) => docs.forEach((d, i) => fn({ id: d.id, data: () => d })),
+  forEach: (fn) => docs.forEach((d) => fn({ id: d.id, data: () => d })),
 });
 
 const makeDocSnap = (data, exists = true) => ({
@@ -67,10 +73,10 @@ const makeDocSnap = (data, exists = true) => ({
 });
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  jest.clearAllMocks();
   mockAddDoc.mockResolvedValue({ id: "new-doc-id" });
-  mockUpdateDoc.mockResolvedValue();
-  mockDeleteDoc.mockResolvedValue();
+  mockUpdateDoc.mockResolvedValue(undefined);
+  mockDeleteDoc.mockResolvedValue(undefined);
 });
 
 // ── writeNotification ─────────────────────────────────────────────────────────
@@ -78,7 +84,7 @@ beforeEach(() => {
 describe("writeNotification", () => {
   it("writes a notification document to Firestore", async () => {
     await writeNotification({ userId: "u1", type: "listing_approved", title: "Approved", body: "Your listing was approved." });
-    expect(mockAddDoc).toHaveBeenCalledOnce();
+    expect(mockAddDoc).toHaveBeenCalledTimes(1);
     const payload = mockAddDoc.mock.calls[0][1];
     expect(payload.userId).toBe("u1");
     expect(payload.type).toBe("listing_approved");
@@ -100,7 +106,9 @@ describe("writeNotification", () => {
 
   it("does not throw when Firestore fails", async () => {
     mockAddDoc.mockRejectedValueOnce(new Error("Firestore error"));
-    await expect(writeNotification({ userId: "u1", type: "t", title: "T", body: "B" })).resolves.not.toThrow();
+    await expect(
+      writeNotification({ userId: "u1", type: "t", title: "T", body: "B" })
+    ).resolves.not.toThrow();
   });
 });
 
@@ -109,7 +117,7 @@ describe("writeNotification", () => {
 describe("markNotificationRead", () => {
   it("calls updateDoc with read: true", async () => {
     await markNotificationRead("notif-123");
-    expect(mockUpdateDoc).toHaveBeenCalledOnce();
+    expect(mockUpdateDoc).toHaveBeenCalledTimes(1);
     const payload = mockUpdateDoc.mock.calls[0][1];
     expect(payload.read).toBe(true);
   });
@@ -173,7 +181,7 @@ describe("createOpportunity", () => {
 describe("updateOpportunity", () => {
   it("calls updateDoc with the provided data plus updatedAt", async () => {
     await updateOpportunity("opp-123", { title: "Updated Title" });
-    expect(mockUpdateDoc).toHaveBeenCalledOnce();
+    expect(mockUpdateDoc).toHaveBeenCalledTimes(1);
     const payload = mockUpdateDoc.mock.calls[0][1];
     expect(payload.title).toBe("Updated Title");
     expect(payload.updatedAt).toBe("SERVER_TS");
@@ -185,7 +193,7 @@ describe("updateOpportunity", () => {
 describe("deleteOpportunity", () => {
   it("calls deleteDoc with the correct document reference", async () => {
     await deleteOpportunity("opp-to-delete");
-    expect(mockDeleteDoc).toHaveBeenCalledOnce();
+    expect(mockDeleteDoc).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -200,7 +208,7 @@ describe("autoCloseExpiredListings", () => {
       ])
     );
     await autoCloseExpiredListings("p1");
-    expect(mockUpdateDoc).toHaveBeenCalledOnce();
+    expect(mockUpdateDoc).toHaveBeenCalledTimes(1);
     const payload = mockUpdateDoc.mock.calls[0][1];
     expect(payload.status).toBe("closed");
   });
@@ -268,7 +276,7 @@ describe("updateApplicationStatus", () => {
       .mockResolvedValueOnce(makeDocSnap({ title: "Dev Learnership" }));
 
     await updateApplicationStatus("app-1", "accepted");
-    expect(mockUpdateDoc).toHaveBeenCalledOnce();
+    expect(mockUpdateDoc).toHaveBeenCalledTimes(1);
     const payload = mockUpdateDoc.mock.calls[0][1];
     expect(payload.status).toBe("accepted");
   });
