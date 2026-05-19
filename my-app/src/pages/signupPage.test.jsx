@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import SignupPage from "./signupPage";
 import { MemoryRouter } from "react-router-dom";
 
-// simple mocks for child components
+// Mock child components
 jest.mock("../components/signupApplicant", () => () => (
   <div>Applicant Form</div>
 ));
@@ -25,7 +25,9 @@ describe("SignupPage", () => {
     renderPage();
 
     expect(screen.getByText(/create your account/i)).toBeInTheDocument();
-    expect(screen.getByText(/choose your role to get started/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/choose your role to get started/i)
+    ).toBeInTheDocument();
   });
 
   test("renders applicant form by default", () => {
@@ -37,7 +39,9 @@ describe("SignupPage", () => {
   test("switches to provider form when provider tab clicked", () => {
     renderPage();
 
-    fireEvent.click(screen.getByText(/provider/i));
+    fireEvent.click(
+      screen.getByRole("tab", { name: /provider/i })
+    );
 
     expect(screen.getByText("Provider Form")).toBeInTheDocument();
   });
@@ -45,27 +49,38 @@ describe("SignupPage", () => {
   test("switches back to applicant form when applicant tab clicked", () => {
     renderPage();
 
-    // switch first
-    fireEvent.click(screen.getByText(/provider/i));
+    // switch to provider first
+    fireEvent.click(
+      screen.getByRole("tab", { name: /provider/i })
+    );
     expect(screen.getByText("Provider Form")).toBeInTheDocument();
 
-    // switch back
-    fireEvent.click(screen.getByText(/applicant/i));
+    // switch back to applicant
+    fireEvent.click(
+      screen.getByRole("tab", { name: /applicant/i })
+    );
+
     expect(screen.getByText("Applicant Form")).toBeInTheDocument();
   });
 
-  test("renders login link", () => {
+  test("renders login link correctly", () => {
     renderPage();
 
-    const link = screen.getByText(/sign in/i);
+    const link = screen.getByRole("link", { name: /sign in/i });
+
     expect(link).toBeInTheDocument();
-    expect(link.closest("a")).toHaveAttribute("href", "/login");
+    expect(link).toHaveAttribute("href", "/login");
   });
 
   test("tabs render correctly", () => {
     renderPage();
 
-    expect(screen.getByRole("tab", { name: /applicant/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /provider/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: /applicant/i })
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("tab", { name: /provider/i })
+    ).toBeInTheDocument();
   });
 });

@@ -1,132 +1,185 @@
-const { signUpWithGoogle } = require('./authService');
-const { signInWithPopup } = require('firebase/auth');
-const { doc, setDoc, getDoc } = require('firebase/firestore');
+// ── Mocks (hoisted) ───────────────────────────────────────────────────────────
 
-jest.mock('firebase/auth', () => ({
-  signInWithPopup: jest.fn(),
-  GoogleAuthProvider: jest.fn().mockImplementation(function () {
-    this.setCustomParameters = jest.fn();
-  }),
+jest.mock('./firebase', () => ({
+  auth: { signOut: jest.fn() },
+  db:   {},
 }));
 
 jest.mock('firebase/firestore', () => ({
-  doc: jest.fn(),
-  setDoc: jest.fn(),
-  getDoc: jest.fn(),
+  doc:      jest.fn(),
+  getDoc:   jest.fn(),
+  setDoc:   jest.fn(),
+  updateDoc: jest.fn(),
 }));
 
-jest.mock('./firebase', () => ({
-  auth: {},
-  db: {},
+jest.mock('firebase/auth', () => ({
+  GoogleAuthProvider: jest.fn().mockImplementation(() => ({
+    setCustomParameters: jest.fn(),
+  })),
+  signInWithPopup: jest.fn(),
 }));
 
-describe('Google Auth Tests', () => {
+// ── Imports (after mocks) ─────────────────────────────────────────────────────
+
+import { signUpWithGoogle } from './authService';
+import { signInWithPopup }  from 'firebase/auth';
+import { getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { auth } from './firebase';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const mockUser = {
+  uid:           'uid-123',
+  email:         'test@gmail.com',
+  emailVerified: true,
+};
+
+const makeSnap = (exists, data = {}) => ({
+  exists: () => exists,
+  data:   () => data,
+});
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  // Default: successful Google sign-in
+  signInWithPopup.mockResolvedValue({ user: mockUser });
+});
+
+// ── New user flows ────────────────────────────────────────────────────────────
+
+describe('new user', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    getDoc.mockResolvedValue(makeSnap(false));
   });
 
-  // UAT 2.1 — New applicant signup saves to Firestore and returns correct role
-  test('creates new applicant in Firestore and returns { user, role }', async () => {
-    const mockUser = { uid: '123', email: 'google@test.com' };
-    const mockDocRef = { id: '123' };
-    signInWithPopup.mockResolvedValue({ user: mockUser });
-    getDoc.mockResolvedValue({ exists: () => false });
-    setDoc.mockResolvedValue();
-    doc.mockReturnValue(mockDocRef);
+  it('creates a new applicant in Firestore and returns { user, role, existingUser: false }', async () => {
+    setDoc.mockResolvedValue(undefined);
 
-    const result = await signUpWithGoogle('applicant');
+    const result = await signUpWithGoogle('applicant', { firstName: 'Tumi' });
 
-    expect(signInWithPopup).toHaveBeenCalled();
-    expect(setDoc).toHaveBeenCalledWith(mockDocRef, expect.objectContaining({
-      uid: mockUser.uid,
-      email: mockUser.email,
-      role: 'applicant',
-    }));
-    expect(result).toEqual({ user: mockUser, role: 'applicant' });
+    expect(result).toEqual({ user: mockUser, role: 'applicant', existingUser: false });
+    expect(setDoc).toHaveBeenCalledTimes(1);
+
+    const savedData = setDoc.mock.calls[0][1];
+    expect(savedData.uid).toBe('uid-123');
+    expect(savedData.email).toBe('test@gmail.com');
+    expect(savedData.role).toBe('applicant');
+    expect(savedData.status).toBe('active');
+    expect(savedData.firstName).toBe('Tumi');
   });
 
-  // UAT 2.1 — New provider signup saves to Firestore and returns correct role
-  test('creates new provider in Firestore and returns { user, role }', async () => {
-    const mockUser = { uid: '124', email: 'provider@test.com' };
-    const mockDocRef = { id: '124' };
-    signInWithPopup.mockResolvedValue({ user: mockUser });
-    getDoc.mockResolvedValue({ exists: () => false });
-    setDoc.mockResolvedValue();
-    doc.mockReturnValue(mockDocRef);
+  it('creates a new provider with status "pending"', async () => {
+    setDoc.mockResolvedValue(undefined);
 
-    const result = await signUpWithGoogle('provider');
+    const result = await signUpWithGoogle('provider', { organisationName: 'Acme' });
 
-    expect(setDoc).toHaveBeenCalledWith(mockDocRef, expect.objectContaining({
-      uid: mockUser.uid,
-      email: mockUser.email,
-      role: 'provider',
-    }));
-    expect(result).toEqual({ user: mockUser, role: 'provider' });
+    expect(result).toEqual({ user: mockUser, role: 'provider', existingUser: false });
+
+    const savedData = setDoc.mock.calls[0][1];
+    expect(savedData.status).toBe('pending');
+    expect(savedData.role).toBe('provider');
+    expect(savedData.organisationName).toBe('Acme');
   });
 
-  // UAT 2.2 — Login with no role throws error for unknown user
-  test('throws error if new user has no role provided', async () => {
-    const mockUser = { uid: '456', email: 'new@test.com' };
-    signInWithPopup.mockResolvedValue({ user: mockUser });
-    getDoc.mockResolvedValue({ exists: () => false });
-
+  it('throws if no role is provided for a new user', async () => {
     await expect(signUpWithGoogle()).rejects.toThrow(
       'No account found. Please sign up first.'
     );
+    expect(setDoc).not.toHaveBeenCalled();
   });
 
-  // UAT 2.3 — Admin cannot self-register
-  test('throws error if someone tries to sign up as admin', async () => {
-    const mockUser = { uid: '999', email: 'admin@test.com' };
-    signInWithPopup.mockResolvedValue({ user: mockUser });
-    getDoc.mockResolvedValue({ exists: () => false });
-
+  it('throws if role is "admin" for a new user', async () => {
     await expect(signUpWithGoogle('admin')).rejects.toThrow(
       'Admin accounts cannot be self-registered.'
     );
+    expect(setDoc).not.toHaveBeenCalled();
   });
+});
 
-  // UAT 2.1 — Existing user login returns their role without saving again
-  test('returns existing applicant role without saving to Firestore', async () => {
-    const mockUser = { uid: '789', email: 'existing@test.com' };
-    signInWithPopup.mockResolvedValue({ user: mockUser });
-    getDoc.mockResolvedValue({
-      exists: () => true,
-      data: () => ({ role: 'applicant' }),
-    });
+// ── Existing user flows ───────────────────────────────────────────────────────
+
+describe('existing user', () => {
+  it('returns existing applicant role without writing to Firestore', async () => {
+    getDoc.mockResolvedValue(makeSnap(true, { role: 'applicant', status: 'active' }));
 
     const result = await signUpWithGoogle();
 
+    expect(result).toEqual({ user: mockUser, role: 'applicant', existingUser: true });
     expect(setDoc).not.toHaveBeenCalled();
-    expect(result).toEqual({ user: mockUser, role: 'applicant' });
+    expect(updateDoc).not.toHaveBeenCalled();
   });
 
-  // UAT 2.1 — Existing admin login returns admin role
-  test('returns existing admin role without saving to Firestore', async () => {
-    const mockUser = { uid: '111', email: 'admin@test.com' };
-    signInWithPopup.mockResolvedValue({ user: mockUser });
-    getDoc.mockResolvedValue({
-      exists: () => true,
-      data: () => ({ role: 'admin' }),
-    });
+  it('returns existing provider role without writing to Firestore', async () => {
+    getDoc.mockResolvedValue(makeSnap(true, { role: 'provider', status: 'active' }));
 
     const result = await signUpWithGoogle();
 
+    expect(result).toEqual({ user: mockUser, role: 'provider', existingUser: true });
     expect(setDoc).not.toHaveBeenCalled();
-    expect(result).toEqual({ user: mockUser, role: 'admin' });
   });
 
-  // UAT 2.2 — Unknown role in Firestore throws error
-  test('throws error if existing user has unknown role', async () => {
-    const mockUser = { uid: '222', email: 'unknown@test.com' };
-    signInWithPopup.mockResolvedValue({ user: mockUser });
-    getDoc.mockResolvedValue({
-      exists: () => true,
-      data: () => ({ role: 'superuser' }),
-    });
+  it('returns existing admin role without writing to Firestore', async () => {
+    getDoc.mockResolvedValue(makeSnap(true, { role: 'admin', status: 'active' }));
+
+    const result = await signUpWithGoogle();
+
+    expect(result).toEqual({ user: mockUser, role: 'admin', existingUser: true });
+    expect(setDoc).not.toHaveBeenCalled();
+  });
+
+  it('throws if existing user has an unknown role', async () => {
+    getDoc.mockResolvedValue(makeSnap(true, { role: 'superuser', status: 'active' }));
+
+    await expect(signUpWithGoogle()).rejects.toThrow('Unknown role. Contact support.');
+  });
+
+  it('signs out and throws if existing user status is "removed"', async () => {
+    getDoc.mockResolvedValue(makeSnap(true, { role: 'applicant', status: 'removed' }));
+    auth.signOut.mockResolvedValue(undefined);
 
     await expect(signUpWithGoogle()).rejects.toThrow(
-      'Unknown role. Contact support.'
+      'Your account has been removed. Contact support.'
+    );
+    expect(auth.signOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('resets an existing active provider back to pending when re-registering as provider', async () => {
+    getDoc.mockResolvedValue(makeSnap(true, { role: 'provider', status: 'active' }));
+    updateDoc.mockResolvedValue(undefined);
+
+    const result = await signUpWithGoogle('provider', { organisationName: 'New Org' });
+
+    expect(result).toEqual({ user: mockUser, role: 'provider', existingUser: true });
+    expect(updateDoc).toHaveBeenCalledTimes(1);
+
+    const updatePayload = updateDoc.mock.calls[0][1];
+    expect(updatePayload.status).toBe('pending');
+    expect(updatePayload.organisationName).toBe('New Org');
+  });
+});
+
+// ── Google auth failure ───────────────────────────────────────────────────────
+
+describe('Google auth failure', () => {
+  it('throws if signInWithPopup rejects', async () => {
+    signInWithPopup.mockRejectedValue(new Error('Popup closed'));
+
+    await expect(signUpWithGoogle('applicant')).rejects.toThrow('Popup closed');
+  });
+
+  it('throws if user has no uid', async () => {
+    signInWithPopup.mockResolvedValue({ user: { uid: null, email: 'x@x.com' } });
+
+    await expect(signUpWithGoogle('applicant')).rejects.toThrow(
+      'Google authentication failed'
+    );
+  });
+
+  it('throws if user has no email', async () => {
+    signInWithPopup.mockResolvedValue({ user: { uid: 'uid-123', email: null } });
+
+    await expect(signUpWithGoogle('applicant')).rejects.toThrow(
+      'Google authentication failed'
     );
   });
 });

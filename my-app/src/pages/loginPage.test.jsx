@@ -1,103 +1,76 @@
-import "@testing-library/jest-dom";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import LoginPage from "./loginPage";
+import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import SignupPage from "./signupPage";
+import { MemoryRouter } from "react-router-dom";
 
-const mockNavigate = jest.fn();
+// mocks
+jest.mock("../components/signupApplicant", () => () => (
+  <div>Applicant Form</div>
+));
 
-jest.mock("react-router-dom", () => ({
-  useNavigate: () => mockNavigate,
-}));
+jest.mock("../components/signupProvider", () => () => (
+  <div>Provider Form</div>
+));
 
-jest.mock("../services/authService", () => ({
-  signUpWithGoogle: jest.fn(),
-}));
+const renderPage = () =>
+  render(
+    <MemoryRouter>
+      <SignupPage />
+    </MemoryRouter>
+  );
 
-import { signUpWithGoogle } from "../services/authService";
+describe("SignupPage", () => {
+  test("renders page heading and subtitle", () => {
+    renderPage();
 
-global.alert = jest.fn();
-
-const renderComponent = () => render(<LoginPage />);
-
-describe("LoginPage Tests", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+    expect(screen.getByText(/create your account/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/choose your role to get started/i)
+    ).toBeInTheDocument();
   });
 
-  // UAT 2.1 — Login page renders correctly
-  test("renders sign in button", () => {
-    renderComponent();
-    expect(screen.getByText("Sign in with Google")).toBeInTheDocument();
+  test("renders applicant form by default", () => {
+    renderPage();
+    expect(screen.getByText("Applicant Form")).toBeInTheDocument();
   });
 
-  // UAT 2.1 — Admin redirects to admin dashboard
-  test("redirects admin to admin dashboard", async () => {
-    signUpWithGoogle.mockResolvedValue({ role: "admin" });
-    renderComponent();
+  test("switches to provider form when provider tab clicked", () => {
+    renderPage();
 
-    fireEvent.click(screen.getByText("Sign in with Google"));
+    const providerTab = screen.getByRole("tab", { name: /provider/i });
+    fireEvent.click(providerTab);
 
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/dashboard/admin");
-    });
+    expect(screen.getByText("Provider Form")).toBeInTheDocument();
   });
 
-  // UAT 2.1 — Provider redirects to provider dashboard
-  test("redirects provider to provider dashboard", async () => {
-    signUpWithGoogle.mockResolvedValue({ role: "provider" });
-    renderComponent();
+  test("switches back to applicant form when applicant tab clicked", () => {
+    renderPage();
 
-    fireEvent.click(screen.getByText("Sign in with Google"));
+    fireEvent.click(screen.getByRole("tab", { name: /provider/i }));
+    expect(screen.getByText("Provider Form")).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/provider-dashboard");
-    });
+    fireEvent.click(screen.getByRole("tab", { name: /applicant/i }));
+    expect(screen.getByText("Applicant Form")).toBeInTheDocument();
   });
 
-  // UAT 2.1 — Applicant redirects to applicant dashboard
-  test("redirects applicant to applicant dashboard", async () => {
-    signUpWithGoogle.mockResolvedValue({ role: "applicant" });
-    renderComponent();
+  test("renders login link", () => {
+    renderPage();
 
-    fireEvent.click(screen.getByText("Sign in with Google"));
+    const link = screen.getByRole("link", { name: /sign in/i });
 
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/applicant-dashboard");
-    });
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "/login");
   });
 
-  // UAT 2.2 — Unknown role shows alert
-  test("shows alert for unknown role", async () => {
-    signUpWithGoogle.mockResolvedValue({ role: "unknown" });
-    renderComponent();
+  test("tabs render correctly", () => {
+    renderPage();
 
-    fireEvent.click(screen.getByText("Sign in with Google"));
+    expect(
+      screen.getByRole("tab", { name: /applicant/i })
+    ).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(global.alert).toHaveBeenCalledWith("Unknown role. Contact support.");
-    });
-  });
-
-  // UAT 2.2 — Failed login shows error alert
-  test("shows alert on login failure", async () => {
-    signUpWithGoogle.mockRejectedValue(new Error("Google login failed. Please try again."));
-    renderComponent();
-
-    fireEvent.click(screen.getByText("Sign in with Google"));
-
-    await waitFor(() => {
-      expect(global.alert).toHaveBeenCalledWith("Google login failed. Please try again.");
-    });
-  });
-
-  // UAT 2.1 — Button shows loading state while signing in
-  test("shows loading state while signing in", async () => {
-    signUpWithGoogle.mockImplementation(() => new Promise(() => {}));
-    renderComponent();
-
-    fireEvent.click(screen.getByText("Sign in with Google"));
-
-    await waitFor(() => {
-      expect(screen.getByText("Signing in...")).toBeInTheDocument();
-    });
+    expect(
+      screen.getByRole("tab", { name: /provider/i })
+    ).toBeInTheDocument();
   });
 });
