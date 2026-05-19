@@ -17,13 +17,11 @@ export default function ProviderDashboard() {
 
   useEffect(() => {
     async function checkProvider() {
-      // 1. Check if logged in
       if (!auth.currentUser) {
         navigate("/login");
         return;
       }
 
-      // 2. Check if provider
       const userRef = doc(db, "users", auth.currentUser.uid);
       const userSnap = await getDoc(userRef);
 
@@ -41,23 +39,21 @@ export default function ProviderDashboard() {
   if (loading) return <main style={{ padding: "24px" }}><p>Loading...</p></main>;
 
   return (
-    <main style={{
-      display: "flex",
-      minHeight: "100vh",
-      background: "#f4f6f8",
-      fontFamily: "Arial"
-    }}>
-
-      {/* Sidebar */}
+    <main
+      className="dashboard-theme"
+      style={{
+        display: "flex",
+        minHeight: "100vh",
+        background: "#f4f6f8",
+        fontFamily: "Arial"
+      }}
+    >
       <Sidebar setTab={setTab} />
 
-      {/* Main Content Area */}
       <section style={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
-        {/* Navbar */}
         <Navbar />
 
-        {/* Page Content */}
         <section style={{
           padding: "24px",
           display: "grid",
