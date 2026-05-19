@@ -63,7 +63,7 @@ export default function SignupApplicant() {
     }
 
     try {
-      const { user, role } = await signUpWithGoogle("applicant", {
+      const { user, existingUser, role } = await signUpWithGoogle("applicant", {
         firstName: form.firstName,
         lastName: form.lastName,
         province: form.province,
@@ -73,9 +73,16 @@ export default function SignupApplicant() {
       console.log("Applicant created:", user?.uid);
       console.log("Role returned:", role);
 
+      // Block if account already exists
+      if (existingUser) {
+        setErrorMsg("You already have an account. Please log in.");
+        setLoading(false);
+        return;
+      }
+
       // Prevent login if role is not applicant
-      if (!role || role.toLowerCase() !== "applicant") {
-        setErrorMsg("You already have an account. Please use the login page.");
+      if (role && role.toLowerCase() !== "applicant") {
+        setErrorMsg("You already have an account with a different role. Please log in.");
         setLoading(false);
         return;
       }
