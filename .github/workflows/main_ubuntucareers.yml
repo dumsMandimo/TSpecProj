@@ -1,65 +1,78 @@
 name: CI/CD Pipeline
+
 on:
   push:
     branches:
       - main
   workflow_dispatch:
+
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           cache: npm
-          cache-dependency-path: ./my-app/package-lock.json
+
       - name: Install dependencies
         working-directory: ./my-app
         run: npm ci
+
       - name: Fix permissions
         working-directory: ./my-app
         run: chmod +x node_modules/.bin/react-scripts
+
       - name: Run tests with coverage
         working-directory: ./my-app
         run: npm test -- --coverage --watchAll=false --passWithNoTests
-        continue-on-error: true
         env:
           CI: true
+
       - name: Check coverage file exists
         run: ls -la ./my-app/coverage && test -f ./my-app/coverage/lcov.info
         continue-on-error: true
+
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: ./my-app/coverage
+
       - name: Upload to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./my-app/coverage/lcov.info
           fail_ci_if_error: false
+
   build-and-deploy:
     runs-on: ubuntu-latest
     needs: test
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           cache: npm
-          cache-dependency-path: ./my-app/package-lock.json
+
       - name: Install dependencies
         working-directory: ./my-app
-        run: npm ci --legacy-peer-deps
+        run: npm ci
+
       - name: Fix permissions
         working-directory: ./my-app
         run: chmod +x node_modules/.bin/react-scripts
+
       - name: Build React app
         working-directory: ./my-app
         run: npm run build
@@ -71,6 +84,7 @@ jobs:
           REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}
           REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
           REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
+
       - name: Prepare deployment package
         run: |
           mkdir -p ./deploy-package
@@ -78,6 +92,7 @@ jobs:
           cp ./my-app/package.json ./deploy-package/
           cp ./my-app/package-lock.json ./deploy-package/
           cp -r ./my-app/build ./deploy-package/build
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
