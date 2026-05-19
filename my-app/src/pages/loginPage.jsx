@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "./loginPage.css";
 
 import { signUpWithGoogle } from "../services/authService";
+import { db } from "../services/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -12,41 +14,35 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // 1. Authenticate user and get role in one call
-      const { user, role } = await signUpWithGoogle();
+      // Step 1: Sign in with Google
+      const { user } = await signUpWithGoogle(); // don't pass role, we just want login
 
-      console.log("Logged in user:", user.uid);
-      console.log("Navigating based on role:", role);
+      if (!user) throw new Error("Google authentication failed.");
 
-      // 2. If no role → user never signed up properly
-      if (!role) {
-        alert("No account found. Please sign up first.");
-        return;
+      // Step 2: Fetch role from Firestore
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+
+      if (!snap.exists()) {
+        throw new Error("No account found. Please sign up first.");
       }
 
-      // 3. Store role locally
-      localStorage.setItem("role", role);
+      const role = snap.data().role;
+      console.log("Fetched role from Firestore:", role);
 
-      // 4. Redirect user
-      if (role === "admin") {
-        navigate("/dashboard/admin");
-      } else if (role === "provider") {
-        navigate("/dashboard/provider");
-      } else {
-        navigate("/dashboard/applicant");
-      }
+      if (!role) throw new Error("User role not found.");
+
+      const normalizedRole = role.toLowerCase();
+
+      // Step 3: Navigate based on role
+      if (normalizedRole === "admin") navigate("/dashboard/admin");
+      else if (normalizedRole === "provider") navigate("/dashboard/provider");
+      else if (normalizedRole === "applicant") navigate("/dashboard/applicant");
+      else alert("Unknown role. Contact support.");
 
     } catch (error) {
       console.error("GOOGLE LOGIN ERROR:", error);
-
-      if (error.message === "account-removed") {
-        alert("Your account has been removed. Please contact support.");
-      } else if (error.message === "Role is required for new users") {
-        alert("No account found. Please sign up first.");
-      } else {
-        alert("Google login failed: " + error.message);
-      }
-
+      alert(error.message || "Google login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -54,7 +50,6 @@ export default function LoginPage() {
 
   return (
     <main className="login-page">
-
       <aside className="login-left">
         <header className="brand">
           <span className="brand-mark">UBUNTU</span>
@@ -63,7 +58,6 @@ export default function LoginPage() {
 
         <section className="hero">
           <h1>Connect.<br />Learn.<br />Grow.</h1>
-
           <p>
             South Africa's platform linking work-seekers with SETA-accredited learnerships,
             apprenticeships and internships.
@@ -91,7 +85,6 @@ export default function LoginPage() {
           </button>
         </section>
       </section>
-
     </main>
   );
 }

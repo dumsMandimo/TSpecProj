@@ -1,51 +1,111 @@
-// Dashboard.js (Applicant side)
 import "./Dashboard.css";
 import MyApplications from "./MyApplications";
 import OpportunityList from "./OpportunityList";
+import NotificationBell from "./NotificationBell";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { subscribeToOpportunities, subscribeToMyApplications } from "../../services/userService";
+import { db, auth } from "../../firebase";
+import {
+    collection,
+    query,
+    where,
+    getDocs,
+    addDoc,
+    Timestamp
+} from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+
+const DAYS_BEFORE = 7;
 
 function Dashboard() {
-  const navigate = useNavigate();
-  const [opportunities, setOpportunities] = useState([]);
-  const [applications, setApplications] = useState([]);
+    const navigate = useNavigate();
+    const [applications, setApplications] = useState([]);
+    const [opportunities, setOpportunities] = useState([]);
 
-  useEffect(() => {
-    // Real-time listener — applicant sees new provider listings instantly
-    const unsubOpportunities = subscribeToOpportunities(
-      (data) => setOpportunities(data),
-      (err)  => console.error("Opportunities error:", err)
+    useEffect(() => {
+        const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                navigate("/login");
+                return;
+            }
+
+            try {
+                const appsSnap = await getDocs(query(
+                    collection(db, "applications"),
+                    where("userId", "==", user.uid)
+                ));
+                const appliedOpportunityIds = appsSnap.docs.map(d => d.data().opportunityId);
+
+                const oppsSnap = await getDocs(query(
+                    collection(db, "opportunities"),
+                    where("status", "==", "approved")
+                ));
+
+                if (oppsSnap.empty) return;
+
+                const today      = new Date();
+                const startOfDay = new Date();
+                startOfDay.setHours(0, 0, 0, 0);
+
+                for (const oppDoc of oppsSnap.docs) {
+                    const opp = oppDoc.data();
+
+                    if (appliedOpportunityIds.includes(oppDoc.id)) continue;
+                    if (!opp.closingDate) continue;
+
+                    const closing  = new Date(opp.closingDate);
+                    const diffDays = Math.ceil((closing - today) / (1000 * 60 * 60 * 24));
+
+                    if (diffDays < 0) continue;
+
+                    const type = diffDays <= DAYS_BEFORE ? "closing_soon" : "new_opportunity";
+
+                    const existingSnap = await getDocs(query(
+                        collection(db, "notifications"),
+                        where("userId", "==", user.uid),
+                        where("type", "==", type),
+                        where("opportunityId", "==", oppDoc.id)
+                    ));
+
+                    if (!existingSnap.empty) continue;
+
+                    await addDoc(collection(db, "notifications"), {
+                        userId:        user.uid,
+                        title:         type === "closing_soon" ? "Opportunity closing soon!" : "New opportunity available!",
+                        body:          type === "closing_soon"
+                            ? `${opp.title} at ${opp.company || opp.companyName || "a provider"} closes in ${diffDays} day${diffDays === 1 ? "" : "s"}. Don't miss out — apply before it's too late!`
+                            : `${opp.title} at ${opp.company || opp.companyName || "a provider"} is now open for applications. Apply before ${opp.closingDate}!`,
+                        read:          false,
+                        type,
+                        opportunityId: oppDoc.id,
+                        createdAt:     Timestamp.now(),
+                    });
+                }
+            } catch (err) {
+                console.error("Error sending notifications:", err);
+            }
+        });
+
+        return () => unsubscribeAuth();
+    }, [navigate]);
+
+    return (
+        <main className="applicant-dashboard">
+            <header style={{ display: "flex", justifyContent: "flex-end", padding: "1rem" }}>
+                <NotificationBell />
+            </header>
+
+            <MyApplications applications={applications} />
+            <OpportunityList opportunities={opportunities} />
+
+            <button
+                className="profile-button"
+                onClick={() => navigate("/dashboard/applicant/myProfile")}
+            >
+                My Profile
+            </button>
+        </main>
     );
-
-    // Real-time listener — applicant sees their own application status updates instantly
-    const unsubApplications = subscribeToMyApplications(
-      (data) => setApplications(data),
-      (err)  => console.error("Applications error:", err)
-    );
-
-    return () => {
-      unsubOpportunities();
-      unsubApplications();
-    };
-  }, []);
-
-  return (
-    <main className="dashboard-page">
-      {/* Applicant's own submitted applications + status tracking */}
-      <MyApplications applications={applications} />
-
-      {/* All opportunities posted by providers */}
-      <OpportunityList opportunities={opportunities} />
-
-      <button
-        className="profile-button"
-        onClick={() => navigate("/dashboard/myProfile")}
-      >
-        My Profile
-      </button>
-    </main>
-  );
 }
 
 export default Dashboard;

@@ -1,169 +1,171 @@
 import "@testing-library/jest-dom";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import SignupApplicant from "./signupApplicant";
-import { signUpWithEmail, signUpWithGoogle } from "../services/authService";
-import { BrowserRouter } from "react-router-dom";
-
-// ================= MOCKS =================
-jest.mock("../services/authService", () => ({
-  signUpWithEmail: jest.fn(),
-  signUpWithGoogle: jest.fn(),
-}));
+import { signUpWithGoogle } from "../services/authService";
 
 const mockNavigate = jest.fn();
 
 jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
-  BrowserRouter: ({ children }) => children,
 }));
 
-// ✅ FIX: proper localStorage mock
-beforeEach(() => {
-  jest.clearAllMocks();
+jest.mock("../services/authService", () => ({
+  signUpWithGoogle: jest.fn(),
+}));
 
-  Object.defineProperty(window, "localStorage", {
-    value: {
-      setItem: jest.fn(),
-      getItem: jest.fn(),
-      removeItem: jest.fn(),
-      clear: jest.fn(),
-    },
-    writable: true,
-  });
-});
+jest.mock("../components/nqfSelect.jsx", () => ({
+  NqfDropdown: ({ value, onChange }) => (
+    <select
+      aria-label="Highest qualification"
+      value={value}
+      onChange={onChange}
+    >
+      <option value="">Select NQF level</option>
+      <option value="NQF 4 — National Certificate (Matric)">
+        NQF 4 — National Certificate (Matric)
+      </option>
+      <option value="NQF 10 — Doctoral Degree">
+        NQF 10 — Doctoral Degree
+      </option>
+    </select>
+  ),
+}));
 
-// ================= HELPER =================
-const renderComponent = () => {
-  render(
-    <BrowserRouter>
-      <SignupApplicant />
-    </BrowserRouter>
-  );
-};
-
-// ================= TESTS =================
 describe("SignupApplicant", () => {
-  test("renders signup form", () => {
-    renderComponent();
-
-    expect(screen.getByText("Personal details")).toBeInTheDocument();
-    expect(screen.getByText("Create account")).toBeInTheDocument();
-    expect(screen.getByText("Sign up with Google")).toBeInTheDocument();
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.spyOn(console, "log").mockImplementation(() => {});
+    jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
-  test("shows error if password is too short", async () => {
-    renderComponent();
+  afterEach(() => {
+    console.log.mockRestore();
+    console.error.mockRestore();
+  });
+
+  test("renders applicant signup form fields", () => {
+    render(<SignupApplicant />);
+
+    expect(screen.getByText(/personal details/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/first name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/last name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/province/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/highest qualification/i)).toBeInTheDocument();
+  });
+
+  test("renders province and qualification dropdown defaults", () => {
+    render(<SignupApplicant />);
+
+    expect(screen.getByText(/select province/i)).toBeInTheDocument();
+    expect(screen.getByText(/select nqf level/i)).toBeInTheDocument();
+  });
+
+  test("allows the user to fill in applicant details", () => {
+    render(<SignupApplicant />);
 
     fireEvent.change(screen.getByLabelText(/first name/i), {
-      target: { value: "John" },
+      target: { value: "Peace" },
     });
 
     fireEvent.change(screen.getByLabelText(/last name/i), {
-      target: { value: "Doe" },
-    });
-
-    fireEvent.change(screen.getByLabelText(/email/i), {
-      target: { value: "test@test.com" },
-    });
-
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: "123" },
-    });
-
-    fireEvent.click(screen.getByText("Create account"));
-
-    expect(
-      await screen.findByText(/at least 6 characters/i)
-    ).toBeInTheDocument();
-  });
-
-  test("successful signup navigates to applicant dashboard", async () => {
-    signUpWithEmail.mockResolvedValue({});
-
-    renderComponent();
-
-    fireEvent.change(screen.getByLabelText(/first name/i), {
-      target: { value: "John" },
-    });
-    fireEvent.change(screen.getByLabelText(/last name/i), {
-      target: { value: "Doe" },
-    });
-    fireEvent.change(screen.getByLabelText(/email/i), {
-      target: { value: "test@test.com" },
-    });
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: "123456" },
+      target: { value: "Zulu" },
     });
 
     fireEvent.change(screen.getByLabelText(/province/i), {
       target: { value: "Gauteng" },
     });
 
-    fireEvent.change(screen.getByLabelText(/qualification/i), {
+    fireEvent.change(screen.getByLabelText(/highest qualification/i), {
       target: { value: "NQF 4 — National Certificate (Matric)" },
     });
 
-    fireEvent.click(screen.getByText("Create account"));
-
-    await waitFor(() => {
-      expect(signUpWithEmail).toHaveBeenCalled();
-
-      expect(window.localStorage.setItem).toHaveBeenCalledWith(
-        "role",
-        "applicant"
-      );
-
-      expect(mockNavigate).toHaveBeenCalledWith(
-        "/dashboard/applicant"
-      );
-    });
+    expect(screen.getByLabelText(/first name/i)).toHaveValue("Peace");
+    expect(screen.getByLabelText(/last name/i)).toHaveValue("Zulu");
+    expect(screen.getByLabelText(/province/i)).toHaveValue("Gauteng");
+    expect(screen.getByLabelText(/highest qualification/i)).toHaveValue(
+      "NQF 4 — National Certificate (Matric)"
+    );
   });
 
-  test("google signup navigates to applicant dashboard", async () => {
-    signUpWithGoogle.mockResolvedValue({});
+  test("successful Google signup calls auth service and navigates to profile creation", async () => {
+    signUpWithGoogle.mockResolvedValue({ uid: "test-user-id" });
 
-    renderComponent();
-
-    fireEvent.click(screen.getByText("Sign up with Google"));
-
-    await waitFor(() => {
-      expect(signUpWithGoogle).toHaveBeenCalled();
-
-      expect(window.localStorage.setItem).toHaveBeenCalledWith(
-        "role",
-        "applicant"
-      );
-
-      expect(mockNavigate).toHaveBeenCalledWith(
-        "/dashboard/applicant"
-      );
-    });
-  });
-
-  test("shows error on signup failure", async () => {
-    signUpWithEmail.mockRejectedValue({
-      code: "auth/email-already-in-use",
-    });
-
-    renderComponent();
+    render(<SignupApplicant />);
 
     fireEvent.change(screen.getByLabelText(/first name/i), {
-      target: { value: "John" },
-    });
-    fireEvent.change(screen.getByLabelText(/last name/i), {
-      target: { value: "Doe" },
-    });
-    fireEvent.change(screen.getByLabelText(/email/i), {
-      target: { value: "test@test.com" },
-    });
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: "123456" },
+      target: { value: "Peace" },
     });
 
-    fireEvent.click(screen.getByText("Create account"));
+    fireEvent.change(screen.getByLabelText(/last name/i), {
+      target: { value: "Zulu" },
+    });
+
+    fireEvent.change(screen.getByLabelText(/province/i), {
+      target: { value: "Gauteng" },
+    });
+
+    fireEvent.change(screen.getByLabelText(/highest qualification/i), {
+      target: { value: "NQF 4 — National Certificate (Matric)" },
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /continue with google/i })
+    );
+
+    await waitFor(() => {
+      expect(signUpWithGoogle).toHaveBeenCalledWith("applicant", {
+        firstName: "Peace",
+        lastName: "Zulu",
+        province: "Gauteng",
+        qualification: "NQF 4 — National Certificate (Matric)",
+      });
+
+      expect(mockNavigate).toHaveBeenCalledWith(
+        "/dashboard/applicant/createProfile"
+      );
+    });
+  });
+
+  test("shows loading text while Google signup is pending", async () => {
+    let resolveSignup;
+
+    signUpWithGoogle.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveSignup = resolve;
+        })
+    );
+
+    render(<SignupApplicant />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /continue with google/i })
+    );
 
     expect(
-      await screen.findByText(/already exists/i)
-    ).toBeInTheDocument();
+      screen.getByRole("button", { name: /signing in/i })
+    ).toBeDisabled();
+
+    resolveSignup({ uid: "abc123" });
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(
+        "/dashboard/applicant/createProfile"
+      );
+    });
+  });
+
+  test("shows an error message when Google signup fails", async () => {
+    signUpWithGoogle.mockRejectedValue(new Error("Google popup closed"));
+
+    render(<SignupApplicant />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /continue with google/i })
+    );
+
+    expect(await screen.findByText(/google popup closed/i)).toBeInTheDocument();
+
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

@@ -8,9 +8,9 @@
 }
 
 /* ===== CARD / FORM CONTAINER ===== */
-.card {
-  background-color: #fff;
-  color: #000;
+.profile-card {
+  background-color: #1a1a1a;
+  color: #fff;
   border: 2px solid orange;
   border-radius: 10px;
   padding: 20px;
@@ -76,4 +76,11 @@
 .loading {
   text-align: center;
   color: #fff;
+}
+
+.error {
+  color: red;
+  font-size: 0.8rem;
+  margin-top: 2px;
+  margin-bottom: 6px;
 }

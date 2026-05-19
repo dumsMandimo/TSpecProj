@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signUpWithGoogle } from "../services/authService";
-import { SectorDropdown } from "../components/nqfSelect.jsx";
+import { SectorDropdown } from "./nqfSelect";
 
 const PROVINCES = [
   "Eastern Cape",
@@ -18,9 +18,6 @@ const PROVINCES = [
 export default function SignupProvider() {
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
-
   const [form, setForm] = useState({
     organisationName: "",
     contactName: "",
@@ -29,11 +26,11 @@ export default function SignupProvider() {
     description: "",
   });
 
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
   const set = (field) => (e) =>
-    setForm((prev) => ({
-      ...prev,
-      [field]: e.target.value,
-    }));
+    setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
   const validateForm = () => {
     if (!form.organisationName.trim()) return "Organisation name is required";
@@ -46,7 +43,6 @@ export default function SignupProvider() {
 
   const handleGoogleSignup = async () => {
     setErrorMsg("");
-
     if (loading) return;
 
     const validationError = validateForm();
@@ -58,7 +54,7 @@ export default function SignupProvider() {
     setLoading(true);
 
     try {
-      const user = await signUpWithGoogle("provider", {
+      const { user, existingUser, role } = await signUpWithGoogle("provider", {
         organisationName: form.organisationName,
         contactName: form.contactName,
         sector: form.sector,
@@ -66,9 +62,22 @@ export default function SignupProvider() {
         description: form.description,
       });
 
-      console.log("Provider signup successful:", user?.uid);
+      if (existingUser) {
+        setErrorMsg("You already have an account. Please log in.");
+        setLoading(false);
+        return;
+      }
 
-      navigate("/dashboard/provider");
+      if (role && role !== "provider") {
+        setErrorMsg(
+          "You already have an account with a different role. Please log in.",
+        );
+        setLoading(false);
+        return;
+      }
+
+      console.log("Provider created:", user?.uid);
+      navigate("/pending-approval");
     } catch (error) {
       console.error("Signup failed:", error);
       setErrorMsg(error?.message || "Signup failed. Please try again.");
@@ -119,9 +128,9 @@ export default function SignupProvider() {
           Province
           <select value={form.province} onChange={set("province")} required>
             <option value="">Select province</option>
-            {PROVINCES.map((province) => (
-              <option key={province} value={province}>
-                {province}
+            {PROVINCES.map((p) => (
+              <option key={p} value={p}>
+                {p}
               </option>
             ))}
           </select>
