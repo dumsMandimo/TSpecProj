@@ -30,10 +30,6 @@ jobs:
         env:
           CI: true
 
-      - name: Check coverage file exists
-        run: ls -la ./my-app/coverage && test -f ./my-app/coverage/lcov.info
-        continue-on-error: true
-
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
@@ -46,7 +42,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./my-app/coverage/lcov.info
           fail_ci_if_error: false
-
 
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -66,9 +61,11 @@ jobs:
         working-directory: ./my-app
         run: npm install --legacy-peer-deps
 
+      # ✅ FIXED BUILD STEP (IMPORTANT)
       - name: Build React app
-        working-directory: ./my-app
-        run: npm run build
+        run: |
+          cd my-app
+          npm run build
         env:
           CI: false
           REACT_APP_FIREBASE_API_KEY: ${{ secrets.REACT_APP_FIREBASE_API_KEY }}
