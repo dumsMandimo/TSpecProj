@@ -2,10 +2,6 @@
   "name": "my-app",
   "version": "0.1.0",
   "private": true,
-<<<<<<< HEAD
-
-=======
->>>>>>> bf404d99fed8f4338355ea234bb912cd26335884
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@supabase/supabase-js": "^2.106.0",
@@ -18,22 +14,9 @@
     "react-router-dom": "^6.30.1",
     "react-scripts": "5.0.1"
   },
-<<<<<<< HEAD
-
-=======
->>>>>>> bf404d99fed8f4338355ea234bb912cd26335884
-  "scripts": {
-    "start": "node server.js",
-    "build": "react-scripts build",
-    "test": "react-scripts test --watchAll=false",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject"
   },
-<<<<<<< HEAD
-
-  "engines": {
-    "node": ">=18"
-=======
   "jest": {
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
@@ -71,7 +54,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
->>>>>>> bf404d99fed8f4338355ea234bb912cd26335884
   },
 
   "devDependencies": {
@@ -83,9 +65,5 @@
     "jest": "^27.5.1",
     "jest-environment-jsdom": "^30.3.0",
     "supertest": "^7.2.2"
-<<<<<<< HEAD
-=======
-
->>>>>>> bf404d99fed8f4338355ea234bb912cd26335884
   }
 }
