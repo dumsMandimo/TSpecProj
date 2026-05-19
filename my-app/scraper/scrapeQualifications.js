@@ -1,11 +1,11 @@
-const axios = require("axios");
 const cheerio = require("cheerio");
 const fs = require("fs");
+const { chromium } = require("playwright");
 
 const START_URL = "https://allqs.saqa.org.za/search.php?id=";
 
-// Keep this as 1 until pagination is working properly.
-const MAX_PAGES = 1;
+// Limit pages for proof of concept. Increase carefully if needed.
+const MAX_PAGES = 5;
 
 function clean(text) {
   return text.replace(/\s+/g, " ").trim();
@@ -86,15 +86,7 @@ function makeSearchText(qualification) {
     .toLowerCase();
 }
 
-async function scrapePage(url) {
-  console.log(`Scraping: ${url}`);
-
-  const { data: html } = await axios.get(url, {
-    headers: {
-      "User-Agent": "UbuntuCareers student project scraper",
-    },
-  });
-
+function parseQualificationsFromHtml(html) {
   const $ = cheerio.load(html);
   const qualifications = [];
 
@@ -108,7 +100,7 @@ async function scrapePage(url) {
 
     const saqaId = cells[0];
 
-    // Skip heading rows and invalid rows
+    // Skip heading rows and invalid rows.
     if (!/^\d+$/.test(saqaId)) return;
 
     const links = $(row)
@@ -117,38 +109,32 @@ async function scrapePage(url) {
       .get();
 
     const selfLink = links.find((href) => href.includes(`id=${saqaId}`));
-
     const field = parseField(cells[8]);
 
     const qualification = {
-      // Core SAQA data
       saqa_id: saqaId,
       title: emptyToNull(cells[1]),
 
-      // NQF alignment
       pre_2009_nqf_level_text: emptyToNull(cells[2]),
       nqf_level_text: emptyToNull(cells[3]),
       nqf_level_number: parseNqfLevel(cells[3], cells[2]),
 
-      // Classification data for dropdowns and filtering
       abet_band: emptyToNull(cells[4]),
       learning_subfield: emptyToNull(cells[5]),
       nqf_subframework: emptyToNull(cells[6]),
       originator: emptyToNull(cells[7]),
+
       field_code: field.field_code,
       field_name: field.field_name,
 
-      // Credits and status
       min_credits: parseCredits(cells[9]),
       status: emptyToNull(cells[10]),
       is_active: isActiveStatus(cells[10]),
 
-      // Extra SAQA info
       qa_functionary: emptyToNull(cells[11]),
       is_learning_programme: cells[12] === "Yes",
       recorded_against_qualification_id: emptyToNull(cells[13]),
 
-      // Source tracking for project justification
       source: "SAQA",
       source_url: selfLink
         ? makeAbsoluteUrl(selfLink)
@@ -157,7 +143,6 @@ async function scrapePage(url) {
       scraped_at: new Date().toISOString(),
     };
 
-    // App-specific helper fields
     qualification.dropdown_label = makeDropdownLabel(qualification);
     qualification.search_text = makeSearchText(qualification);
 
@@ -165,6 +150,56 @@ async function scrapePage(url) {
   });
 
   return qualifications;
+}
+
+async function scrapePagesWithPlaywright() {
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage();
+
+  const allQualifications = [];
+
+  await page.goto(START_URL, {
+    waitUntil: "domcontentloaded",
+    timeout: 60000,
+  });
+
+  for (let pageNumber = 1; pageNumber <= MAX_PAGES; pageNumber++) {
+    console.log(`Scraping page ${pageNumber}...`);
+
+    const html = await page.content();
+    const pageQualifications = parseQualificationsFromHtml(html);
+
+    console.log(`Found ${pageQualifications.length} qualifications`);
+
+    const first = pageQualifications[0];
+    const last = pageQualifications[pageQualifications.length - 1];
+
+    console.log("First qualification on this page:", first?.saqa_id, first?.title);
+    console.log("Last qualification on this page:", last?.saqa_id, last?.title);
+
+    allQualifications.push(...pageQualifications);
+
+    if (pageNumber === MAX_PAGES) break;
+
+    const nextOffset = pageNumber * 20;
+
+    console.log(`Moving to next offset: ${nextOffset}`);
+
+    await page.evaluate((offset) => {
+      if (typeof goPrevNext === "function") {
+        goPrevNext(offset);
+      } else {
+        throw new Error("goPrevNext function not found on page");
+      }
+    }, nextOffset);
+
+    await page.waitForLoadState("domcontentloaded").catch(() => {});
+    await page.waitForTimeout(1500);
+  }
+
+  await browser.close();
+
+  return allQualifications;
 }
 
 function buildProjectOutputs(allQualifications) {
@@ -245,13 +280,26 @@ function buildProjectOutputs(allQualifications) {
   };
 }
 
-async function main() {
-  let allQualifications = [];
+function dedupeBySaqaId(qualifications) {
+  const map = new Map();
 
-  for (let page = 1; page <= MAX_PAGES; page++) {
-    const pageQualifications = await scrapePage(START_URL);
-    allQualifications = allQualifications.concat(pageQualifications);
-  }
+  qualifications.forEach((q) => {
+    if (!q.saqa_id) return;
+
+    if (!map.has(q.saqa_id)) {
+      map.set(q.saqa_id, q);
+    }
+  });
+
+  return Array.from(map.values());
+}
+
+async function main() {
+  const scrapedQualifications = await scrapePagesWithPlaywright();
+  const allQualifications = dedupeBySaqaId(scrapedQualifications);
+
+  console.log(`Scraped rows before dedupe: ${scrapedQualifications.length}`);
+  console.log(`Unique qualifications after dedupe: ${allQualifications.length}`);
 
   const {
     activeQualifications,
@@ -261,8 +309,26 @@ async function main() {
     skillTags,
   } = buildProjectOutputs(allQualifications);
 
+  const report = {
+    scraped_rows_before_dedupe: scrapedQualifications.length,
+    unique_qualifications_after_dedupe: allQualifications.length,
+    active_qualifications: activeQualifications.length,
+    dropdown_items: qualificationDropdown.length,
+    fields_found: fields.length,
+    skill_tags_generated: skillTags.length,
+    nqf_levels_in_scraped_active_data: nqfLevels.map((level) => level.value),
+    note:
+      "Canonical NQF 1-10 levels are handled separately in the application. Scraped SAQA data is used for specific qualification titles, fields, subfields, source URLs, and skill-tag generation.",
+    generated_at: new Date().toISOString(),
+  };
+
   fs.writeFileSync(
-    "qualifications_raw.json",
+    "qualifications_scraped_raw.json",
+    JSON.stringify(scrapedQualifications, null, 2)
+  );
+
+  fs.writeFileSync(
+    "qualifications_cleaned.json",
     JSON.stringify(allQualifications, null, 2)
   );
 
@@ -277,10 +343,9 @@ async function main() {
   );
 
   fs.writeFileSync("nqf_levels.json", JSON.stringify(nqfLevels, null, 2));
-
   fs.writeFileSync("fields.json", JSON.stringify(fields, null, 2));
-
   fs.writeFileSync("skill_tags.json", JSON.stringify(skillTags, null, 2));
+  fs.writeFileSync("scraper_report.json", JSON.stringify(report, null, 2));
 
   console.log("Summary:");
   console.log(`Total scraped qualifications: ${allQualifications.length}`);

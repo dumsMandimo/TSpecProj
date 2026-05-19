@@ -1,11 +1,23 @@
 [
   {
+    "field_code": "001",
+    "field_name": "Agriculture and Nature Conservation"
+  },
+  {
     "field_code": "002",
     "field_name": "Culture and Arts"
   },
   {
     "field_code": "003",
     "field_name": "Business, Commerce and Management Studies"
+  },
+  {
+    "field_code": "005",
+    "field_name": "Education, Training and Development"
+  },
+  {
+    "field_code": "007",
+    "field_name": "Human and Social Studies"
   },
   {
     "field_code": "008",

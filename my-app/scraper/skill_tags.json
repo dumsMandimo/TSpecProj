@@ -40,6 +40,26 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=102427"
   },
   {
+    "name": "Primary Agriculture",
+    "field_name": "Agriculture and Nature Conservation",
+    "field_code": "001",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "125263",
+    "example_qualification_title": "Advanced Certificate in Conservation Agriculture",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125263"
+  },
+  {
+    "name": "Psychology",
+    "field_name": "Human and Social Studies",
+    "field_code": "007",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "88524",
+    "example_qualification_title": "Advanced Certificate in Counselling and Communication Skills",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=88524"
+  },
+  {
     "name": "Safety in Society",
     "field_name": "Law, Military Science and Security",
     "field_code": "008",
@@ -48,5 +68,25 @@
     "example_qualification_id": "102417",
     "example_qualification_title": "Advance Certificate in Social Security",
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=102417"
+  },
+  {
+    "name": "Schooling",
+    "field_name": "Education, Training and Development",
+    "field_code": "005",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "116955",
+    "example_qualification_title": "Advanced Certificate in Education in Cognitive Studies",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=116955"
+  },
+  {
+    "name": "Sport",
+    "field_name": "Culture and Arts",
+    "field_code": "002",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "104536",
+    "example_qualification_title": "Advanced Certificate in Coaching Science",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=104536"
   }
 ]

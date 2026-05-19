@@ -128,5 +128,125 @@
     "learning_subfield": "Generic Management",
     "min_credits": 120,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=122888"
+  },
+  {
+    "value": "101772",
+    "label": "Advanced Certificate in Business Management and Administration — NQF Level 6",
+    "title": "Advanced Certificate in Business Management and Administration",
+    "nqf_level_number": 6,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Generic Management",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101772"
+  },
+  {
+    "value": "102420",
+    "label": "Advanced Certificate in Business Management in Business Analysis — NQF Level 6",
+    "title": "Advanced Certificate in Business Management in Business Analysis",
+    "nqf_level_number": 6,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Generic Management",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=102420"
+  },
+  {
+    "value": "102421",
+    "label": "Advanced Certificate in Business Management in Change Management — NQF Level 6",
+    "title": "Advanced Certificate in Business Management in Change Management",
+    "nqf_level_number": 6,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Generic Management",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=102421"
+  },
+  {
+    "value": "101004",
+    "label": "Advanced Certificate in Business Management in Operational Management — NQF Level 6",
+    "title": "Advanced Certificate in Business Management in Operational Management",
+    "nqf_level_number": 6,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Generic Management",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101004"
+  },
+  {
+    "value": "102426",
+    "label": "Advanced Certificate in Business Management in Project Management — NQF Level 6",
+    "title": "Advanced Certificate in Business Management in Project Management",
+    "nqf_level_number": 6,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Generic Management",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=102426"
+  },
+  {
+    "value": "102423",
+    "label": "Advanced Certificate in Business Management in Risk Management — NQF Level 6",
+    "title": "Advanced Certificate in Business Management in Risk Management",
+    "nqf_level_number": 6,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Generic Management",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=102423"
+  },
+  {
+    "value": "104536",
+    "label": "Advanced Certificate in Coaching Science — NQF Level 6",
+    "title": "Advanced Certificate in Coaching Science",
+    "nqf_level_number": 6,
+    "field_name": "Culture and Arts",
+    "learning_subfield": "Sport",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=104536"
+  },
+  {
+    "value": "88162",
+    "label": "Advanced Certificate in Commerce — NQF Level 6",
+    "title": "Advanced Certificate in Commerce",
+    "nqf_level_number": 6,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=88162"
+  },
+  {
+    "value": "125263",
+    "label": "Advanced Certificate in Conservation Agriculture — NQF Level 6",
+    "title": "Advanced Certificate in Conservation Agriculture",
+    "nqf_level_number": 6,
+    "field_name": "Agriculture and Nature Conservation",
+    "learning_subfield": "Primary Agriculture",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125263"
+  },
+  {
+    "value": "88524",
+    "label": "Advanced Certificate in Counselling and Communication Skills — NQF Level 6",
+    "title": "Advanced Certificate in Counselling and Communication Skills",
+    "nqf_level_number": 6,
+    "field_name": "Human and Social Studies",
+    "learning_subfield": "Psychology",
+    "min_credits": 132,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=88524"
+  },
+  {
+    "value": "125037",
+    "label": "Advanced Certificate in Digital Banking — NQF Level 6",
+    "title": "Advanced Certificate in Digital Banking",
+    "nqf_level_number": 6,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Generic Management",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125037"
+  },
+  {
+    "value": "116955",
+    "label": "Advanced Certificate in Education in Cognitive Studies — NQF Level 6",
+    "title": "Advanced Certificate in Education in Cognitive Studies",
+    "nqf_level_number": 6,
+    "field_name": "Education, Training and Development",
+    "learning_subfield": "Schooling",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=116955"
   }
 ]
