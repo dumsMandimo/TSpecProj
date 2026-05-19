@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Film Television and Video",
+    "field_name": "Culture and Arts",
+    "field_code": "002",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "97233",
+    "example_qualification_title": "Advanced Certificate in Acting for Film",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=97233"
+  },
+  {
+    "name": "Finance Economics and Accounting",
+    "field_name": "Business, Commerce and Management Studies",
+    "field_code": "003",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "101812",
+    "example_qualification_title": "Advanced Certificate in Accountancy",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101812"
+  },
+  {
+    "name": "Generic Management",
+    "field_name": "Business, Commerce and Management Studies",
+    "field_code": "003",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "122981",
+    "example_qualification_title": "Advanced Certificate in Agile Leadership",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=122981"
+  },
+  {
+    "name": "Justice in Society",
+    "field_name": "Law, Military Science and Security",
+    "field_code": "008",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "102427",
+    "example_qualification_title": "Advance Certificate in Labour Law",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=102427"
+  },
+  {
+    "name": "Safety in Society",
+    "field_name": "Law, Military Science and Security",
+    "field_code": "008",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "102417",
+    "example_qualification_title": "Advance Certificate in Social Security",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=102417"
+  }
+]
