@@ -68,7 +68,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./my-app
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Fix permissions
         working-directory: ./my-app
