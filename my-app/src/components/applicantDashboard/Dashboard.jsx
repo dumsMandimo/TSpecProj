@@ -30,14 +30,12 @@ function Dashboard() {
             }
 
             try {
-                // Fetch the user's existing applications
                 const appsSnap = await getDocs(query(
                     collection(db, "applications"),
                     where("userId", "==", user.uid)
                 ));
                 const appliedOpportunityIds = appsSnap.docs.map(d => d.data().opportunityId);
 
-                // Fetch all approved opportunities
                 const oppsSnap = await getDocs(query(
                     collection(db, "opportunities"),
                     where("status", "==", "approved")
@@ -92,7 +90,7 @@ function Dashboard() {
     }, [navigate]);
 
     return (
-        <main className="dashboard-page">
+        <main className="applicant-dashboard">
             <header style={{ display: "flex", justifyContent: "flex-end", padding: "1rem" }}>
                 <NotificationBell />
             </header>
