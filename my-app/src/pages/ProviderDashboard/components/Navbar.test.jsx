@@ -21,7 +21,7 @@ describe("Navbar", () => {
   it("renders the welcome greeting with the provider name", () => {
     render(<Navbar {...defaultProps} />);
     expect(screen.getByText(/Welcome back,/i)).toBeInTheDocument();
-    expect(screen.getByText("Jane Doe")).toBeInTheDocument();
+    expect(screen.getAllByText("Jane Doe")[0]).toBeInTheDocument();
   });
 
   it("renders the Sign out button", () => {

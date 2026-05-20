@@ -1,9 +1,3 @@
-// ── Mock Firebase ─────────────────────────────────────────────────────────────
-// IMPORTANT: jest.mock() is hoisted above ALL variable declarations by Babel.
-// Any `const mockX = jest.fn()` defined outside the factory will be undefined
-// when the factory runs. Solution: define fns inside the factory and retrieve
-// them afterwards with jest.requireMock().
-
 jest.mock("firebase/firestore", () => ({
   collection:      jest.fn((_, name) => ({ name })),
   query:           jest.fn((...args) => args),
@@ -34,15 +28,6 @@ jest.mock("@emailjs/browser", () => ({
   default: { send: jest.fn().mockResolvedValue({}) },
 }));
 
-// ── Pull mock refs AFTER jest.mock() declarations ─────────────────────────────
-// jest.requireMock() returns the mocked module so we can call .mockX() on fns.
-const firestoreMock = jest.requireMock("firebase/firestore");
-const mockAddDoc          = firestoreMock.addDoc;
-const mockUpdateDoc       = firestoreMock.updateDoc;
-const mockDeleteDoc       = firestoreMock.deleteDoc;
-const mockGetDoc          = firestoreMock.getDoc;
-const mockGetDocs         = firestoreMock.getDocs;
-
 import {
   writeNotification,
   markNotificationRead,
@@ -57,6 +42,15 @@ import {
   notifyProviderApproval,
   notifyProviderNewApplication,
 } from "./providerService";
+
+const firestoreMock       = jest.requireMock("firebase/firestore");
+const mockAddDoc          = firestoreMock.addDoc;
+const mockUpdateDoc       = firestoreMock.updateDoc;
+const mockDeleteDoc       = firestoreMock.deleteDoc;
+const mockGetDoc          = firestoreMock.getDoc;
+const mockGetDocs         = firestoreMock.getDocs;
+const mockServerTimestamp = firestoreMock.serverTimestamp;
+
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -74,6 +68,8 @@ const makeDocSnap = (data, exists = true) => ({
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockServerTimestamp.mockReturnValue("SERVER_TS");
+  firestoreMock.serverTimestamp.mockReturnValue("SERVER_TS");  // ← add this
   mockAddDoc.mockResolvedValue({ id: "new-doc-id" });
   mockUpdateDoc.mockResolvedValue(undefined);
   mockDeleteDoc.mockResolvedValue(undefined);
@@ -346,3 +342,4 @@ describe("notifyProviderNewApplication", () => {
     expect(payload.applicationId).toBe("app-1");
   });
 });
+

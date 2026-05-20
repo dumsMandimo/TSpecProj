@@ -1,63 +1,57 @@
 import { renderHook, act } from "@testing-library/react";
 import { useProviderWatcher } from "./useProviderWatcher";
 
-// ── Mocks ──────────────────────────────────────────────────────────────────
-
-// We mock Firestore at the module level so we can control snapshot callbacks
 jest.mock("../../../services/firebase", () => ({ db: {} }));
 
-// Capture listener callbacks so tests can fire them manually
-let onSnapshotListings;
-let onSnapshotApps;
+let mockOnSnapshotListings;
+let mockOnSnapshotApps;
 
 const mockUnsubListings = jest.fn();
 const mockUnsubApps     = jest.fn();
 
-const mockGetDocs          = jest.fn();
-const mockAddDoc           = jest.fn();
-const mockGetDoc           = jest.fn();
-const mockOnSnapshot       = jest.fn();
-const mockQuery            = jest.fn((...args) => ({ _query: args }));
-const mockCollection       = jest.fn((db, col) => ({ _col: col }));
-const mockWhere            = jest.fn();
-const mockServerTimestamp  = jest.fn(() => "SERVER_TIMESTAMP");
-const mockDoc              = jest.fn();
-const mockTimestamp        = { fromMillis: jest.fn(() => "TIMESTAMP") };
+const mockGetDocs         = jest.fn();
+const mockAddDoc          = jest.fn();
+const mockGetDoc          = jest.fn();
+const mockOnSnapshot      = jest.fn();
+const mockQuery           = jest.fn((...args) => ({ _query: args }));
+const mockCollection      = jest.fn((db, col) => ({ _col: col }));
+const mockWhere           = jest.fn();
+const mockServerTimestamp = jest.fn(() => "SERVER_TIMESTAMP");
+const mockDoc             = jest.fn();
 
-jest.mock("firebase/firestore", () => ({
-  collection:      (...args) => mockCollection(...args),
-  query:           (...args) => mockQuery(...args),
-  where:           (...args) => mockWhere(...args),
-  onSnapshot:      (q, cb) => {
-    // First call = listings, second = apps
-    if (!onSnapshotListings) {
-      onSnapshotListings = cb;
-      return mockUnsubListings;
-    }
-    onSnapshotApps = cb;
-    return mockUnsubApps;
-  },
-  getDocs:         (...args) => mockGetDocs(...args),
-  addDoc:          (...args) => mockAddDoc(...args),
-  serverTimestamp: () => mockServerTimestamp(),
-  doc:             (...args) => mockDoc(...args),
-  getDoc:          (...args) => mockGetDoc(...args),
-  Timestamp:       mockTimestamp,
-}));
+jest.mock("firebase/firestore", () => {
+  const mockTimestamp = { fromMillis: jest.fn(() => "TIMESTAMP") };
+  return {
+    collection:      (...args) => mockCollection(...args),
+    query:           (...args) => mockQuery(...args),
+    where:           (...args) => mockWhere(...args),
+    onSnapshot:      (q, cb) => {
+      if (!mockOnSnapshotListings) {
+        mockOnSnapshotListings = cb;
+        return mockUnsubListings;
+      }
+      mockOnSnapshotApps = cb;
+      return mockUnsubApps;
+    },
+    getDocs:         (...args) => mockGetDocs(...args),
+    addDoc:          (...args) => mockAddDoc(...args),
+    serverTimestamp: () => mockServerTimestamp(),
+    doc:             (...args) => mockDoc(...args),
+    getDoc:          (...args) => mockGetDoc(...args),
+    Timestamp:       mockTimestamp,
+  };
+});
 
-// localStorage mock
 const localStorageMock = (() => {
   let store = {};
   return {
-    getItem:  (k) => store[k] ?? null,
-    setItem:  (k, v) => { store[k] = String(v); },
+    getItem:    (k) => store[k] ?? null,
+    setItem:    (k, v) => { store[k] = String(v); },
     removeItem: (k) => { delete store[k]; },
-    clear:    () => { store = {}; },
+    clear:      () => { store = {}; },
   };
 })();
 Object.defineProperty(window, "localStorage", { value: localStorageMock });
-
-// ── Helpers ────────────────────────────────────────────────────────────────
 
 function makeListing(overrides = {}) {
   return {
@@ -69,41 +63,37 @@ function makeListing(overrides = {}) {
 }
 
 function makeListingSnapshot(changes) {
+  const docs = changes.map(({ type = "modified", data }) => ({
+    type,
+    doc: { id: data.id, data: () => data },
+  }));
   return {
-    docChanges: () =>
-      changes.map(({ type = "modified", data }) => ({
-        type,
-        doc: { id: data.id, data: () => data },
-      })),
+    docChanges: () => docs,
+    forEach: (fn) => docs.forEach((d) => fn(d.doc)),
   };
 }
 
 function makeAppSnapshot(changes) {
+  const docs = changes.map(({ type = "added", data }) => ({
+    type,
+    doc: { id: data.id, data: () => data },
+  }));
   return {
-    docChanges: () =>
-      changes.map(({ type = "added", data }) => ({
-        type,
-        doc: { id: data.id, data: () => data },
-      })),
+    docChanges: () => docs,
+    forEach: (fn) => docs.forEach((d) => fn(d.doc)),
   };
 }
-
-// ── Tests ──────────────────────────────────────────────────────────────────
 
 describe("useProviderWatcher", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorageMock.clear();
-    onSnapshotListings = undefined;
-    onSnapshotApps     = undefined;
+    mockOnSnapshotListings = undefined;
+    mockOnSnapshotApps     = undefined;
 
-    // Default: getDocs returns an empty listings snapshot
     mockGetDocs.mockResolvedValue({ docs: [] });
-    // Default: addDoc succeeds
     mockAddDoc.mockResolvedValue({ id: "new-notif-id" });
-    // Default: duplicate check returns empty (no existing notification)
     mockGetDocs.mockResolvedValue({ empty: true, docs: [] });
-    // getDoc for user lookup
     mockGetDoc.mockResolvedValue({ exists: () => false });
   });
 
@@ -114,15 +104,13 @@ describe("useProviderWatcher", () => {
 
   it("subscribes to the listings collection on mount", () => {
     renderHook(() => useProviderWatcher("uid-123"));
-    // onSnapshot was bound for listings
-    expect(typeof onSnapshotListings).toBe("function");
+    expect(typeof mockOnSnapshotListings).toBe("function");
   });
 
   it("reads saved listing statuses from localStorage on mount", () => {
     const key = "listing_statuses_uid-123";
     localStorageMock.setItem(key, JSON.stringify({ "listing-1": "pending" }));
     renderHook(() => useProviderWatcher("uid-123"));
-    // No error = localStorage was read successfully
     expect(localStorageMock.getItem(key)).not.toBeNull();
   });
 
@@ -139,24 +127,20 @@ describe("useProviderWatcher", () => {
     expect(mockUnsubListings).toHaveBeenCalled();
   });
 
-  // ── Listing status change → notification ───────────────────────────────────
-
   it("writes an 'approved' notification when status changes from pending to approved", async () => {
-    // Seed localStorage with old status
     localStorageMock.setItem(
       "listing_statuses_uid-123",
       JSON.stringify({ "listing-1": "pending" })
     );
 
-    // Duplicate check: empty (so notification is written)
     mockGetDocs
-      .mockResolvedValueOnce({ empty: true, docs: [] }) // duplicate check
-      .mockResolvedValue({ docs: [] });                 // app watcher getDocs
+      .mockResolvedValueOnce({ empty: true, docs: [] })
+      .mockResolvedValue({ docs: [] });
 
     renderHook(() => useProviderWatcher("uid-123"));
 
     await act(async () => {
-      onSnapshotListings(
+      mockOnSnapshotListings(
         makeListingSnapshot([{ data: makeListing({ status: "approved" }) }])
       );
     });
@@ -185,7 +169,7 @@ describe("useProviderWatcher", () => {
     renderHook(() => useProviderWatcher("uid-123"));
 
     await act(async () => {
-      onSnapshotListings(
+      mockOnSnapshotListings(
         makeListingSnapshot([{ data: makeListing({ status: "rejected" }) }])
       );
     });
@@ -199,13 +183,12 @@ describe("useProviderWatcher", () => {
   });
 
   it("does NOT write a notification when status is seen for the first time (no prior status)", async () => {
-    // No saved statuses → prevStatus is undefined → should not fire
     mockGetDocs.mockResolvedValue({ docs: [] });
 
     renderHook(() => useProviderWatcher("uid-123"));
 
     await act(async () => {
-      onSnapshotListings(
+      mockOnSnapshotListings(
         makeListingSnapshot([{ data: makeListing({ status: "approved" }) }])
       );
     });
@@ -221,7 +204,7 @@ describe("useProviderWatcher", () => {
     renderHook(() => useProviderWatcher("uid-123"));
 
     await act(async () => {
-      onSnapshotListings(
+      mockOnSnapshotListings(
         makeListingSnapshot([{ data: makeListing({ status: "closed" }) }])
       );
     });
@@ -238,7 +221,6 @@ describe("useProviderWatcher", () => {
       JSON.stringify({ "listing-1": "pending" })
     );
 
-    // First getDocs = duplicate exists
     mockGetDocs
       .mockResolvedValueOnce({ empty: false, docs: [{ id: "dup" }] })
       .mockResolvedValue({ docs: [] });
@@ -246,7 +228,7 @@ describe("useProviderWatcher", () => {
     renderHook(() => useProviderWatcher("uid-123"));
 
     await act(async () => {
-      onSnapshotListings(
+      mockOnSnapshotListings(
         makeListingSnapshot([{ data: makeListing({ status: "approved" }) }])
       );
     });
@@ -256,29 +238,22 @@ describe("useProviderWatcher", () => {
     expect(mockAddDoc).not.toHaveBeenCalled();
   });
 
-  // ── New application → notification ─────────────────────────────────────────
-
   it("writes a 'new_application' notification for a brand-new application", async () => {
-    // Setup listings so the app watcher knows about them
     mockGetDocs
       .mockResolvedValueOnce({
-        docs: [
-          { id: "listing-1", data: () => ({ title: "React Internship" }) },
-        ],
-      })         // getDocs for listings in setupApplicationWatcher
-      .mockResolvedValueOnce({ empty: true, docs: [] }); // duplicate check
+        docs: [{ id: "listing-1", data: () => ({ title: "React Internship" }) }],
+      })
+      .mockResolvedValueOnce({ empty: true, docs: [] });
 
-    mockGetDoc.mockResolvedValue({ exists: () => false }); // user lookup fails → "Someone"
+    mockGetDoc.mockResolvedValue({ exists: () => false });
 
     renderHook(() => useProviderWatcher("uid-123"));
-
-    // Let the async setupApplicationWatcher run
     await new Promise((r) => setTimeout(r, 20));
 
-    if (!onSnapshotApps) return; // if no opportunity ids, no apps watcher
+    if (!mockOnSnapshotApps) return;
 
     await act(async () => {
-      onSnapshotApps(
+      mockOnSnapshotApps(
         makeAppSnapshot([
           { data: { id: "app-99", userId: "user-1", opportunityId: "listing-1" } },
         ])
@@ -306,10 +281,10 @@ describe("useProviderWatcher", () => {
     renderHook(() => useProviderWatcher("uid-123"));
     await new Promise((r) => setTimeout(r, 20));
 
-    if (!onSnapshotApps) return;
+    if (!mockOnSnapshotApps) return;
 
     await act(async () => {
-      onSnapshotApps(
+      mockOnSnapshotApps(
         makeAppSnapshot([
           { data: { id: "app-existing", userId: "user-1", opportunityId: "listing-1" } },
         ])
@@ -326,17 +301,17 @@ describe("useProviderWatcher", () => {
       .mockResolvedValueOnce({
         docs: [{ id: "listing-1", data: () => ({ title: "React Internship" }) }],
       })
-      .mockResolvedValueOnce({ empty: true, docs: [] }); // duplicate check
+      .mockResolvedValueOnce({ empty: true, docs: [] });
 
     mockGetDoc.mockResolvedValue({ exists: () => false });
 
     renderHook(() => useProviderWatcher("uid-123"));
     await new Promise((r) => setTimeout(r, 20));
 
-    if (!onSnapshotApps) return;
+    if (!mockOnSnapshotApps) return;
 
     await act(async () => {
-      onSnapshotApps(
+      mockOnSnapshotApps(
         makeAppSnapshot([
           { data: { id: "app-new", userId: "user-1", opportunityId: "listing-1" } },
         ])
@@ -359,13 +334,13 @@ describe("useProviderWatcher", () => {
     renderHook(() => useProviderWatcher("uid-123"));
     await new Promise((r) => setTimeout(r, 20));
 
-    if (!onSnapshotApps) return;
+    if (!mockOnSnapshotApps) return;
 
     await act(async () => {
-      onSnapshotApps(
+      mockOnSnapshotApps(
         makeAppSnapshot([
           {
-            type: "modified", // not "added"
+            type: "modified",
             data: { id: "app-mod", userId: "user-1", opportunityId: "listing-1" },
           },
         ])
@@ -376,8 +351,6 @@ describe("useProviderWatcher", () => {
 
     expect(mockAddDoc).not.toHaveBeenCalled();
   });
-
-  // ── User name resolution ───────────────────────────────────────────────────
 
   it("uses firstName + lastName from users collection if available", async () => {
     mockGetDocs
@@ -394,10 +367,10 @@ describe("useProviderWatcher", () => {
     renderHook(() => useProviderWatcher("uid-123"));
     await new Promise((r) => setTimeout(r, 20));
 
-    if (!onSnapshotApps) return;
+    if (!mockOnSnapshotApps) return;
 
     await act(async () => {
-      onSnapshotApps(
+      mockOnSnapshotApps(
         makeAppSnapshot([
           { data: { id: "app-A", userId: "user-jane", opportunityId: "listing-1" } },
         ])
@@ -419,8 +392,6 @@ describe("useProviderWatcher", () => {
       })
       .mockResolvedValueOnce({ empty: true, docs: [] });
 
-    // First getDoc (users): doesn't exist
-    // Second getDoc (applicants): exists with name
     mockGetDoc
       .mockResolvedValueOnce({ exists: () => false })
       .mockResolvedValueOnce({ exists: () => true, data: () => ({ name: "Applicant Name" }) });
@@ -428,10 +399,10 @@ describe("useProviderWatcher", () => {
     renderHook(() => useProviderWatcher("uid-123"));
     await new Promise((r) => setTimeout(r, 20));
 
-    if (!onSnapshotApps) return;
+    if (!mockOnSnapshotApps) return;
 
     await act(async () => {
-      onSnapshotApps(
+      mockOnSnapshotApps(
         makeAppSnapshot([
           { data: { id: "app-B", userId: "user-B", opportunityId: "listing-1" } },
         ])
@@ -446,3 +417,4 @@ describe("useProviderWatcher", () => {
     );
   });
 });
+
