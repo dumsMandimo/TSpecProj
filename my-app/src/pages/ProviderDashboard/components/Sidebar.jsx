@@ -3,6 +3,7 @@ import "./Sidebar.css";
 const NAV_ITEMS = [
   { key: "overview",      label: "Overview",          icon: "⬡" },
   { key: "listings",      label: "My Listings",       icon: "◈" },
+  { key: "analytics",     label: "Analytics",         icon: "📊" },
   { key: "applications",  label: "Applications",      icon: "◎" },
   { key: "notifications", label: "Notifications",     icon: "◇" },
   { key: "create",        label: "Post Opportunity",  icon: "+" },
