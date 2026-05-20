@@ -1,41 +1,10 @@
 {
-  "sector_targets_used": [
-    "Sector - Agriculture and Nature Conservation",
-    "Sector - Culture and Arts",
-    "Sector - Business, Commerce and Management Studies",
-    "Sector - Communication Studies and Language",
-    "Sector - Education, Training and Development",
-    "Sector - Manufacturing, Engineering and Technology",
-    "Sector - Human and Social Studies",
-    "Sector - Law, Military Science and Security",
-    "Sector - Health Sciences and Social Services",
-    "Sector - Physical, Mathematical, Computer and Life Sciences",
-    "Sector - Services",
-    "Sector - Physical Planning and Construction"
-  ],
-  "scraper_mode": "demo",
-  "delay_ms": 1500,
-  "search_targets_used": [
-    "NQF 1 General Certificate - Services",
-    "NQF 2 Elementary Certificate - Agriculture",
-    "NQF 3 Intermediate Certificate - Engineering",
-    "NQF 4 National Certificate - Computer Science",
-    "NQF 5 Higher Certificate - Business",
-    "NQF 6 Diploma - Engineering",
-    "NQF 6 Advanced Certificate - Business",
-    "NQF 7 Bachelor's Degree - Health",
-    "NQF 7 Advanced Diploma - Education",
-    "NQF 8 Honours Degree - Science",
-    "NQF 8 Postgraduate Diploma - Business",
-    "NQF 9 Master's Degree - Education",
-    "NQF 10 Doctoral Degree - Science"
-  ],
   "scraped_rows_before_dedupe": 660,
-  "unique_qualifications_after_dedupe": 629,
-  "active_qualifications": 405,
-  "dropdown_items": 405,
+  "unique_qualifications_after_dedupe": 630,
+  "active_qualifications": 402,
+  "dropdown_items": 402,
   "fields_found": 12,
-  "skill_tags_generated": 75,
+  "skill_tags_generated": 76,
   "nqf_levels_in_scraped_active_data": [
     1,
     2,
@@ -48,6 +17,7 @@
     9,
     10
   ],
-  "note": "Canonical NQF 1-10 levels are handled separately in the application. Scraped SAQA data is used for specific qualification titles, fields, subfields, source URLs, and skill-tag generation.",
-  "generated_at": "2026-05-20T00:41:03.068Z"
+  "nqf_qualification_types_generated": 13,
+  "note": "NQF level and qualification type options are derived from scraped SAQA qualification records. Specific qualification titles, fields, subfields, source URLs, and skill tags are also sourced from SAQA data.",
+  "generated_at": "2026-05-20T23:40:02.120Z"
 }

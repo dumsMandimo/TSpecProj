@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { signUpWithGoogle } from "../services/authService";
+import { NqfDropdown } from "./nqfSelect";
 
 const NQF_LEVELS = [
   "NQF 1 — General Certificate",
@@ -96,9 +97,7 @@ export default function SignupApplicant() {
         <legend>Personal details</legend>
 
         {errorMsg && (
-          <p style={{ color: "red", marginBottom: "10px" }}>
-            {errorMsg}
-          </p>
+          <p style={{ color: "red", marginBottom: "10px" }}>{errorMsg}</p>
         )}
 
         <label>
@@ -121,7 +120,11 @@ export default function SignupApplicant() {
 
         <label>
           Province
-          <select value={form.province} onChange={setField("province")} required>
+          <select
+            value={form.province}
+            onChange={setField("province")}
+            required
+          >
             <option value="">Select province</option>
             {PROVINCES.map((p) => (
               <option key={p} value={p}>
@@ -133,18 +136,11 @@ export default function SignupApplicant() {
 
         <label>
           Qualification
-          <select
+          <NqfDropdown
             value={form.qualification}
             onChange={setField("qualification")}
             required
-          >
-            <option value="">Select NQF level</option>
-            {NQF_LEVELS.map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
+          />
         </label>
       </fieldset>
 

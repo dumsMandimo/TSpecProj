@@ -2,35 +2,9 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import saqaFields from "../data/saqa/fields.json";
 import saqaQualifications from "../data/saqa/qualification_dropdown.json";
 import saqaSkillTags from "../data/saqa/skill_tags.json";
+import saqaNqfLevels from "../data/saqa/nqf_levels.json";
 
-const NQF_LEVELS = [
-  { group: "NQF 1", level: 1, options: ["General Certificate"] },
-  { group: "NQF 2", level: 2, options: ["Elementary Certificate"] },
-  { group: "NQF 3", level: 3, options: ["Intermediate Certificate"] },
-  { group: "NQF 4", level: 4, options: ["National Certificate"] },
-  { group: "NQF 5", level: 5, options: ["Higher Certificate"] },
-  { group: "NQF 6", level: 6, options: ["Diploma", "Advanced Certificate"] },
-  {
-    group: "NQF 7",
-    level: 7,
-    options: ["Bachelor's Degree", "Advanced Diploma"],
-  },
-  {
-    group: "NQF 8",
-    level: 8,
-    options: ["Bachelor Honours Degree", "Postgraduate Diploma"],
-  },
-  {
-    group: "NQF 9",
-    level: 9,
-    options: ["Master's Degree", "Master's Degree (Professional)"],
-  },
-  {
-    group: "NQF 10",
-    level: 10,
-    options: ["Doctoral Degree", "Doctoral Degree (Professional)"],
-  },
-];
+const NQF_LEVELS = saqaNqfLevels;
 
 const OTHER_QUALIFICATION_VALUE = "OTHER_NOT_LISTED";
 
@@ -137,23 +111,25 @@ export function NqfDropdown({ value, onChange, required }) {
 
       {open && (
         <ul className="nqf-list">
-          {NQF_LEVELS.map(({ group, level, options }) => (
-            <li key={group}>
-              <p className="nqf-group-label">{group}</p>
-              {options.map((name) => (
-                <button
-                  key={name}
-                  type="button"
-                  className={`nqf-option ${
-                    selected?.name === name ? "selected" : ""
-                  }`}
-                  onClick={() => pick(name, group, level)}
-                >
-                  {name}
-                </button>
-              ))}
-            </li>
-          ))}
+          {[...NQF_LEVELS]
+            .sort((a, b) => Number(a.level) - Number(b.level))
+            .map(({ group, level, options }) => (
+              <li key={group}>
+                <p className="nqf-group-label">{group}</p>
+                {(options || []).map((name) => (
+                  <button
+                    key={`${group}-${name}`}
+                    type="button"
+                    className={`nqf-option ${
+                      selected?.name === name ? "selected" : ""
+                    }`}
+                    onClick={() => pick(name, group, level)}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </li>
+            ))}
         </ul>
       )}
     </section>

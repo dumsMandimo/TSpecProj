@@ -130,16 +130,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=99552"
   },
   {
-    "value": "121159",
-    "label": "Higher Certificate in Accounting — NQF Level 5",
-    "title": "Higher Certificate in Accounting",
-    "nqf_level_number": 5,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=121159"
-  },
-  {
     "value": "93811",
     "label": "Higher Certificate in Accounting — NQF Level 5",
     "title": "Higher Certificate in Accounting",
@@ -158,6 +148,16 @@
     "learning_subfield": "Finance Economics and Accounting",
     "min_credits": 120,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=117979"
+  },
+  {
+    "value": "86487",
+    "label": "Higher Certificate in Accounting — NQF Level 5",
+    "title": "Higher Certificate in Accounting",
+    "nqf_level_number": 5,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=86487"
   },
   {
     "value": "103080",
@@ -180,14 +180,14 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125243"
   },
   {
-    "value": "86487",
+    "value": "121159",
     "label": "Higher Certificate in Accounting — NQF Level 5",
     "title": "Higher Certificate in Accounting",
     "nqf_level_number": 5,
     "field_name": "Business, Commerce and Management Studies",
     "learning_subfield": "Finance Economics and Accounting",
     "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=86487"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=121159"
   },
   {
     "value": "102038",
@@ -280,26 +280,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=117893"
   },
   {
-    "value": "84186",
-    "label": "Higher Certificate in Business Administration — NQF Level 5",
-    "title": "Higher Certificate in Business Administration",
-    "nqf_level_number": 5,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Office Administration",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=84186"
-  },
-  {
-    "value": "111255",
-    "label": "Higher Certificate in Business Administration — NQF Level 5",
-    "title": "Higher Certificate in Business Administration",
-    "nqf_level_number": 5,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=111255"
-  },
-  {
     "value": "111416",
     "label": "Higher Certificate in Business Administration — NQF Level 5",
     "title": "Higher Certificate in Business Administration",
@@ -318,6 +298,16 @@
     "learning_subfield": "Generic Management",
     "min_credits": 120,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=90864"
+  },
+  {
+    "value": "84186",
+    "label": "Higher Certificate in Business Administration — NQF Level 5",
+    "title": "Higher Certificate in Business Administration",
+    "nqf_level_number": 5,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Office Administration",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=84186"
   },
   {
     "value": "125057",
@@ -350,6 +340,16 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=93712"
   },
   {
+    "value": "125058",
+    "label": "Higher Certificate in Business Management — NQF Level 5",
+    "title": "Higher Certificate in Business Management",
+    "nqf_level_number": 5,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Generic Management",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125058"
+  },
+  {
     "value": "96746",
     "label": "Higher Certificate in Business Management — NQF Level 5",
     "title": "Higher Certificate in Business Management",
@@ -380,16 +380,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=118460"
   },
   {
-    "value": "118169",
-    "label": "Higher Certificate in Business Management — NQF Level 5",
-    "title": "Higher Certificate in Business Management",
-    "nqf_level_number": 5,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Generic Management",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=118169"
-  },
-  {
     "value": "94802",
     "label": "Higher Certificate in Business Management — NQF Level 5",
     "title": "Higher Certificate in Business Management",
@@ -400,14 +390,34 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=94802"
   },
   {
-    "value": "123025",
+    "value": "125717",
     "label": "Higher Certificate in Business Management — NQF Level 5",
     "title": "Higher Certificate in Business Management",
     "nqf_level_number": 5,
     "field_name": "Business, Commerce and Management Studies",
     "learning_subfield": "Generic Management",
     "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=123025"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125717"
+  },
+  {
+    "value": "118169",
+    "label": "Higher Certificate in Business Management — NQF Level 5",
+    "title": "Higher Certificate in Business Management",
+    "nqf_level_number": 5,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Generic Management",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=118169"
+  },
+  {
+    "value": "125419",
+    "label": "Higher Certificate in Business Management — NQF Level 5",
+    "title": "Higher Certificate in Business Management",
+    "nqf_level_number": 5,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Generic Management",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125419"
   },
   {
     "value": "120687",
@@ -418,16 +428,6 @@
     "learning_subfield": "Generic Management",
     "min_credits": 130,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=120687"
-  },
-  {
-    "value": "121387",
-    "label": "Higher Certificate in Business Management — NQF Level 5",
-    "title": "Higher Certificate in Business Management",
-    "nqf_level_number": 5,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Generic Management",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=121387"
   },
   {
     "value": "84046",
@@ -450,16 +450,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=96799"
   },
   {
-    "value": "125058",
-    "label": "Higher Certificate in Business Management — NQF Level 5",
-    "title": "Higher Certificate in Business Management",
-    "nqf_level_number": 5,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Generic Management",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125058"
-  },
-  {
     "value": "87026",
     "label": "Higher Certificate in Business Management — NQF Level 5",
     "title": "Higher Certificate in Business Management",
@@ -470,16 +460,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=87026"
   },
   {
-    "value": "125717",
-    "label": "Higher Certificate in Business Management — NQF Level 5",
-    "title": "Higher Certificate in Business Management",
-    "nqf_level_number": 5,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Generic Management",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125717"
-  },
-  {
     "value": "118148",
     "label": "Diploma in Agricultural Engineering — NQF Level 6",
     "title": "Diploma in Agricultural Engineering",
@@ -488,6 +468,16 @@
     "learning_subfield": "Engineering and Related Design",
     "min_credits": 360,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=118148"
+  },
+  {
+    "value": "112178",
+    "label": "Diploma in Chemical Engineering — NQF Level 6",
+    "title": "Diploma in Chemical Engineering",
+    "nqf_level_number": 6,
+    "field_name": "Manufacturing, Engineering and Technology",
+    "learning_subfield": "Engineering and Related Design",
+    "min_credits": 360,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=112178"
   },
   {
     "value": "96854",
@@ -520,26 +510,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101147"
   },
   {
-    "value": "112178",
-    "label": "Diploma in Chemical Engineering — NQF Level 6",
-    "title": "Diploma in Chemical Engineering",
-    "nqf_level_number": 6,
-    "field_name": "Manufacturing, Engineering and Technology",
-    "learning_subfield": "Engineering and Related Design",
-    "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=112178"
-  },
-  {
-    "value": "122961",
-    "label": "Diploma in Civil Engineering — NQF Level 6",
-    "title": "Diploma in Civil Engineering",
-    "nqf_level_number": 6,
-    "field_name": "Manufacturing, Engineering and Technology",
-    "learning_subfield": "Engineering and Related Design",
-    "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=122961"
-  },
-  {
     "value": "111282",
     "label": "Diploma in Civil Engineering — NQF Level 6",
     "title": "Diploma in Civil Engineering",
@@ -558,6 +528,16 @@
     "learning_subfield": "Engineering and Related Design",
     "min_credits": 360,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=123081"
+  },
+  {
+    "value": "122961",
+    "label": "Diploma in Civil Engineering — NQF Level 6",
+    "title": "Diploma in Civil Engineering",
+    "nqf_level_number": 6,
+    "field_name": "Manufacturing, Engineering and Technology",
+    "learning_subfield": "Engineering and Related Design",
+    "min_credits": 360,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=122961"
   },
   {
     "value": "121217",
@@ -580,16 +560,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125299"
   },
   {
-    "value": "125622",
-    "label": "Diploma in Engineering in Mechanical Engineering — NQF Level 6",
-    "title": "Diploma in Engineering in Mechanical Engineering",
-    "nqf_level_number": 6,
-    "field_name": "Manufacturing, Engineering and Technology",
-    "learning_subfield": "Engineering and Related Design",
-    "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125622"
-  },
-  {
     "value": "125317",
     "label": "Diploma in Engineering in Mechanical Engineering — NQF Level 6",
     "title": "Diploma in Engineering in Mechanical Engineering",
@@ -600,6 +570,16 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125317"
   },
   {
+    "value": "125622",
+    "label": "Diploma in Engineering in Mechanical Engineering — NQF Level 6",
+    "title": "Diploma in Engineering in Mechanical Engineering",
+    "nqf_level_number": 6,
+    "field_name": "Manufacturing, Engineering and Technology",
+    "learning_subfield": "Engineering and Related Design",
+    "min_credits": 360,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125622"
+  },
+  {
     "value": "101120",
     "label": "Diploma in Explosives Management — NQF Level 6",
     "title": "Diploma in Explosives Management",
@@ -608,6 +588,16 @@
     "learning_subfield": "Manufacturing and Assembly",
     "min_credits": 360,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101120"
+  },
+  {
+    "value": "100978",
+    "label": "Diploma in Food Technology — NQF Level 6",
+    "title": "Diploma in Food Technology",
+    "nqf_level_number": 6,
+    "field_name": "Manufacturing, Engineering and Technology",
+    "learning_subfield": "Manufacturing and Assembly",
+    "min_credits": 360,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=100978"
   },
   {
     "value": "96981",
@@ -630,14 +620,24 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=100745"
   },
   {
-    "value": "100978",
-    "label": "Diploma in Food Technology — NQF Level 6",
-    "title": "Diploma in Food Technology",
+    "value": "97089",
+    "label": "Diploma in Industrial Engineering — NQF Level 6",
+    "title": "Diploma in Industrial Engineering",
     "nqf_level_number": 6,
     "field_name": "Manufacturing, Engineering and Technology",
-    "learning_subfield": "Manufacturing and Assembly",
+    "learning_subfield": "Engineering and Related Design",
     "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=100978"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=97089"
+  },
+  {
+    "value": "101151",
+    "label": "Diploma in Industrial Engineering — NQF Level 6",
+    "title": "Diploma in Industrial Engineering",
+    "nqf_level_number": 6,
+    "field_name": "Manufacturing, Engineering and Technology",
+    "learning_subfield": "Engineering and Related Design",
+    "min_credits": 360,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101151"
   },
   {
     "value": "112692",
@@ -660,24 +660,14 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=100774"
   },
   {
-    "value": "97089",
-    "label": "Diploma in Industrial Engineering — NQF Level 6",
-    "title": "Diploma in Industrial Engineering",
+    "value": "96857",
+    "label": "Diploma in Mechanical Engineering — NQF Level 6",
+    "title": "Diploma in Mechanical Engineering",
     "nqf_level_number": 6,
     "field_name": "Manufacturing, Engineering and Technology",
     "learning_subfield": "Engineering and Related Design",
     "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=97089"
-  },
-  {
-    "value": "101151",
-    "label": "Diploma in Industrial Engineering — NQF Level 6",
-    "title": "Diploma in Industrial Engineering",
-    "nqf_level_number": 6,
-    "field_name": "Manufacturing, Engineering and Technology",
-    "learning_subfield": "Engineering and Related Design",
-    "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101151"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=96857"
   },
   {
     "value": "111594",
@@ -688,16 +678,6 @@
     "learning_subfield": "Engineering and Related Design",
     "min_credits": 360,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=111594"
-  },
-  {
-    "value": "96857",
-    "label": "Diploma in Mechanical Engineering — NQF Level 6",
-    "title": "Diploma in Mechanical Engineering",
-    "nqf_level_number": 6,
-    "field_name": "Manufacturing, Engineering and Technology",
-    "learning_subfield": "Engineering and Related Design",
-    "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=96857"
   },
   {
     "value": "101198",
@@ -1040,6 +1020,26 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=123447"
   },
   {
+    "value": "110441",
+    "label": "Advanced Certificate in Financial Planning — NQF Level 6",
+    "title": "Advanced Certificate in Financial Planning",
+    "nqf_level_number": 6,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=110441"
+  },
+  {
+    "value": "96750",
+    "label": "Advanced Certificate in Financial Planning — NQF Level 6",
+    "title": "Advanced Certificate in Financial Planning",
+    "nqf_level_number": 6,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=96750"
+  },
+  {
     "value": "93710",
     "label": "Advanced Certificate in Financial Planning — NQF Level 6",
     "title": "Advanced Certificate in Financial Planning",
@@ -1068,26 +1068,6 @@
     "learning_subfield": "Finance Economics and Accounting",
     "min_credits": 120,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=102203"
-  },
-  {
-    "value": "110441",
-    "label": "Advanced Certificate in Financial Planning — NQF Level 6",
-    "title": "Advanced Certificate in Financial Planning",
-    "nqf_level_number": 6,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=110441"
-  },
-  {
-    "value": "96750",
-    "label": "Advanced Certificate in Financial Planning — NQF Level 6",
-    "title": "Advanced Certificate in Financial Planning",
-    "nqf_level_number": 6,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=96750"
   },
   {
     "value": "96725",
@@ -1160,26 +1140,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=5365"
   },
   {
-    "value": "87241",
-    "label": "Bachelor of Arts: Social Work — NQF Level 7",
-    "title": "Bachelor of Arts: Social Work",
-    "nqf_level_number": 7,
-    "field_name": "Health Sciences and Social Services",
-    "learning_subfield": "Promotive Health and Developmental Services",
-    "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=87241"
-  },
-  {
-    "value": "80200",
-    "label": "Bachelor of Arts: Social Work — NQF Level 7",
-    "title": "Bachelor of Arts: Social Work",
-    "nqf_level_number": 7,
-    "field_name": "Health Sciences and Social Services",
-    "learning_subfield": "Promotive Health and Developmental Services",
-    "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=80200"
-  },
-  {
     "value": "79115",
     "label": "Bachelor of Arts: Social Work — NQF Level 7",
     "title": "Bachelor of Arts: Social Work",
@@ -1198,6 +1158,26 @@
     "learning_subfield": "Promotive Health and Developmental Services",
     "min_credits": 360,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=73033"
+  },
+  {
+    "value": "87241",
+    "label": "Bachelor of Arts: Social Work — NQF Level 7",
+    "title": "Bachelor of Arts: Social Work",
+    "nqf_level_number": 7,
+    "field_name": "Health Sciences and Social Services",
+    "learning_subfield": "Promotive Health and Developmental Services",
+    "min_credits": 360,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=87241"
+  },
+  {
+    "value": "80200",
+    "label": "Bachelor of Arts: Social Work — NQF Level 7",
+    "title": "Bachelor of Arts: Social Work",
+    "nqf_level_number": 7,
+    "field_name": "Health Sciences and Social Services",
+    "learning_subfield": "Promotive Health and Developmental Services",
+    "min_credits": 360,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=80200"
   },
   {
     "value": "71755",
@@ -1230,34 +1210,14 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=105742"
   },
   {
-    "value": "114954",
+    "value": "116569",
     "label": "Bachelor of Dental Therapy — NQF Level 7",
     "title": "Bachelor of Dental Therapy",
     "nqf_level_number": 7,
     "field_name": "Health Sciences and Social Services",
     "learning_subfield": "Promotive Health and Developmental Services",
     "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=114954"
-  },
-  {
-    "value": "79126",
-    "label": "Bachelor of Dental Therapy — NQF Level 7",
-    "title": "Bachelor of Dental Therapy",
-    "nqf_level_number": 7,
-    "field_name": "Health Sciences and Social Services",
-    "learning_subfield": "Promotive Health and Developmental Services",
-    "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=79126"
-  },
-  {
-    "value": "83938",
-    "label": "Bachelor of Dental Therapy — NQF Level 7",
-    "title": "Bachelor of Dental Therapy",
-    "nqf_level_number": 7,
-    "field_name": "Health Sciences and Social Services",
-    "learning_subfield": "Promotive Health and Developmental Services",
-    "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=83938"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=116569"
   },
   {
     "value": "72835",
@@ -1270,24 +1230,34 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=72835"
   },
   {
-    "value": "116569",
+    "value": "79126",
     "label": "Bachelor of Dental Therapy — NQF Level 7",
     "title": "Bachelor of Dental Therapy",
     "nqf_level_number": 7,
     "field_name": "Health Sciences and Social Services",
     "learning_subfield": "Promotive Health and Developmental Services",
     "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=116569"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=79126"
   },
   {
-    "value": "79127",
-    "label": "Bachelor of Diagnostic Radiography — NQF Level 7",
-    "title": "Bachelor of Diagnostic Radiography",
+    "value": "114954",
+    "label": "Bachelor of Dental Therapy — NQF Level 7",
+    "title": "Bachelor of Dental Therapy",
     "nqf_level_number": 7,
     "field_name": "Health Sciences and Social Services",
     "learning_subfield": "Promotive Health and Developmental Services",
     "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=79127"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=114954"
+  },
+  {
+    "value": "83938",
+    "label": "Bachelor of Dental Therapy — NQF Level 7",
+    "title": "Bachelor of Dental Therapy",
+    "nqf_level_number": 7,
+    "field_name": "Health Sciences and Social Services",
+    "learning_subfield": "Promotive Health and Developmental Services",
+    "min_credits": 360,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=83938"
   },
   {
     "value": "117092",
@@ -1298,6 +1268,16 @@
     "learning_subfield": "Promotive Health and Developmental Services",
     "min_credits": 360,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=117092"
+  },
+  {
+    "value": "79127",
+    "label": "Bachelor of Diagnostic Radiography — NQF Level 7",
+    "title": "Bachelor of Diagnostic Radiography",
+    "nqf_level_number": 7,
+    "field_name": "Health Sciences and Social Services",
+    "learning_subfield": "Promotive Health and Developmental Services",
+    "min_credits": 360,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=79127"
   },
   {
     "value": "58001",
@@ -1318,6 +1298,16 @@
     "learning_subfield": "Promotive Health and Developmental Services",
     "min_credits": 360,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=112941"
+  },
+  {
+    "value": "119382",
+    "label": "Bachelor of Health Sciences — NQF Level 7",
+    "title": "Bachelor of Health Sciences",
+    "nqf_level_number": 7,
+    "field_name": "Health Sciences and Social Services",
+    "learning_subfield": "Curative Health",
+    "min_credits": 360,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=119382"
   },
   {
     "value": "115314",
@@ -1450,6 +1440,16 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=124592"
   },
   {
+    "value": "119492",
+    "label": "Advanced Diploma in Adult and Community Education and Training Teaching — NQF Level 7",
+    "title": "Advanced Diploma in Adult and Community Education and Training Teaching",
+    "nqf_level_number": 7,
+    "field_name": "Education, Training and Development",
+    "learning_subfield": "Schooling",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=119492"
+  },
+  {
     "value": "123201",
     "label": "Advanced Diploma in Adult and Community Education and Training Teaching — NQF Level 7",
     "title": "Advanced Diploma in Adult and Community Education and Training Teaching",
@@ -1458,16 +1458,6 @@
     "learning_subfield": "Adult Learning",
     "min_credits": 120,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=123201"
-  },
-  {
-    "value": "104533",
-    "label": "Advanced Diploma in Adult and Community Education and Training Teaching — NQF Level 7",
-    "title": "Advanced Diploma in Adult and Community Education and Training Teaching",
-    "nqf_level_number": 7,
-    "field_name": "Education, Training and Development",
-    "learning_subfield": "Schooling",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=104533"
   },
   {
     "value": "117718",
@@ -1480,6 +1470,16 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=117718"
   },
   {
+    "value": "104533",
+    "label": "Advanced Diploma in Adult and Community Education and Training Teaching — NQF Level 7",
+    "title": "Advanced Diploma in Adult and Community Education and Training Teaching",
+    "nqf_level_number": 7,
+    "field_name": "Education, Training and Development",
+    "learning_subfield": "Schooling",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=104533"
+  },
+  {
     "value": "123565",
     "label": "Advanced Diploma in Adult and Community Education and Training Teaching — NQF Level 7",
     "title": "Advanced Diploma in Adult and Community Education and Training Teaching",
@@ -1488,16 +1488,6 @@
     "learning_subfield": "Schooling",
     "min_credits": 120,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=123565"
-  },
-  {
-    "value": "119492",
-    "label": "Advanced Diploma in Adult and Community Education and Training Teaching — NQF Level 7",
-    "title": "Advanced Diploma in Adult and Community Education and Training Teaching",
-    "nqf_level_number": 7,
-    "field_name": "Education, Training and Development",
-    "learning_subfield": "Schooling",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=119492"
   },
   {
     "value": "111152",
@@ -1660,6 +1650,26 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=115929"
   },
   {
+    "value": "110092",
+    "label": "Advanced Diploma in School Leadership and Management — NQF Level 7",
+    "title": "Advanced Diploma in School Leadership and Management",
+    "nqf_level_number": 7,
+    "field_name": "Education, Training and Development",
+    "learning_subfield": "Schooling",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=110092"
+  },
+  {
+    "value": "119806",
+    "label": "Advanced Diploma in School Leadership and Management — NQF Level 7",
+    "title": "Advanced Diploma in School Leadership and Management",
+    "nqf_level_number": 7,
+    "field_name": "Education, Training and Development",
+    "learning_subfield": "Schooling",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=119806"
+  },
+  {
     "value": "111397",
     "label": "Advanced Diploma in School Leadership and Management — NQF Level 7",
     "title": "Advanced Diploma in School Leadership and Management",
@@ -1710,16 +1720,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=124895"
   },
   {
-    "value": "108931",
-    "label": "Advanced Diploma in School Leadership and Management — NQF Level 7",
-    "title": "Advanced Diploma in School Leadership and Management",
-    "nqf_level_number": 7,
-    "field_name": "Education, Training and Development",
-    "learning_subfield": "Schooling",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=108931"
-  },
-  {
     "value": "112604",
     "label": "Advanced Diploma in School Leadership and Management — NQF Level 7",
     "title": "Advanced Diploma in School Leadership and Management",
@@ -1728,26 +1728,6 @@
     "learning_subfield": "Schooling",
     "min_credits": 120,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=112604"
-  },
-  {
-    "value": "109236",
-    "label": "Advanced Diploma in School Leadership and Management — NQF Level 7",
-    "title": "Advanced Diploma in School Leadership and Management",
-    "nqf_level_number": 7,
-    "field_name": "Education, Training and Development",
-    "learning_subfield": "Schooling",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109236"
-  },
-  {
-    "value": "113014",
-    "label": "Advanced Diploma in School Leadership and Management — NQF Level 7",
-    "title": "Advanced Diploma in School Leadership and Management",
-    "nqf_level_number": 7,
-    "field_name": "Education, Training and Development",
-    "learning_subfield": "Schooling",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=113014"
   },
   {
     "value": "111240",
@@ -1860,6 +1840,16 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=73550"
   },
   {
+    "value": "19970",
+    "label": "Bachelor of Commerce Honours in Information Systems — NQF Level 8",
+    "title": "Bachelor of Commerce Honours in Information Systems",
+    "nqf_level_number": 8,
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "learning_subfield": "Information Technology and Computer Sciences",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=19970"
+  },
+  {
     "value": "100903",
     "label": "Bachelor of Commerce Honours in Information Systems — NQF Level 8",
     "title": "Bachelor of Commerce Honours in Information Systems",
@@ -1878,16 +1868,6 @@
     "learning_subfield": "Information Technology and Computer Sciences",
     "min_credits": 120,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=118408"
-  },
-  {
-    "value": "19970",
-    "label": "Bachelor of Commerce Honours in Information Systems — NQF Level 8",
-    "title": "Bachelor of Commerce Honours in Information Systems",
-    "nqf_level_number": 8,
-    "field_name": "Physical, Mathematical, Computer and Life Sciences",
-    "learning_subfield": "Information Technology and Computer Sciences",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=19970"
   },
   {
     "value": "96959",
@@ -1980,26 +1960,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=71776"
   },
   {
-    "value": "19448",
-    "label": "Postgraduate Diploma in Accountancy — NQF Level 8",
-    "title": "Postgraduate Diploma in Accountancy",
-    "nqf_level_number": 8,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=19448"
-  },
-  {
-    "value": "118949",
-    "label": "Postgraduate Diploma in Accountancy — NQF Level 8",
-    "title": "Postgraduate Diploma in Accountancy",
-    "nqf_level_number": 8,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=118949"
-  },
-  {
     "value": "98917",
     "label": "Postgraduate Diploma in Accountancy — NQF Level 8",
     "title": "Postgraduate Diploma in Accountancy",
@@ -2008,6 +1968,16 @@
     "learning_subfield": "Finance Economics and Accounting",
     "min_credits": 128,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=98917"
+  },
+  {
+    "value": "102204",
+    "label": "Postgraduate Diploma in Accountancy — NQF Level 8",
+    "title": "Postgraduate Diploma in Accountancy",
+    "nqf_level_number": 8,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=102204"
   },
   {
     "value": "101527",
@@ -2030,114 +2000,34 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=90906"
   },
   {
-    "value": "102204",
+    "value": "118949",
     "label": "Postgraduate Diploma in Accountancy — NQF Level 8",
     "title": "Postgraduate Diploma in Accountancy",
     "nqf_level_number": 8,
     "field_name": "Business, Commerce and Management Studies",
     "learning_subfield": "Finance Economics and Accounting",
     "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=102204"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=118949"
   },
   {
-    "value": "101977",
+    "value": "19448",
+    "label": "Postgraduate Diploma in Accountancy — NQF Level 8",
+    "title": "Postgraduate Diploma in Accountancy",
+    "nqf_level_number": 8,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=19448"
+  },
+  {
+    "value": "110275",
     "label": "Postgraduate Diploma in Accounting — NQF Level 8",
     "title": "Postgraduate Diploma in Accounting",
     "nqf_level_number": 8,
     "field_name": "Business, Commerce and Management Studies",
     "learning_subfield": "Finance Economics and Accounting",
     "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101977"
-  },
-  {
-    "value": "109416",
-    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
-    "title": "Postgraduate Diploma in Accounting",
-    "nqf_level_number": 8,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109416"
-  },
-  {
-    "value": "119983",
-    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
-    "title": "Postgraduate Diploma in Accounting",
-    "nqf_level_number": 8,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=119983"
-  },
-  {
-    "value": "122741",
-    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
-    "title": "Postgraduate Diploma in Accounting",
-    "nqf_level_number": 8,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=122741"
-  },
-  {
-    "value": "124106",
-    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
-    "title": "Postgraduate Diploma in Accounting",
-    "nqf_level_number": 8,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=124106"
-  },
-  {
-    "value": "115390",
-    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
-    "title": "Postgraduate Diploma in Accounting",
-    "nqf_level_number": 8,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=115390"
-  },
-  {
-    "value": "112688",
-    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
-    "title": "Postgraduate Diploma in Accounting",
-    "nqf_level_number": 8,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=112688"
-  },
-  {
-    "value": "93768",
-    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
-    "title": "Postgraduate Diploma in Accounting",
-    "nqf_level_number": 8,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=93768"
-  },
-  {
-    "value": "5191",
-    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
-    "title": "Postgraduate Diploma in Accounting",
-    "nqf_level_number": 8,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=5191"
-  },
-  {
-    "value": "119818",
-    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
-    "title": "Postgraduate Diploma in Accounting",
-    "nqf_level_number": 8,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=119818"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=110275"
   },
   {
     "value": "111679",
@@ -2170,16 +2060,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=72944"
   },
   {
-    "value": "110275",
-    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
-    "title": "Postgraduate Diploma in Accounting",
-    "nqf_level_number": 8,
-    "field_name": "Business, Commerce and Management Studies",
-    "learning_subfield": "Finance Economics and Accounting",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=110275"
-  },
-  {
     "value": "122803",
     "label": "Postgraduate Diploma in Accounting — NQF Level 8",
     "title": "Postgraduate Diploma in Accounting",
@@ -2188,6 +2068,126 @@
     "learning_subfield": "Finance Economics and Accounting",
     "min_credits": 120,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=122803"
+  },
+  {
+    "value": "96614",
+    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
+    "title": "Postgraduate Diploma in Accounting",
+    "nqf_level_number": 8,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=96614"
+  },
+  {
+    "value": "119983",
+    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
+    "title": "Postgraduate Diploma in Accounting",
+    "nqf_level_number": 8,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=119983"
+  },
+  {
+    "value": "115399",
+    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
+    "title": "Postgraduate Diploma in Accounting",
+    "nqf_level_number": 8,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=115399"
+  },
+  {
+    "value": "124106",
+    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
+    "title": "Postgraduate Diploma in Accounting",
+    "nqf_level_number": 8,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=124106"
+  },
+  {
+    "value": "115390",
+    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
+    "title": "Postgraduate Diploma in Accounting",
+    "nqf_level_number": 8,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=115390"
+  },
+  {
+    "value": "101977",
+    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
+    "title": "Postgraduate Diploma in Accounting",
+    "nqf_level_number": 8,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101977"
+  },
+  {
+    "value": "112688",
+    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
+    "title": "Postgraduate Diploma in Accounting",
+    "nqf_level_number": 8,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=112688"
+  },
+  {
+    "value": "109416",
+    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
+    "title": "Postgraduate Diploma in Accounting",
+    "nqf_level_number": 8,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109416"
+  },
+  {
+    "value": "93768",
+    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
+    "title": "Postgraduate Diploma in Accounting",
+    "nqf_level_number": 8,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=93768"
+  },
+  {
+    "value": "5191",
+    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
+    "title": "Postgraduate Diploma in Accounting",
+    "nqf_level_number": 8,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=5191"
+  },
+  {
+    "value": "122741",
+    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
+    "title": "Postgraduate Diploma in Accounting",
+    "nqf_level_number": 8,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=122741"
+  },
+  {
+    "value": "119818",
+    "label": "Postgraduate Diploma in Accounting — NQF Level 8",
+    "title": "Postgraduate Diploma in Accounting",
+    "nqf_level_number": 8,
+    "field_name": "Business, Commerce and Management Studies",
+    "learning_subfield": "Finance Economics and Accounting",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=119818"
   },
   {
     "value": "123065",
@@ -2218,46 +2218,6 @@
     "learning_subfield": "Higher Education and Training",
     "min_credits": 180,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=97386"
-  },
-  {
-    "value": "8375",
-    "label": "Master of Education — NQF Level 9",
-    "title": "Master of Education",
-    "nqf_level_number": 9,
-    "field_name": "Education, Training and Development",
-    "learning_subfield": "Higher Education and Training",
-    "min_credits": 240,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=8375"
-  },
-  {
-    "value": "18971",
-    "label": "Master of Education — NQF Level 9",
-    "title": "Master of Education",
-    "nqf_level_number": 9,
-    "field_name": "Education, Training and Development",
-    "learning_subfield": "Higher Education and Training",
-    "min_credits": 180,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=18971"
-  },
-  {
-    "value": "58266",
-    "label": "Master of Education — NQF Level 9",
-    "title": "Master of Education",
-    "nqf_level_number": 9,
-    "field_name": "Education, Training and Development",
-    "learning_subfield": "Higher Education and Training",
-    "min_credits": 180,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=58266"
-  },
-  {
-    "value": "79137",
-    "label": "Master of Education — NQF Level 9",
-    "title": "Master of Education",
-    "nqf_level_number": 9,
-    "field_name": "Education, Training and Development",
-    "learning_subfield": "Higher Education and Training",
-    "min_credits": 180,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=79137"
   },
   {
     "value": "113281",
@@ -2320,34 +2280,14 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=73069"
   },
   {
-    "value": "65288",
+    "value": "109480",
     "label": "Master of Education — NQF Level 9",
     "title": "Master of Education",
     "nqf_level_number": 9,
     "field_name": "Education, Training and Development",
-    "learning_subfield": "Schooling",
+    "learning_subfield": "Adult Learning",
     "min_credits": 180,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=65288"
-  },
-  {
-    "value": "83933",
-    "label": "Master of Education — NQF Level 9",
-    "title": "Master of Education",
-    "nqf_level_number": 9,
-    "field_name": "Education, Training and Development",
-    "learning_subfield": "Higher Education and Training",
-    "min_credits": 180,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=83933"
-  },
-  {
-    "value": "88878",
-    "label": "Master of Education — NQF Level 9",
-    "title": "Master of Education",
-    "nqf_level_number": 9,
-    "field_name": "Education, Training and Development",
-    "learning_subfield": "Higher Education and Training",
-    "min_credits": 180,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=88878"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109480"
   },
   {
     "value": "7261",
@@ -2360,24 +2300,54 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=7261"
   },
   {
-    "value": "101837",
+    "value": "79137",
     "label": "Master of Education — NQF Level 9",
     "title": "Master of Education",
     "nqf_level_number": 9,
     "field_name": "Education, Training and Development",
     "learning_subfield": "Higher Education and Training",
     "min_credits": 180,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101837"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=79137"
   },
   {
-    "value": "4057",
+    "value": "8375",
     "label": "Master of Education — NQF Level 9",
     "title": "Master of Education",
     "nqf_level_number": 9,
     "field_name": "Education, Training and Development",
     "learning_subfield": "Higher Education and Training",
     "min_credits": 240,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=4057"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=8375"
+  },
+  {
+    "value": "18971",
+    "label": "Master of Education — NQF Level 9",
+    "title": "Master of Education",
+    "nqf_level_number": 9,
+    "field_name": "Education, Training and Development",
+    "learning_subfield": "Higher Education and Training",
+    "min_credits": 180,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=18971"
+  },
+  {
+    "value": "58266",
+    "label": "Master of Education — NQF Level 9",
+    "title": "Master of Education",
+    "nqf_level_number": 9,
+    "field_name": "Education, Training and Development",
+    "learning_subfield": "Higher Education and Training",
+    "min_credits": 180,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=58266"
+  },
+  {
+    "value": "65288",
+    "label": "Master of Education — NQF Level 9",
+    "title": "Master of Education",
+    "nqf_level_number": 9,
+    "field_name": "Education, Training and Development",
+    "learning_subfield": "Schooling",
+    "min_credits": 180,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=65288"
   },
   {
     "value": "116743",
@@ -2460,16 +2430,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=19793"
   },
   {
-    "value": "19232",
-    "label": "Doctor of Philosophy in Applied Mathematics — NQF Level 10",
-    "title": "Doctor of Philosophy in Applied Mathematics",
-    "nqf_level_number": 10,
-    "field_name": "Physical, Mathematical, Computer and Life Sciences",
-    "learning_subfield": "Mathematical Sciences",
-    "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=19232"
-  },
-  {
     "value": "17380",
     "label": "Doctor of Philosophy in Applied Mathematics — NQF Level 10",
     "title": "Doctor of Philosophy in Applied Mathematics",
@@ -2478,6 +2438,16 @@
     "learning_subfield": "Mathematical Sciences",
     "min_credits": 360,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=17380"
+  },
+  {
+    "value": "19232",
+    "label": "Doctor of Philosophy in Applied Mathematics — NQF Level 10",
+    "title": "Doctor of Philosophy in Applied Mathematics",
+    "nqf_level_number": 10,
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "learning_subfield": "Mathematical Sciences",
+    "min_credits": 360,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=19232"
   },
   {
     "value": "111047",
@@ -2580,16 +2550,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=117678"
   },
   {
-    "value": "115317",
-    "label": "Doctor of Philosophy in Biostatistics — NQF Level 10",
-    "title": "Doctor of Philosophy in Biostatistics",
-    "nqf_level_number": 10,
-    "field_name": "Physical, Mathematical, Computer and Life Sciences",
-    "learning_subfield": "Physical Sciences",
-    "min_credits": 360,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=115317"
-  },
-  {
     "value": "119583",
     "label": "Doctor of Philosophy in Biostatistics — NQF Level 10",
     "title": "Doctor of Philosophy in Biostatistics",
@@ -2598,6 +2558,16 @@
     "learning_subfield": "Physical Sciences",
     "min_credits": 360,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=119583"
+  },
+  {
+    "value": "115317",
+    "label": "Doctor of Philosophy in Biostatistics — NQF Level 10",
+    "title": "Doctor of Philosophy in Biostatistics",
+    "nqf_level_number": 10,
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "learning_subfield": "Physical Sciences",
+    "min_credits": 360,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=115317"
   },
   {
     "value": "125263",
@@ -2940,26 +2910,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=111208"
   },
   {
-    "value": "109766",
-    "label": "Advanced Diploma in Journalism — NQF Level 7",
-    "title": "Advanced Diploma in Journalism",
-    "nqf_level_number": 7,
-    "field_name": "Communication Studies and Language",
-    "learning_subfield": "Communication Studies",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109766"
-  },
-  {
-    "value": "99338",
-    "label": "Advanced Diploma in Journalism — NQF Level 7",
-    "title": "Advanced Diploma in Journalism",
-    "nqf_level_number": 7,
-    "field_name": "Communication Studies and Language",
-    "learning_subfield": "Communication Studies",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=99338"
-  },
-  {
     "value": "111171",
     "label": "Advanced Diploma in Journalism — NQF Level 7",
     "title": "Advanced Diploma in Journalism",
@@ -2980,6 +2930,36 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101206"
   },
   {
+    "value": "109766",
+    "label": "Advanced Diploma in Journalism — NQF Level 7",
+    "title": "Advanced Diploma in Journalism",
+    "nqf_level_number": 7,
+    "field_name": "Communication Studies and Language",
+    "learning_subfield": "Communication Studies",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109766"
+  },
+  {
+    "value": "99338",
+    "label": "Advanced Diploma in Journalism — NQF Level 7",
+    "title": "Advanced Diploma in Journalism",
+    "nqf_level_number": 7,
+    "field_name": "Communication Studies and Language",
+    "learning_subfield": "Communication Studies",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=99338"
+  },
+  {
+    "value": "115397",
+    "label": "Advanced Diploma in Language Practice — NQF Level 7",
+    "title": "Advanced Diploma in Language Practice",
+    "nqf_level_number": 7,
+    "field_name": "Communication Studies and Language",
+    "learning_subfield": "Language",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=115397"
+  },
+  {
     "value": "110065",
     "label": "Advanced Diploma in Language Practice — NQF Level 7",
     "title": "Advanced Diploma in Language Practice",
@@ -2998,16 +2978,6 @@
     "learning_subfield": "Language",
     "min_credits": 120,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=111624"
-  },
-  {
-    "value": "115397",
-    "label": "Advanced Diploma in Language Practice — NQF Level 7",
-    "title": "Advanced Diploma in Language Practice",
-    "nqf_level_number": 7,
-    "field_name": "Communication Studies and Language",
-    "learning_subfield": "Language",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=115397"
   },
   {
     "value": "116407",
@@ -3190,6 +3160,16 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=113013"
   },
   {
+    "value": "109579",
+    "label": "Advanced Diploma in Industrial Engineering — NQF Level 7",
+    "title": "Advanced Diploma in Industrial Engineering",
+    "nqf_level_number": 7,
+    "field_name": "Manufacturing, Engineering and Technology",
+    "learning_subfield": "Engineering and Related Design",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109579"
+  },
+  {
     "value": "111267",
     "label": "Advanced Diploma in Industrial Engineering — NQF Level 7",
     "title": "Advanced Diploma in Industrial Engineering",
@@ -3210,16 +3190,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=110935"
   },
   {
-    "value": "109579",
-    "label": "Advanced Diploma in Industrial Engineering — NQF Level 7",
-    "title": "Advanced Diploma in Industrial Engineering",
-    "nqf_level_number": 7,
-    "field_name": "Manufacturing, Engineering and Technology",
-    "learning_subfield": "Engineering and Related Design",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109579"
-  },
-  {
     "value": "103062",
     "label": "Advanced Diploma in Marine Engineering — NQF Level 7",
     "title": "Advanced Diploma in Marine Engineering",
@@ -3230,14 +3200,14 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=103062"
   },
   {
-    "value": "101992",
+    "value": "101174",
     "label": "Advanced Diploma in Mechanical Engineering — NQF Level 7",
     "title": "Advanced Diploma in Mechanical Engineering",
     "nqf_level_number": 7,
     "field_name": "Manufacturing, Engineering and Technology",
     "learning_subfield": "Engineering and Related Design",
     "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101992"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101174"
   },
   {
     "value": "88524",
@@ -3500,16 +3470,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125273"
   },
   {
-    "value": "115517",
-    "label": "Advanced Certificate in Medical Rescue — NQF Level 6",
-    "title": "Advanced Certificate in Medical Rescue",
-    "nqf_level_number": 6,
-    "field_name": "Health Sciences and Social Services",
-    "learning_subfield": "Rehabilitative Health/Services",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=115517"
-  },
-  {
     "value": "109900",
     "label": "Advanced Certificate in Medical Rescue — NQF Level 6",
     "title": "Advanced Certificate in Medical Rescue",
@@ -3518,6 +3478,16 @@
     "learning_subfield": "Preventive Health",
     "min_credits": 120,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109900"
+  },
+  {
+    "value": "115517",
+    "label": "Advanced Certificate in Medical Rescue — NQF Level 6",
+    "title": "Advanced Certificate in Medical Rescue",
+    "nqf_level_number": 6,
+    "field_name": "Health Sciences and Social Services",
+    "learning_subfield": "Rehabilitative Health/Services",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=115517"
   },
   {
     "value": "109959",
@@ -3870,16 +3840,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=103079"
   },
   {
-    "value": "112080",
-    "label": "Advanced Diploma in Architectural Technology — NQF Level 7",
-    "title": "Advanced Diploma in Architectural Technology",
-    "nqf_level_number": 7,
-    "field_name": "Physical Planning and Construction",
-    "learning_subfield": "Physical Planning Design and Management",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=112080"
-  },
-  {
     "value": "109781",
     "label": "Advanced Diploma in Architectural Technology — NQF Level 7",
     "title": "Advanced Diploma in Architectural Technology",
@@ -3888,6 +3848,16 @@
     "learning_subfield": "Physical Planning Design and Management",
     "min_credits": 120,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109781"
+  },
+  {
+    "value": "112080",
+    "label": "Advanced Diploma in Architectural Technology — NQF Level 7",
+    "title": "Advanced Diploma in Architectural Technology",
+    "nqf_level_number": 7,
+    "field_name": "Physical Planning and Construction",
+    "learning_subfield": "Physical Planning Design and Management",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=112080"
   },
   {
     "value": "115931",
@@ -4010,16 +3980,6 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=111290"
   },
   {
-    "value": "119070",
-    "label": "Advanced Diploma in Quantity Surveying — NQF Level 7",
-    "title": "Advanced Diploma in Quantity Surveying",
-    "nqf_level_number": 7,
-    "field_name": "Physical Planning and Construction",
-    "learning_subfield": "Physical Planning Design and Management",
-    "min_credits": 120,
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=119070"
-  },
-  {
     "value": "109011",
     "label": "Advanced Diploma in Quantity Surveying — NQF Level 7",
     "title": "Advanced Diploma in Quantity Surveying",
@@ -4028,6 +3988,16 @@
     "learning_subfield": "Physical Planning Design and Management",
     "min_credits": 120,
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109011"
+  },
+  {
+    "value": "119070",
+    "label": "Advanced Diploma in Quantity Surveying — NQF Level 7",
+    "title": "Advanced Diploma in Quantity Surveying",
+    "nqf_level_number": 7,
+    "field_name": "Physical Planning and Construction",
+    "learning_subfield": "Physical Planning Design and Management",
+    "min_credits": 120,
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=119070"
   },
   {
     "value": "108932",

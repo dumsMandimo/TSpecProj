@@ -281,6 +281,176 @@ const SECTOR_TARGETS = [
 ];
 
 
+const QUALIFICATION_TYPE_ORDER = [
+  "General Certificate",
+  "Elementary Certificate",
+  "Intermediate Certificate",
+  "National Certificate",
+  "National Senior Certificate / Matric",
+  "Higher Certificate",
+  "Diploma",
+  "Advanced Certificate",
+  "Bachelor's Degree",
+  "Advanced Diploma",
+  "Bachelor Honours Degree",
+  "Postgraduate Diploma",
+  "Master's Degree",
+  "Master's Degree (Professional)",
+  "Doctoral Degree",
+  "Doctoral Degree (Professional)",
+];
+
+function normalizeQualificationType(type) {
+  if (!type) return null;
+
+  const text = String(type).trim().toLowerCase();
+
+  const typeMap = {
+    "general certificate": "General Certificate",
+    "elementary certificate": "Elementary Certificate",
+    "intermediate certificate": "Intermediate Certificate",
+    "national certificate": "National Certificate",
+    "national senior certificate": "National Senior Certificate / Matric",
+    "matric": "National Senior Certificate / Matric",
+    "higher certificate": "Higher Certificate",
+    "diploma": "Diploma",
+    "advanced certificate": "Advanced Certificate",
+    "bachelor's degree": "Bachelor's Degree",
+    "bachelors degree": "Bachelor's Degree",
+    "advanced diploma": "Advanced Diploma",
+    "honours degree": "Bachelor Honours Degree",
+    "honors degree": "Bachelor Honours Degree",
+    "bachelor honours degree": "Bachelor Honours Degree",
+    "bachelor honors degree": "Bachelor Honours Degree",
+    "postgraduate diploma": "Postgraduate Diploma",
+    "master's degree": "Master's Degree",
+    "masters degree": "Master's Degree",
+    "doctoral degree": "Doctoral Degree",
+    "doctorate": "Doctoral Degree",
+  };
+
+  return typeMap[text] || type;
+}
+
+function detectQualificationType(title) {
+  const text = String(title || "").toLowerCase();
+
+  const typePatterns = [
+    {
+      label: "National Senior Certificate / Matric",
+      patterns: ["national senior certificate", "matric"],
+    },
+    {
+      label: "Doctoral Degree",
+      patterns: ["doctor", "doctoral", "phd", "ph.d"],
+    },
+    {
+      label: "Master's Degree",
+      patterns: ["master"],
+    },
+    {
+      label: "Postgraduate Diploma",
+      patterns: ["postgraduate diploma"],
+    },
+    {
+      label: "Bachelor Honours Degree",
+      patterns: ["honours", "honors"],
+    },
+    {
+      label: "Bachelor's Degree",
+      patterns: ["bachelor"],
+    },
+    {
+      label: "Advanced Diploma",
+      patterns: ["advanced diploma"],
+    },
+    {
+      label: "Advanced Certificate",
+      patterns: ["advanced certificate"],
+    },
+    {
+      label: "Higher Certificate",
+      patterns: ["higher certificate"],
+    },
+    {
+      label: "National Certificate",
+      patterns: ["national certificate"],
+    },
+    {
+      label: "Intermediate Certificate",
+      patterns: ["intermediate certificate"],
+    },
+    {
+      label: "Elementary Certificate",
+      patterns: ["elementary certificate"],
+    },
+    {
+      label: "General Certificate",
+      patterns: ["general certificate"],
+    },
+    {
+      label: "Diploma",
+      patterns: ["diploma"],
+    },
+  ];
+
+  const match = typePatterns.find((type) =>
+    type.patterns.some((pattern) => text.includes(pattern))
+  );
+
+  return match ? match.label : null;
+}
+
+function sortQualificationTypes(types) {
+  return types.sort((a, b) => {
+    const aIndex = QUALIFICATION_TYPE_ORDER.indexOf(a);
+    const bIndex = QUALIFICATION_TYPE_ORDER.indexOf(b);
+
+    const safeAIndex = aIndex === -1 ? 999 : aIndex;
+    const safeBIndex = bIndex === -1 ? 999 : bIndex;
+
+    if (safeAIndex !== safeBIndex) {
+      return safeAIndex - safeBIndex;
+    }
+
+    return a.localeCompare(b);
+  });
+}
+
+function buildNqfLevels(activeQualifications) {
+  const grouped = new Map();
+
+  activeQualifications.forEach((qualification) => {
+    const level = Number(qualification.nqf_level_number);
+
+    const type =
+      normalizeQualificationType(qualification.target_qualification_type) ||
+      detectQualificationType(qualification.title);
+
+    if (!Number.isInteger(level) || level < 1 || level > 10) return;
+    if (!type) return;
+
+    if (!grouped.has(level)) {
+      grouped.set(level, {
+        group: `NQF ${level}`,
+        level,
+        options: new Set(),
+        source: "SAQA",
+      });
+    }
+
+    grouped.get(level).options.add(type);
+  });
+
+  return Array.from(grouped.values())
+    .sort((a, b) => a.level - b.level)
+    .map((item) => ({
+      group: item.group,
+      level: item.level,
+      options: sortQualificationTypes(Array.from(item.options)),
+      source: item.source,
+    }));
+}
 function clean(text) {
   return text.replace(/\s+/g, " ").trim();
 }
@@ -662,18 +832,7 @@ function buildProjectOutputs(allQualifications) {
     source_url: q.source_url,
   }));
 
-  const nqfLevels = [
-    ...new Set(
-      activeQualifications
-        .map((q) => q.nqf_level_number)
-        .filter((level) => level !== null)
-    ),
-  ]
-    .sort((a, b) => a - b)
-    .map((level) => ({
-      value: level,
-      label: `NQF Level ${level}`,
-    }));
+  const nqfLevels = buildNqfLevels(activeQualifications);
 
   const fields = Array.from(
     new Map(
@@ -763,21 +922,25 @@ async function main() {
   } = buildProjectOutputs(allQualifications);
 
   const report = {
-    sector_targets_used: SECTOR_TARGETS.map((target) => target.label),
-  scraper_mode: SCRAPER_MODE,
-  delay_ms: CONFIG.delayMs,
-  search_targets_used: SEARCH_TARGETS.map((target) => target.label),
   scraped_rows_before_dedupe: scrapedQualifications.length,
   unique_qualifications_after_dedupe: allQualifications.length,
-  active_qualificationpmns: activeQualifications.length,
+  active_qualifications: activeQualifications.length,
   dropdown_items: qualificationDropdown.length,
   fields_found: fields.length,
   skill_tags_generated: skillTags.length,
-  nqf_levels_in_scraped_active_data: nqfLevels.map((level) => level.value),
+
+  nqf_levels_in_scraped_active_data: nqfLevels.map((level) => level.level),
+
+  nqf_qualification_types_generated: nqfLevels.reduce(
+    (total, level) => total + level.options.length,
+    0
+  ),
+
   note:
-      "Canonical NQF 1-10 levels are handled separately in the application. Scraped SAQA data is used for specific qualification titles, fields, subfields, source URLs, and skill-tag generation.",
-    generated_at: new Date().toISOString(),
-  };
+    "NQF level and qualification type options are derived from scraped SAQA qualification records. Specific qualification titles, fields, subfields, source URLs, and skill tags are also sourced from SAQA data.",
+
+  generated_at: new Date().toISOString(),
+};
 
   fs.writeFileSync(
     "qualifications_scraped_raw.json",

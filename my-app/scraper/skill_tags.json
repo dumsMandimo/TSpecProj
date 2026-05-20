@@ -20,6 +20,16 @@
     "source_url": "https://allqs.saqa.org.za/showQualification.php?id=111274"
   },
   {
+    "name": "Adult Learning",
+    "field_name": "Education, Training and Development",
+    "field_code": "005",
+    "nqf_level_number": 9,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "109480",
+    "example_qualification_title": "Master of Education",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109480"
+  },
+  {
     "name": "Building Construction",
     "field_name": "Physical Planning and Construction",
     "field_code": "012",
@@ -205,9 +215,9 @@
     "field_code": "003",
     "nqf_level_number": 8,
     "source": "Derived from SAQA qualification learning subfield",
-    "example_qualification_id": "19448",
+    "example_qualification_id": "98917",
     "example_qualification_title": "Postgraduate Diploma in Accountancy",
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=19448"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=98917"
   },
   {
     "name": "General Social Science",
@@ -355,9 +365,9 @@
     "field_code": "004",
     "nqf_level_number": 7,
     "source": "Derived from SAQA qualification learning subfield",
-    "example_qualification_id": "110065",
+    "example_qualification_id": "115397",
     "example_qualification_title": "Advanced Diploma in Language Practice",
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=110065"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=115397"
   },
   {
     "name": "Life Sciences",
@@ -505,9 +515,9 @@
     "field_code": "012",
     "nqf_level_number": 7,
     "source": "Derived from SAQA qualification learning subfield",
-    "example_qualification_id": "112080",
+    "example_qualification_id": "109781",
     "example_qualification_title": "Advanced Diploma in Architectural Technology",
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=112080"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109781"
   },
   {
     "name": "Physical Planning Design and Management",
@@ -685,9 +695,9 @@
     "field_code": "005",
     "nqf_level_number": 7,
     "source": "Derived from SAQA qualification learning subfield",
-    "example_qualification_id": "104533",
+    "example_qualification_id": "119492",
     "example_qualification_title": "Advanced Diploma in Adult and Community Education and Training Teaching",
-    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=104533"
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=119492"
   },
   {
     "name": "Schooling",
