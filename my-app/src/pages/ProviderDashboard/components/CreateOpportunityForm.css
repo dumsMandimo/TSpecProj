@@ -8,33 +8,83 @@
   --color-danger: #dc2626;
   --color-success: #22c55e;
 
-  /* NEW: input system */
+  /* input system */
   --color-input-bg: #ffffff;
   --color-input-text: #111111;
 }
 
-/* ── INPUT FIX (IMPORTANT) ───────────────────────────── */
+/* â”€â”€ FORM LAYOUT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.create-form__header {
+  margin-bottom: 1rem;
+}
+
+.create-form__title {
+  color: var(--color-primary);
+  margin-bottom: 0.25rem;
+}
+
+.create-form__subtitle,
+.create-form__helper {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.create-form__form {
+  display: grid;
+  gap: 1rem;
+}
+
+.create-form__fieldset {
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1rem;
+  background: var(--color-surface);
+}
+
+.create-form__legend {
+  color: var(--color-primary);
+  font-weight: 700;
+  padding: 0 0.35rem;
+}
+
+.create-form__row {
+  margin-bottom: 1rem;
+}
+
+.create-form__label {
+  display: block;
+  color: var(--color-text);
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+/* â”€â”€ INPUT FIX â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .create-form__input,
 .create-form__select,
 .create-form__textarea {
   background: var(--color-input-bg);
-  color: var(--color-input-text); /* <-- black typing */
+  color: var(--color-input-text);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 10px 14px;
   font-size: 14px;
   width: 100%;
   font-family: inherit;
+  box-sizing: border-box;
 }
 
-/* placeholder */
+.create-form__textarea {
+  resize: vertical;
+}
+
 .create-form__input::placeholder,
 .create-form__textarea::placeholder {
   color: #888;
 }
 
-/* focus */
 .create-form__input:focus,
 .create-form__select:focus,
 .create-form__textarea:focus {
@@ -43,8 +93,116 @@
   box-shadow: 0 0 0 3px rgba(255, 165, 0, 0.25);
 }
 
-/* autofill fix */
 .create-form__input:-webkit-autofill {
   -webkit-box-shadow: 0 0 0px 1000px white inset;
   -webkit-text-fill-color: #111;
+}
+
+.create-form__input--error {
+  border-color: var(--color-danger);
+}
+
+/* â”€â”€ STATUS / ERROR TEXT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.create-form__field-error,
+.create-form__error {
+  color: var(--color-danger);
+  font-size: 0.85rem;
+  margin-top: 0.35rem;
+}
+
+.create-form__success {
+  color: var(--color-success);
+  font-weight: 700;
+}
+
+/* â”€â”€ SKILL CHIPS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.create-form__skill-input-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.create-form__skill-input-row .create-form__input {
+  flex: 1;
+}
+
+.create-form__secondary-btn {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-primary);
+  background: #fff;
+  color: #111;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.create-form__secondary-btn:hover {
+  opacity: 0.9;
+}
+
+.create-form__skill-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  list-style: none;
+}
+
+.create-form__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-primary);
+  color: #111;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.create-form__chip button {
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* â”€â”€ SUBMIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.create-form__footer {
+  margin-top: 0.5rem;
+}
+
+.create-form__submit-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--color-primary);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.create-form__submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .create-form__skill-input-row {
+    flex-direction: column;
+  }
+
+  .create-form__secondary-btn {
+    width: 100%;
+  }
 }
