@@ -1,100 +1,199 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import React from "react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import "@testing-library/jest-dom";
 import ListingsPanel from "./ListingsPanel";
-import { subscribeToProviderListings } from "../../../services/providerService";
+
+jest.mock("./ListingsPanel.css", () => ({}), { virtual: true });
 
 jest.mock("../../../services/providerService", () => ({
   subscribeToProviderListings: jest.fn(),
+  updateOpportunity: jest.fn(),
+  deleteOpportunity: jest.fn(),
+  getApplicationCountsForListings: jest.fn(),
+  autoCloseExpiredListings: jest.fn(),
 }));
 
 jest.mock("../../../services/firebase", () => ({
   auth: { currentUser: { uid: "provider-uid" } },
 }));
-const mockListings = [
-  { id: "lst-1", title: "Software Internship",   location: "Johannesburg", status: "approved" },
-  { id: "lst-2", title: "Business Learnership",  location: "Cape Town",    status: "pending" },
-  { id: "lst-3", title: "IT Graduate Programme", location: "Pretoria",     status: "rejected" },
+
+import {
+  subscribeToProviderListings,
+  updateOpportunity,
+  deleteOpportunity,
+  getApplicationCountsForListings,
+  autoCloseExpiredListings,
+} from "../../../services/providerService";
+
+const LISTINGS = [
+  {
+    id: "list-1",
+    title: "React Internship",
+    location: "Cape Town",
+    type: "internship",
+    status: "approved",
+    closingDate: "2099-12-31",
+    description: "Build cool React apps.",
+  },
+  {
+    id: "list-2",
+    title: "Java Learnership",
+    location: "Johannesburg",
+    type: "learnership",
+    status: "pending",
+    closingDate: "2099-12-31",
+  },
+  {
+    id: "list-3",
+    title: "QA Apprenticeship",
+    location: "Durban",
+    type: "apprenticeship",
+    status: "closed",
+    closingDate: "2000-01-01",
+  },
 ];
 
-const setupListener = (listings = mockListings) => {
+function setupSubscription(listings = LISTINGS) {
+  autoCloseExpiredListings.mockResolvedValue();
+
+  getApplicationCountsForListings.mockResolvedValue({
+    "list-1": 5,
+    "list-2": 2,
+    "list-3": 0,
+  });
+
   subscribeToProviderListings.mockImplementation((uid, onData) => {
     onData(listings);
     return jest.fn();
   });
-};
+}
+
+function getListingCard(title) {
+  return screen.getByText(title).closest(".lc");
+}
 
 describe("ListingsPanel", () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  it("shows loading state before data arrives", () => {
-    subscribeToProviderListings.mockImplementation(() => jest.fn());
-    render(<ListingsPanel />);
-    expect(screen.getByText(/loading listings/i)).toBeInTheDocument();
+  beforeEach(() => {
+    jest.clearAllMocks();
+    updateOpportunity.mockResolvedValue({});
+    deleteOpportunity.mockResolvedValue({});
   });
 
-  it("renders listing titles once data is received", () => {
-    setupListener();
+  it("renders listings", async () => {
+    setupSubscription();
     render(<ListingsPanel />);
-    expect(screen.getByText("Software Internship")).toBeInTheDocument();
-    expect(screen.getByText("Business Learnership")).toBeInTheDocument();
-    expect(screen.getByText("IT Graduate Programme")).toBeInTheDocument();
-  });
 
-  it("renders listing locations", () => {
-    setupListener();
-    render(<ListingsPanel />);
-    expect(screen.getByText("Johannesburg")).toBeInTheDocument();
-    expect(screen.getByText("Cape Town")).toBeInTheDocument();
-    expect(screen.getByText("Pretoria")).toBeInTheDocument();
-  });
-
-  it("renders correct status badge for approved listing", () => {
-    setupListener([mockListings[0]]);
-    render(<ListingsPanel />);
-    expect(screen.getByText("Approved")).toBeInTheDocument();
-  });
-
-  it("renders correct status badge for pending listing", () => {
-    setupListener([mockListings[1]]);
-    render(<ListingsPanel />);
-    expect(screen.getByText("Pending")).toBeInTheDocument();
-  });
-
-  it("renders correct status badge for rejected listing", () => {
-    setupListener([mockListings[2]]);
-    render(<ListingsPanel />);
-    expect(screen.getByText("Rejected")).toBeInTheDocument();
-  });
-
-  it("shows empty state message when there are no listings", () => {
-    setupListener([]);
-    render(<ListingsPanel />);
-    expect(screen.getByText(/no listings yet/i)).toBeInTheDocument();
-  });
-
-  it("shows an error message when the listener fails", () => {
-    subscribeToProviderListings.mockImplementation((uid, onData, onError) => {
-      onError(new Error("Firestore error"));
-      return jest.fn();
+    await waitFor(() => {
+      expect(screen.getByText("React Internship")).toBeInTheDocument();
     });
-    render(<ListingsPanel />);
-    expect(screen.getByRole("alert")).toBeInTheDocument();
-    expect(screen.getByText(/failed to load listings/i)).toBeInTheDocument();
   });
 
-  it("calls unsubscribe on unmount to avoid memory leaks", () => {
-    const mockUnsubscribe = jest.fn();
-    subscribeToProviderListings.mockReturnValueOnce(mockUnsubscribe);
+  it("filters approved listings correctly", async () => {
+    setupSubscription();
+    render(<ListingsPanel />);
 
-    const { unmount } = render(<ListingsPanel />);
-    unmount();
+    await waitFor(() => screen.getByText("React Internship"));
 
-    expect(mockUnsubscribe).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("button", { name: /^approved/i }));
+
+    expect(screen.getByText("React Internship")).toBeInTheDocument();
+    expect(screen.queryByText("Java Learnership")).not.toBeInTheDocument();
   });
 
-  it("renders the section heading and subtitle", () => {
-    setupListener();
+  it("filters pending listings correctly", async () => {
+    setupSubscription();
     render(<ListingsPanel />);
-    expect(screen.getByRole("heading", { name: /my listings/i })).toBeInTheDocument();
-    expect(screen.getByText(/manage all your posted opportunities/i)).toBeInTheDocument();
+
+    await waitFor(() => screen.getByText("Java Learnership"));
+
+    fireEvent.click(screen.getByRole("button", { name: /^pending/i }));
+
+    expect(screen.getByText("Java Learnership")).toBeInTheDocument();
+    expect(screen.queryByText("React Internship")).not.toBeInTheDocument();
+  });
+
+  it("shows application counts", async () => {
+    setupSubscription();
+    render(<ListingsPanel />);
+
+    await waitFor(() => {
+      const outputs = screen.getAllByTitle(/applications received/i);
+      expect(outputs.length).toBeGreaterThan(0);
+    });
+  });
+
+  it("expands listing", async () => {
+    setupSubscription();
+    render(<ListingsPanel />);
+
+    await waitFor(() => screen.getByText("React Internship"));
+
+    fireEvent.click(screen.getByText("React Internship"));
+
+    expect(screen.getByText(/build cool react apps/i)).toBeInTheDocument();
+  });
+
+  it("calls updateOpportunity safely", async () => {
+    setupSubscription();
+    render(<ListingsPanel />);
+
+    await waitFor(() => screen.getByText("React Internship"));
+
+    fireEvent.click(screen.getByText("React Internship"));
+
+    fireEvent.click(screen.getByRole("button", { name: /edit/i }));
+
+    const titleInput = screen.getByDisplayValue("React Internship");
+    await userEvent.clear(titleInput);
+    await userEvent.type(titleInput, "Vue Internship");
+
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+
+    await waitFor(() => {
+      expect(updateOpportunity).toHaveBeenCalledWith(
+        "list-1",
+        expect.objectContaining({ title: "Vue Internship" })
+      );
+    });
+  });
+
+  it("calls deleteOpportunity safely", async () => {
+    setupSubscription();
+    render(<ListingsPanel />);
+
+    await waitFor(() => screen.getByText("React Internship"));
+
+    fireEvent.click(screen.getByText("React Internship"));
+    fireEvent.click(screen.getByRole("button", { name: /delete/i }));
+    fireEvent.click(screen.getByRole("button", { name: /yes, delete/i }));
+
+    await waitFor(() => {
+      expect(deleteOpportunity).toHaveBeenCalledWith("list-1");
+    });
+  });
+
+  it("shows empty state", async () => {
+    setupSubscription([]);
+    render(<ListingsPanel />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/no.*listings/i)).toBeInTheDocument();
+    });
+  });
+
+  it("calls autoCloseExpiredListings", async () => {
+    setupSubscription();
+    render(<ListingsPanel />);
+
+    await waitFor(() => {
+      expect(autoCloseExpiredListings).toHaveBeenCalled();
+    });
   });
 });

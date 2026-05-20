@@ -1,184 +1,121 @@
-.applications-page {
-    max-width: 980px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background: #0b0b0b;
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 18px;
-    font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
-}
-
-.applications-header {
-    margin-bottom: 2.2rem;
-}
-
-.eyebrow {
-    margin: 0;
-    color: #ff8a1f;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 700;
-    font-size: 0.75rem;
-}
-
-.applications-title {
-    margin: 0.35rem 0;
-    font-size: clamp(1.7rem, 2.4vw, 2.3rem);
-    line-height: 1.15;
-    color: #ffffff;
-}
-
-.applications-subtitle {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.85);
-}
-
-.applications-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 1rem;
-}
-
 .application-card {
-    background: linear-gradient(160deg, #1a1a1a 0%, #222222 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 14px;
-    padding: 1rem;
-    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--ad-panel);
+  border: 1px solid var(--ad-border);
+  border-radius: var(--ad-radius-sm);
+  padding: 1.15rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .application-card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(255, 138, 31, 0.8);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  border-color: var(--ad-border-hover);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
-.application-card h3 {
-    margin: 0 0 0.5rem;
-    color: #ff8a1f;
-    font-size: 1.08rem;
+.application-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
-.application-card p {
-    margin: 0 0 0.9rem;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.95rem;
+.application-card__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ad-orange);
+  line-height: 1.3;
 }
 
-.status-pill {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.36rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border: 1px solid transparent;
+.application-card__meta {
+  margin-bottom: 1rem;
 }
 
-.status-received {
-    background: rgba(255, 138, 31, 0.18);
-    color: #ffb066;
-    border-color: rgba(255, 138, 31, 0.35);
+.application-card__company {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ad-text-muted);
 }
 
-.status-shortlisted {
-    background: rgba(255, 138, 31, 0.24);
-    color: #ffd2a5;
-    border-color: rgba(255, 138, 31, 0.45);
+/* ── Progress Tracker ─────────────────────────────────────────── */
+
+.progress-tracker {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ad-border);
 }
 
-.status-rejected {
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.84);
-    border-color: rgba(255, 255, 255, 0.2);
+.progress-tracker__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
 }
 
-.status-offered {
-    background: #ff8a1f;
-    color: #111111;
-    border-color: #ff8a1f;
-}
-.progress-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1rem;
-    gap: 1rem;
+.progress-tracker__dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.progress-step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
-    position: relative;
-    
+.progress-tracker__dot--active {
+  background: var(--ad-orange);
+  border-color: var(--ad-orange);
+  box-shadow: 0 0 0 4px var(--ad-orange-soft);
 }
 
-.circle {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    margin: 0 auto;
-    background: rgba(255,255,255,0.2);
-    border: 2px solid rgba(255,255,255,0.2);
-    transition: background-color 0.3s, border-color 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.progress-tracker__dot--accepted {
+  background: #2ecc71;
+  border-color: #2ecc71;
+  box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.2);
 }
 
-/* Active stage */
-.circle.active {
-    background: #ff8a1f;
-    border-color: #ff8a1f;
+.progress-tracker__dot--rejected {
+  background: #e74c3c;
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.2);
 }
 
-/* Final decision overrides */
-.circle.accepted {
-    background: #2ecc71;
-    border-color: #2ecc71;
+.progress-tracker__dot--shortlisted {
+  background: #f1c40f;
+  border-color: #f1c40f;
+  box-shadow: 0 0 0 4px rgba(241, 196, 15, 0.2);
 }
 
-.circle.rejected {
-    background: #e74c3c;
-    border-color: #e74c3c;
+.progress-tracker__label {
+  margin-top: 0.5rem;
+  font-size: 0.62rem;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--ad-text-muted);
 }
 
-/* Default label style */
-.stage-label {
-    font-size: 0.75rem;
-    margin-top: 0.4rem;
-    color: rgba(255,255,255,0.6); /* softer default */
-    text-align: center;
+.progress-tracker__label--active {
+  color: var(--ad-orange);
+  font-weight: 600;
 }
 
-/* Highlight the active stage label */
-.circle.active + .stage-label {
-    color: #ff8a1f;
-    font-weight: 600;
+.progress-tracker__step:has(.progress-tracker__dot--accepted) .progress-tracker__label {
+  color: #2ecc71;
+  font-weight: 600;
 }
 
-/* Accepted/Rejected label colors */
-.circle.accepted + .stage-label {
-    color: #2ecc71;
-    font-weight: 600;
+.progress-tracker__step:has(.progress-tracker__dot--rejected) .progress-tracker__label {
+  color: #e74c3c;
+  font-weight: 600;
 }
 
-.circle.rejected + .stage-label {
-    color: #e74c3c;
-    font-weight: 600;
-}
-.circle.shortlisted {
-    background: #f1c40f;   /* yellow */
-    border-color: #f1c40f;
-}
-
-.circle.shortlisted + .stage-label {
-    color: #f1c40f;
-    font-weight: 600;
+.progress-tracker__step:has(.progress-tracker__dot--shortlisted) .progress-tracker__label {
+  color: #f1c40f;
+  font-weight: 600;
 }

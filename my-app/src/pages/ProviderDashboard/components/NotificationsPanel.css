@@ -1,0 +1,122 @@
+:root {
+  --color-primary: orange;
+  --color-bg: #0b0b0b;
+  --color-surface: #141414;
+  --color-text: #ffffff;
+  --color-muted: #b3b3b3;
+  --color-border: #2a2a2a;
+}
+
+/* ── PANEL BACKGROUND ───────────────────────────── */
+
+.notifications-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: transparent;
+}
+
+/* ── NOTIFICATION CARD (WHITE BUBBLE) ───────────── */
+
+.notification-card {
+  display: flex;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+
+  background: #ffffff;           /* WHITE BUBBLE */
+  border: 1px solid #e5e7eb;
+
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* hover effect */
+.notification-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+/* unread highlight (orange accent instead of blue/purple) */
+.notification-card--unread {
+  border-left: 4px solid var(--color-primary);
+  background: #fff7ed;
+}
+
+/* icon */
+.notification-card__icon {
+  font-size: 1.3rem;
+  margin-top: 0.1rem;
+}
+
+/* title */
+.notification-card__title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin: 0 0 0.2rem;
+  color: #111;
+}
+
+/* message */
+.notification-card__message {
+  font-size: 0.85rem;
+  color: #444;
+  margin: 0 0 0.5rem;
+  line-height: 1.4;
+}
+
+/* footer */
+.notification-card__footer {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* time */
+.notification-card__time {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+/* type badge */
+.notification-card__type {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+  background: #f3f4f6;
+  color: #333;
+}
+
+/* type accents (orange-based system) */
+.notification-card__type--new_application {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.notification-card__type--listing_approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.notification-card__type--listing_rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* mark as read button */
+.notification-card__read-btn {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.notification-card__read-btn:hover {
+  background: #f3f4f6;
+}

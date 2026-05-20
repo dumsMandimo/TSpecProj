@@ -1,28 +1,116 @@
-/* ProviderDashboard.css */
+/* ── ProviderDashboard Layout (Orange Theme System) ───────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Base */
+  --color-bg:        #0b0b0d;   /* deep black */
+  --color-surface:   #121218;   /* cards / panels */
+  --color-surface-2: #1a1a22;
+
+  /* Borders */
+  --color-border:        #23232b;
+  --color-border-light:  #2c2c36;
+
+  /* ORANGE PRIMARY */
+  --color-accent:       #f97316;
+  --color-accent-dim:   rgba(249, 115, 22, 0.12);
+  --color-accent-glow:  rgba(249, 115, 22, 0.25);
+
+  /* Status colors (kept minimal) */
+  --color-green:  #22c55e;
+  --color-amber:  #fbbf24;
+  --color-red:    #ef4444;
+
+  /* Text */
+  --color-text:        #ffffff;
+  --color-text-muted:  #a1a1aa;
+  --color-text-subtle: #71717a;
+
+  /* Typography */
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 6px 18px rgba(0,0,0,0.5);
+
+  /* Motion */
+  --transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Reset ───────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout Container ────────────────────────────────────────────────────── */
 
 .provider-dashboard {
   display: flex;
   min-height: 100vh;
-  background: #f4f6f8;
-  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--color-bg);
 }
 
+/* Main content area */
 .provider-dashboard__content {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  margin-left: 240px; /* sidebar width */
 }
 
+/* Page body */
 .provider-dashboard__body {
-  padding: 28px 32px;
   flex: 1;
+  padding: 24px 32px 40px;
+  overflow-y: auto;
 }
 
+/* Inner panel wrapper */
 .provider-dashboard__panel {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 28px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e5e7eb;
+  max-width: 1100px;
+  margin: 0 auto;
+  animation: panelFadeIn 0.25s ease both;
+}
+
+/* ── Animation ───────────────────────────────────────────────────────────── */
+
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .provider-dashboard__content {
+    margin-left: 0;
+  }
+
+  .provider-dashboard__body {
+    padding: 16px;
+  }
 }

@@ -20,12 +20,24 @@ export default function PendingApproval() {
         </div>
         <div className="hero">
           <h1>Connecting talent with opportunity.</h1>
-          <p>South Africa's platform for job seekers and providers building the workforce of tomorrow.</p>
+          <p>
+            South Africa's platform for job seekers and providers building the
+            workforce of tomorrow.
+          </p>
         </div>
         <ul className="stats">
-          <li><strong>12k+</strong><span>Job seekers</span></li>
-          <li><strong>340+</strong><span>Providers</span></li>
-          <li><strong>9</strong><span>Provinces</span></li>
+          <li>
+            <strong>12k+</strong>
+            <span>Job seekers</span>
+          </li>
+          <li>
+            <strong>340+</strong>
+            <span>Providers</span>
+          </li>
+          <li>
+            <strong>9</strong>
+            <span>Provinces</span>
+          </li>
         </ul>
       </div>
 
@@ -43,7 +55,6 @@ export default function PendingApproval() {
 
         <div className="form-panel">
           <div className="steps">
-
             <div className="step">
               <div className="step-icon done">✓</div>
               <div className="step-text">
@@ -58,7 +69,10 @@ export default function PendingApproval() {
               <div className="step-icon pending">⏳</div>
               <div className="step-text">
                 <strong>Under review</strong>
-                <span>Admin is verifying your organisation — typically 1–2 business days</span>
+                <span>
+                  Admin is verifying your organisation — typically 1–2 business
+                  days
+                </span>
               </div>
             </div>
 
@@ -68,17 +82,19 @@ export default function PendingApproval() {
               <div className="step-icon waiting">🏢</div>
               <div className="step-text">
                 <strong>Access granted</strong>
-                <span>Post opportunities and manage your provider dashboard</span>
+                <span>
+                  Post opportunities and manage your provider dashboard
+                </span>
               </div>
             </div>
-
           </div>
         </div>
 
         <div className="info-box">
           <p>
-            We'll send a confirmation to the email linked to your Google account.
-            Check your spam folder if you don't see it within 2 business days.
+            We'll send a confirmation to the email linked to your Google
+            account. Check your spam folder if you don't see it within 2
+            business days.
           </p>
         </div>
 

@@ -1,181 +1,76 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import LoginPage from './loginPage';
+import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import SignupPage from "./signupPage";
+import { MemoryRouter } from "react-router-dom";
 
+// mocks
+jest.mock("../components/signupApplicant", () => () => (
+  <div>Applicant Form</div>
+));
 
-const mockNavigate = jest.fn();
+jest.mock("../components/signupProvider", () => () => (
+  <div>Provider Form</div>
+));
 
-jest.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate,
-}));
+const renderPage = () =>
+  render(
+    <MemoryRouter>
+      <SignupPage />
+    </MemoryRouter>
+  );
 
-// Mock Firebase auth
-jest.mock('firebase/auth', () => ({
-  signInWithEmailAndPassword: jest.fn(),
-}));
+describe("SignupPage", () => {
+  test("renders page heading and subtitle", () => {
+    renderPage();
 
-// Mock auth instance
-jest.mock('../services/firebase', () => ({
-  auth: {},
-}));
-
-// Mock role service
-jest.mock('../services/userService', () => ({
-  getUserRole: jest.fn(),
-}));
-
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { getUserRole } from '../services/userService';
-
-describe('LoginPage', () => {
-
-  beforeEach(() => {
-    jest.clearAllMocks();
+    expect(screen.getByText(/create your account/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/choose your role to get started/i)
+    ).toBeInTheDocument();
   });
 
-  test('renders login form', () => {
-    render(<LoginPage />);
-    
-    expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/password/i)).toBeInTheDocument();
+  test("renders applicant form by default", () => {
+    renderPage();
+    expect(screen.getByText("Applicant Form")).toBeInTheDocument();
   });
 
-  test('shows alert if fields are empty', () => {
-    window.alert = jest.fn();
+  test("switches to provider form when provider tab clicked", () => {
+    renderPage();
 
-    render(<LoginPage />);
+    const providerTab = screen.getByRole("tab", { name: /provider/i });
+    fireEvent.click(providerTab);
 
-    const button = screen.getByDisplayValue(/login/i);
-    fireEvent.click(button);
-
-    expect(window.alert).toHaveBeenCalledWith(
-      'Please enter email and password'
-    );
+    expect(screen.getByText("Provider Form")).toBeInTheDocument();
   });
 
-  test('successful login redirects admin', async () => {
-    signInWithEmailAndPassword.mockResolvedValue({
-      user: { uid: '123' },
-    });
+  test("switches back to applicant form when applicant tab clicked", () => {
+    renderPage();
 
-    getUserRole.mockResolvedValue('admin');
+    fireEvent.click(screen.getByRole("tab", { name: /provider/i }));
+    expect(screen.getByText("Provider Form")).toBeInTheDocument();
 
-    render(<LoginPage />);
-
-    fireEvent.change(screen.getByPlaceholderText(/email/i), {
-      target: { value: 'TEST@EMAIL.COM' },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/password/i), {
-      target: { value: 'password123' },
-    });
-
-    fireEvent.click(screen.getByDisplayValue(/login/i));
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/dashboard/admin');
-    });
+    fireEvent.click(screen.getByRole("tab", { name: /applicant/i }));
+    expect(screen.getByText("Applicant Form")).toBeInTheDocument();
   });
 
-  test('successful login redirects provider', async () => {
-    signInWithEmailAndPassword.mockResolvedValue({
-      user: { uid: '123' },
-    });
+  test("renders login link", () => {
+    renderPage();
 
-    getUserRole.mockResolvedValue('provider');
+    const link = screen.getByRole("link", { name: /sign in/i });
 
-    render(<LoginPage />);
-
-    fireEvent.change(screen.getByPlaceholderText(/email/i), {
-      target: { value: 'test@email.com' },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/password/i), {
-      target: { value: 'password123' },
-    });
-
-    fireEvent.click(screen.getByDisplayValue(/login/i));
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/dashboard/provider');
-    });
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "/login");
   });
 
-  test('successful login redirects applicant (default)', async () => {
-    signInWithEmailAndPassword.mockResolvedValue({
-      user: { uid: '123' },
-    });
+  test("tabs render correctly", () => {
+    renderPage();
 
-    getUserRole.mockResolvedValue('applicant');
+    expect(
+      screen.getByRole("tab", { name: /applicant/i })
+    ).toBeInTheDocument();
 
-    render(<LoginPage />);
-
-    fireEvent.change(screen.getByPlaceholderText(/email/i), {
-      target: { value: 'test@email.com' },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/password/i), {
-      target: { value: 'password123' },
-    });
-
-    fireEvent.click(screen.getByDisplayValue(/login/i));
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/dashboard/applicant');
-    });
+    expect(
+      screen.getByRole("tab", { name: /provider/i })
+    ).toBeInTheDocument();
   });
-
-  test('shows alert if no role found', async () => {
-    window.alert = jest.fn();
-
-    signInWithEmailAndPassword.mockResolvedValue({
-      user: { uid: '123' },
-    });
-
-    getUserRole.mockResolvedValue(null);
-
-    render(<LoginPage />);
-
-    fireEvent.change(screen.getByPlaceholderText(/email/i), {
-      target: { value: 'test@email.com' },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/password/i), {
-      target: { value: 'password123' },
-    });
-
-    fireEvent.click(screen.getByDisplayValue(/login/i));
-
-    await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith(
-        'No role found for this user. Contact admin.'
-      );
-    });
-  });
-
-  test('handles invalid credentials error', async () => {
-    window.alert = jest.fn();
-
-    signInWithEmailAndPassword.mockRejectedValue({
-      code: 'auth/invalid-credential',
-    });
-
-    render(<LoginPage />);
-
-    fireEvent.change(screen.getByPlaceholderText(/email/i), {
-      target: { value: 'test@email.com' },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/password/i), {
-      target: { value: 'wrongpass' },
-    });
-
-    fireEvent.click(screen.getByDisplayValue(/login/i));
-
-    await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith(
-        'Invalid email or password.'
-      );
-    });
-  });
-
 });

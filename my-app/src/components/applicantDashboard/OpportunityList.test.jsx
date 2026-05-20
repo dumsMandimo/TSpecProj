@@ -1,191 +1,275 @@
-import "@testing-library/jest-dom";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import OpportunityList from "./OpportunityList";
-
-jest.mock("react-router-dom", () => ({
-  useNavigate: () => jest.fn(),
-  Link: ({ children }) => children,
-}));
+import { db, auth } from "../../firebase";
+import {
+    collection,
+    getDocs,
+    addDoc,
+    query,
+    where,
+    Timestamp
+} from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 
 jest.mock("../../firebase", () => ({
-  db: {},
-  auth: {},
+    db:   {},
+    auth: {},
 }));
 
 jest.mock("firebase/firestore", () => ({
-  collection: jest.fn(),
-  getDocs: jest.fn(),
-  addDoc: jest.fn(),
-  query: jest.fn(),
-  where: jest.fn(),
-  Timestamp: { now: jest.fn(() => ({ seconds: 1234567890 })) },
-  getFirestore: jest.fn(),
+    collection: jest.fn(),
+    getDocs:    jest.fn(),
+    addDoc:     jest.fn(),
+    query:      jest.fn(),
+    where:      jest.fn(),
+    Timestamp:  { now: jest.fn(() => ({ seconds: 1234567890 })) },
 }));
 
 jest.mock("firebase/auth", () => ({
-  onAuthStateChanged: jest.fn(),
-  getAuth: jest.fn(),
+    onAuthStateChanged: jest.fn(),
 }));
 
+jest.mock("./OpportunityList.css", () => ({}));
+
+const mockUser = { uid: "user123" };
+
 const mockOpportunities = [
-  {
-    id: "opp1",
-    title: "Software Internship",
-    description: "A great internship opportunity",
-    location: "Johannesburg",
-    stipend: "R5000/month",
-    closingDate: "2025-12-31",
-    company: "TechCorp",
-    companyUrl: "https://techcorp.com",
-  },
-  {
-    id: "opp2",
-    title: "Data Learnership",
-    description: "Learn data skills",
-    location: "Cape Town",
-    stipend: "R4000/month",
-    closingDate: "2025-11-30",
-    company: "DataCo",
-    companyUrl: null,
-  },
+    {
+        id:          "opp1",
+        title:       "Junior Developer Learnership",
+        description: "A great opportunity",
+        location:    "Johannesburg",
+        stipend:     "R5000/month",
+        closingDate: "2026-12-31",
+        company:     "TechCorp",
+        status:      "approved",
+    },
+    {
+        id:          "opp2",
+        title:       "Data Analyst Internship",
+        description: "Data focused role",
+        location:    "Cape Town",
+        stipend:     "R4000/month",
+        closingDate: "2026-11-30",
+        company:     "DataCo",
+        status:      "approved",
+    },
 ];
 
-describe("OpportunityList", () => {
-  beforeEach(() => {
+const mockApplications = [
+    {
+        id:            "app1",
+        opportunityId: "opp1",
+        userId:        "user123",
+    },
+];
+
+beforeEach(() => {
     jest.clearAllMocks();
 
-    const { onAuthStateChanged } = require("firebase/auth");
     onAuthStateChanged.mockImplementation((auth, callback) => {
-      callback(null);
-      return () => {};
+        callback(mockUser);
+        return jest.fn();
     });
 
-    const { getDocs, collection, query, where } = require("firebase/firestore");
-    collection.mockReturnValue({});
-    query.mockReturnValue({});
-    where.mockReturnValue({});
-    getDocs.mockResolvedValue({
-      docs: mockOpportunities.map((opp) => ({
-        id: opp.id,
-        data: () => opp,
-      })),
-    });
-  });
+    addDoc.mockResolvedValue({ id: "newDoc123" });
+    query.mockReturnValue("mockedQuery");
+    collection.mockReturnValue("mockedCollection");
+    where.mockReturnValue("mockedWhere");
+});
 
-  test("renders page header", async () => {
-    render(<OpportunityList />);
+describe("OpportunityList", () => {
 
-    await waitFor(() => {
-      expect(screen.getByText(/available opportunities/i)).toBeInTheDocument();
-    });
+    test("renders the opportunities section heading", async () => {
+        getDocs.mockResolvedValue({ docs: [] });
 
-    // Use getAllByText since "Opportunities" appears in both the eyebrow and title
-    expect(screen.getAllByText(/opportunities/i).length).toBeGreaterThan(0);
-  });
+        await act(async () => {
+            render(<OpportunityList />);
+        });
 
-  test("renders list of opportunities from Firestore", async () => {
-    render(<OpportunityList />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/software internship/i)).toBeInTheDocument();
+        expect(screen.getByText("Available Opportunities")).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/data learnership/i)).toBeInTheDocument();
-  });
+    test("renders opportunities fetched from Firestore", async () => {
+        getDocs.mockResolvedValue({
+            docs: mockOpportunities.map(opp => ({
+                id:   opp.id,
+                data: () => opp,
+            })),
+        });
 
-  test("renders opportunity details", async () => {
-    render(<OpportunityList />);
+        await act(async () => {
+            render(<OpportunityList />);
+        });
 
-    await waitFor(() => {
-      expect(screen.getByText(/software internship/i)).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
     });
 
-    expect(screen.getByText(/a great internship opportunity/i)).toBeInTheDocument();
-    expect(screen.getByText(/johannesburg/i)).toBeInTheDocument();
-    expect(screen.getByText(/r5000\/month/i)).toBeInTheDocument();
-  });
+    test("shows empty message when no opportunities available", async () => {
+        getDocs.mockResolvedValue({ docs: [] });
 
-  test("renders Apply Now buttons for each opportunity", async () => {
-    render(<OpportunityList />);
+        await act(async () => {
+            render(<OpportunityList />);
+        });
 
-    await waitFor(() => {
-      expect(screen.getAllByText(/apply now/i)).toHaveLength(2);
-    });
-  });
-
-  test("shows alert when unauthenticated user clicks Apply Now", async () => {
-    const alertMock = jest.spyOn(window, "alert").mockImplementation(() => {});
-
-    render(<OpportunityList />);
-
-    await waitFor(() => {
-      expect(screen.getAllByText(/apply now/i)[0]).toBeInTheDocument();
+        await waitFor(() => {
+            expect(
+                screen.getByText("No opportunities available at the moment.")
+            ).toBeInTheDocument();
+        });
     });
 
-    fireEvent.click(screen.getAllByText(/apply now/i)[0]);
-    expect(alertMock).toHaveBeenCalledWith("Please log in first");
+    test("filters out opportunities the user already applied for", async () => {
+        getDocs
+            // opportunities fetch
+            .mockResolvedValueOnce({
+                docs: mockOpportunities.map(opp => ({
+                    id:   opp.id,
+                    data: () => opp,
+                })),
+            })
+            // applications fetch
+            .mockResolvedValueOnce({
+                docs: mockApplications.map(app => ({
+                    id:   app.id,
+                    data: () => app,
+                })),
+            });
 
-    alertMock.mockRestore();
-  });
+        await act(async () => {
+            render(<OpportunityList />);
+        });
 
-  test("renders More Info link when companyUrl exists", async () => {
-    render(<OpportunityList />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/more about techcorp/i)).toBeInTheDocument();
+        await waitFor(() => {
+            // opp2 not applied for — should show
+            expect(screen.getByText("Data Analyst Internship")).toBeInTheDocument();
+            // opp1 already applied for — should be filtered out
+            expect(screen.queryByText("Junior Developer Learnership")).not.toBeInTheDocument();
+        });
     });
 
-    expect(
-      screen.getByText(/more about techcorp/i).closest("a")
-    ).toHaveAttribute("href", "https://techcorp.com");
-  });
+    test("shows alert when user is not logged in and tries to apply", async () => {
+        onAuthStateChanged.mockImplementation((auth, callback) => {
+            callback(null);
+            return jest.fn();
+        });
 
-  test("does not render More Info link when companyUrl is null", async () => {
-    render(<OpportunityList />);
+        getDocs.mockResolvedValue({
+            docs: mockOpportunities.map(opp => ({
+                id:   opp.id,
+                data: () => opp,
+            })),
+        });
 
-    await waitFor(() => {
-      expect(screen.getByText(/data learnership/i)).toBeInTheDocument();
+        window.alert = jest.fn();
+
+        await act(async () => {
+            render(<OpportunityList />);
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
+
+        fireEvent.click(screen.getAllByText("Apply Now")[0]);
+
+        expect(window.alert).toHaveBeenCalledWith("Please log in first");
     });
 
-    expect(screen.queryByText(/more about dataco/i)).not.toBeInTheDocument();
-  });
+    test("submits application and writes notification to Firestore", async () => {
+        getDocs
+            // opportunities
+            .mockResolvedValueOnce({
+                docs: mockOpportunities.map(opp => ({
+                    id:   opp.id,
+                    data: () => opp,
+                })),
+            })
+            // applications — none yet
+            .mockResolvedValueOnce({ docs: [] });
 
-  test("submits application for authenticated user", async () => {
-    const { onAuthStateChanged } = require("firebase/auth");
-    onAuthStateChanged.mockImplementation((auth, callback) => {
-      callback({ uid: "user123" });
-      return () => {};
+        window.alert = jest.fn();
+        addDoc.mockResolvedValue({ id: "newApp123" });
+
+        await act(async () => {
+            render(<OpportunityList />);
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
+
+        await act(async () => {
+            fireEvent.click(screen.getAllByText("Apply Now")[0]);
+        });
+
+        await waitFor(() => {
+            // addDoc called twice — once for application, once for notification
+            expect(addDoc).toHaveBeenCalledTimes(2);
+        });
     });
 
-    const { addDoc, collection, getDocs, query, where } = require("firebase/firestore");
-    collection.mockReturnValue({});
-    query.mockReturnValue({});
-    where.mockReturnValue({});
-    // First call returns opportunities, second returns user's existing applications
-    getDocs
-      .mockResolvedValueOnce({
-        docs: mockOpportunities.map((opp) => ({ id: opp.id, data: () => opp })),
-      })
-      .mockResolvedValueOnce({ docs: [] });
+    test("shows alert when user already applied for an opportunity", async () => {
+        // Both opportunities show in the list initially (no filter yet)
+        getDocs
+            // opportunities
+            .mockResolvedValueOnce({
+                docs: mockOpportunities.map(opp => ({
+                    id:   opp.id,
+                    data: () => opp,
+                })),
+            })
+            // applications — none yet so both cards are visible
+            .mockResolvedValueOnce({ docs: [] });
 
-    addDoc.mockResolvedValue({ id: "newApp1" });
+        window.alert = jest.fn();
 
-    const alertMock = jest.spyOn(window, "alert").mockImplementation(() => {});
-    const onApplicationAdded = jest.fn();
+        await act(async () => {
+            render(<OpportunityList />);
+        });
 
-    render(<OpportunityList onApplicationAdded={onApplicationAdded} />);
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
 
-    await waitFor(() => {
-      expect(screen.getAllByText(/apply now/i)[0]).toBeInTheDocument();
+        // First click — applies successfully
+        await act(async () => {
+            fireEvent.click(screen.getAllByText("Apply Now")[0]);
+        });
+
+        await waitFor(() => {
+            expect(window.alert).toHaveBeenCalledWith("Application submitted!");
+        });
+
+        // The button now reads "Applied" (disabled). fireEvent bypasses disabled in jsdom,
+        // so clicking it still invokes handleApply which detects the sessionApplied duplicate.
+        await act(async () => {
+            fireEvent.click(screen.getAllByText("Applied")[0]);
+        });
+
+        await waitFor(() => {
+            expect(window.alert).toHaveBeenCalledWith(
+                "You already applied for this opportunity"
+            );
+        });
     });
 
-    fireEvent.click(screen.getAllByText(/apply now/i)[0]);
+    test("renders opportunity details correctly", async () => {
+        getDocs.mockResolvedValue({
+            docs: [{ id: "opp1", data: () => mockOpportunities[0] }],
+        });
 
-    await waitFor(() => {
-      expect(alertMock).toHaveBeenCalledWith("Application submitted!");
+        await act(async () => {
+            render(<OpportunityList />);
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText(/Johannesburg/)).toBeInTheDocument();
+            expect(screen.getByText(/R5000\/month/)).toBeInTheDocument();
+            expect(screen.getByText(/2026-12-31/)).toBeInTheDocument();
+            expect(screen.getByText(/TechCorp/)).toBeInTheDocument();
+        });
     });
-
-    expect(onApplicationAdded).toHaveBeenCalled();
-    alertMock.mockRestore();
-  });
 });

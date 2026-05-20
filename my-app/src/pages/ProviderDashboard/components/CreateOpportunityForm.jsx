@@ -3,17 +3,20 @@ import { createOpportunity } from "../../../services/providerService";
 import { auth } from "../../../services/firebase";
 import "./CreateOpportunityForm.css";
 
+const today = new Date().toISOString().split("T")[0];
+
 const EMPTY_FORM = {
   title:       "",
   location:    "",
   stipend:     "",
   description: "",
   type:        "learnership",
+  closingDate: "",
 };
 
 export default function CreateOpportunityForm() {
-  const [form, setForm]         = useState(EMPTY_FORM);
-  const [errors, setErrors]     = useState({});
+  const [form, setForm]             = useState(EMPTY_FORM);
+  const [errors, setErrors]         = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
@@ -22,6 +25,7 @@ export default function CreateOpportunityForm() {
     if (!form.title.trim())       next.title       = "Title is required.";
     if (!form.location.trim())    next.location    = "Location is required.";
     if (!form.description.trim()) next.description = "Description is required.";
+    if (!form.closingDate)        next.closingDate = "Closing date is required.";
     return next;
   };
 
@@ -39,18 +43,16 @@ export default function CreateOpportunityForm() {
       setErrors(validationErrors);
       return;
     }
-
     setSubmitting(true);
     try {
       const uid = auth.currentUser?.uid;
       await createOpportunity({ ...form, providerUid: uid, status: "pending" });
       setForm(EMPTY_FORM);
       setSuccessMsg("Opportunity posted successfully and is pending review.");
-    }  catch (err) {
-  console.error("Create opportunity error:", err);
-  setErrors({ submit: "Failed to post opportunity. Please try again." });
-}
-    finally {
+    } catch (err) {
+      console.error("Create opportunity error:", err);
+      setErrors({ submit: "Failed to post opportunity. Please try again." });
+    } finally {
       setSubmitting(false);
     }
   };
@@ -144,6 +146,26 @@ export default function CreateOpportunityForm() {
               onChange={handleChange}
               placeholder="e.g. R3 500/month"
             />
+          </section>
+
+          <section className="create-form__row create-form__row--half">
+            <label className="create-form__label" htmlFor="opp-closing-date">
+              Closing Date <span aria-hidden="true">*</span>
+            </label>
+            <input
+              id="opp-closing-date"
+              className={`create-form__input${errors.closingDate ? " create-form__input--error" : ""}`}
+              type="date"
+              name="closingDate"
+              value={form.closingDate}
+              onChange={handleChange}
+              min={today}
+              aria-required="true"
+              aria-describedby={errors.closingDate ? "opp-closing-err" : undefined}
+            />
+            {errors.closingDate && (
+              <p id="opp-closing-err" className="create-form__field-error" role="alert">{errors.closingDate}</p>
+            )}
           </section>
 
           <section className="create-form__row">

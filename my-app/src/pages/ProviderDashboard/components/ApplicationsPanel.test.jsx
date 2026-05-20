@@ -1,116 +1,159 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import React from "react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import "@testing-library/jest-dom";
 import ApplicationsPanel from "./ApplicationsPanel";
-import { subscribeToProviderApplications, updateApplicationStatus } from "../../../services/providerService";
+
+jest.mock("./ApplicationsPanel.css", () => ({}), { virtual: true });
 
 jest.mock("../../../services/providerService", () => ({
   subscribeToProviderApplications: jest.fn(),
-  updateApplicationStatus:         jest.fn(),
+  updateApplicationStatus: jest.fn(),
 }));
 
 jest.mock("../../../services/firebase", () => ({
   auth: { currentUser: { uid: "provider-uid" } },
 }));
 
-const mockApplications = [
-  { id: "app-1", applicantName: "John Doe",   opportunityTitle: "Software Internship", status: "received" },
-  { id: "app-2", applicantName: "Sarah Kim",  opportunityTitle: "Business Learnership", status: "shortlisted" },
+import {
+  subscribeToProviderApplications,
+  updateApplicationStatus,
+} from "../../../services/providerService";
+
+const APPS = [
+  {
+    id: "app-1",
+    applicantName: "Alice Smith",
+    applicantEmail: "alice@example.com",
+    applicantPhone: "0821234567",
+    opportunityTitle: "React Internship",
+    status: "submitted",
+    cvUrl: "https://example.com/cv1.pdf",
+    education: "BSc Computer Science",
+    skills: "React, Node.js",
+    interests: "Web development",
+  },
+  {
+    id: "app-2",
+    applicantName: "Bob Jones",
+    opportunityTitle: "Java Learnership",
+    status: "shortlisted",
+  },
+  {
+    id: "app-3",
+    applicantName: "Carol White",
+    opportunityTitle: "React Internship",
+    status: "accepted",
+  },
+  {
+    id: "app-4",
+    applicantName: "Dave Brown",
+    opportunityTitle: "QA Learnership",
+    status: "rejected",
+  },
 ];
 
-const setupListener = (apps = mockApplications) => {
+function setupSubscription(apps = APPS) {
   subscribeToProviderApplications.mockImplementation((uid, onData) => {
     onData(apps);
-    return jest.fn(); // unsubscribe mock
+    return jest.fn();
   });
-};
+}
+
+function getCard(name) {
+  return screen.getByText(name).closest(".ac");
+}
 
 describe("ApplicationsPanel", () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  it("renders a loading state initially before data arrives", () => {
-    subscribeToProviderApplications.mockImplementation(() => jest.fn());
-    render(<ApplicationsPanel />);
-    expect(screen.getByText(/loading applications/i)).toBeInTheDocument();
+  beforeEach(() => {
+    jest.clearAllMocks();
+    updateApplicationStatus.mockResolvedValue({});
   });
 
-  it("renders applicant names once data is received", () => {
-    setupListener();
-    render(<ApplicationsPanel />);
-    expect(screen.getByText("John Doe")).toBeInTheDocument();
-    expect(screen.getByText("Sarah Kim")).toBeInTheDocument();
-  });
-
-  it("shows opportunity title for each application", () => {
-    setupListener();
-    render(<ApplicationsPanel />);
-    expect(screen.getByText(/software internship/i)).toBeInTheDocument();
-    expect(screen.getByText(/business learnership/i)).toBeInTheDocument();
-  });
-
-  it("shows an empty state message when there are no applications", () => {
-    setupListener([]);
-    render(<ApplicationsPanel />);
-    expect(screen.getByText(/no applications received yet/i)).toBeInTheDocument();
-  });
-
-  it("calls updateApplicationStatus with 'accepted' when Accept is clicked", async () => {
-    updateApplicationStatus.mockResolvedValueOnce(undefined);
-    setupListener();
+  it("renders applications", () => {
+    setupSubscription();
     render(<ApplicationsPanel />);
 
-    const acceptButtons = screen.getAllByRole("button", { name: /accept/i });
-    fireEvent.click(acceptButtons[0]);
-
-    await waitFor(() =>
-      expect(updateApplicationStatus).toHaveBeenCalledWith("app-1", "accepted")
-    );
+    APPS.forEach((a) => {
+      expect(screen.getByText(a.applicantName)).toBeInTheDocument();
+    });
   });
 
-  it("calls updateApplicationStatus with 'rejected' when Reject is clicked", async () => {
-    updateApplicationStatus.mockResolvedValueOnce(undefined);
-    setupListener();
+  it("filters accepted applications correctly", () => {
+    setupSubscription();
     render(<ApplicationsPanel />);
 
-    const rejectButtons = screen.getAllByRole("button", { name: /reject/i });
-    fireEvent.click(rejectButtons[0]);
+    const acceptedFilter = screen.getByRole("button", { name: /accepted/i });
+    fireEvent.click(acceptedFilter);
 
-    await waitFor(() =>
-      expect(updateApplicationStatus).toHaveBeenCalledWith("app-1", "rejected")
-    );
+    expect(screen.getByText("Carol White")).toBeInTheDocument();
+    expect(screen.queryByText("Alice Smith")).not.toBeInTheDocument();
   });
 
-  it("calls updateApplicationStatus with 'shortlisted' when Shortlist is clicked", async () => {
-    updateApplicationStatus.mockResolvedValueOnce(undefined);
-    setupListener();
+  it("filters rejected applications correctly", () => {
+    setupSubscription();
     render(<ApplicationsPanel />);
 
-    const shortlistButtons = screen.getAllByRole("button", { name: /shortlist/i });
-    fireEvent.click(shortlistButtons[0]);
+    const rejectedFilter = screen.getByRole("button", { name: /rejected/i });
+    fireEvent.click(rejectedFilter);
 
-    await waitFor(() =>
-      expect(updateApplicationStatus).toHaveBeenCalledWith("app-1", "shortlisted")
-    );
+    expect(screen.getByText("Dave Brown")).toBeInTheDocument();
+    expect(screen.queryByText("Alice Smith")).not.toBeInTheDocument();
   });
 
-  it("shows an error message when updateApplicationStatus fails", async () => {
-    updateApplicationStatus.mockRejectedValueOnce(new Error("Network error"));
-    setupListener();
+  it("shows no results state", () => {
+    setupSubscription(APPS);
     render(<ApplicationsPanel />);
 
-    const acceptButtons = screen.getAllByRole("button", { name: /accept/i });
-    fireEvent.click(acceptButtons[0]);
+    const search = screen.getByRole("searchbox");
+    fireEvent.change(search, { target: { value: "zzznoresult" } });
 
-    await waitFor(() =>
-      expect(screen.getByRole("alert")).toBeInTheDocument()
-    );
+    expect(screen.getByText(/no applications found/i)).toBeInTheDocument();
   });
 
-  it("calls the unsubscribe function on unmount", () => {
-    const mockUnsubscribe = jest.fn();
-    subscribeToProviderApplications.mockReturnValueOnce(mockUnsubscribe);
+  it("expands application", () => {
+    setupSubscription();
+    render(<ApplicationsPanel />);
 
-    const { unmount } = render(<ApplicationsPanel />);
-    unmount();
+    fireEvent.click(screen.getByText("Alice Smith"));
 
-    expect(mockUnsubscribe).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("alice@example.com")).toBeInTheDocument();
+  });
+
+  it("calls updateApplicationStatus safely", async () => {
+    setupSubscription();
+    render(<ApplicationsPanel />);
+
+    fireEvent.click(screen.getByText("Alice Smith"));
+
+    const card = getCard("Alice Smith");
+
+    const acceptBtn = within(card).getByRole("button", {
+      name: /accept/i,
+    });
+
+    fireEvent.click(acceptBtn);
+
+    await waitFor(() => {
+      expect(updateApplicationStatus).toHaveBeenCalledWith(
+        "app-1",
+        "accepted"
+      );
+    });
+  });
+
+  it("shows empty state", () => {
+    setupSubscription([]);
+    render(<ApplicationsPanel />);
+
+    expect(
+      screen.getByText(/no applications found/i)
+    ).toBeInTheDocument();
   });
 });

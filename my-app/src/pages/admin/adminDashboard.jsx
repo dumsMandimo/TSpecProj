@@ -1,6 +1,10 @@
+// adminDashboard.jsx
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./adminStyle.css";
 import { getAdminDashboard, getPendingProviders, approveProvider, rejectProvider } from "../../services/api";
+import { auth, db } from "../../services/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0 });
@@ -9,33 +13,50 @@ export default function AdminDashboard() {
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
-    async function fetchData() {
+    async function init() {
       try {
-        const [data, pendingProviders] = await Promise.all([
+        // 1. Check if logged in
+        if (!auth.currentUser) {
+          navigate("/login");
+          return;
+        }
+
+        // 2. Check if admin
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists() || userSnap.data().role !== "admin") {
+          navigate("/login");
+          return;
+        }
+
+        // 3. Fetch dashboard stats and pending providers
+        const [dashboardData, pendingProviders] = await Promise.all([
           getAdminDashboard(),
           getPendingProviders(),
         ]);
-        setStats(data);
+        setStats(dashboardData);
         setProviders(pendingProviders);
-      } catch (error) {
-        console.error("Failed to load dashboard:", error);
+      } catch (err) {
+        console.error("Failed to load dashboard:", err);
         setError("Failed to load dashboard data. Please try again.");
       } finally {
         setLoading(false);
       }
     }
 
-    fetchData();
-  }, []);
+    init();
+  }, [navigate]);
 
   const handleApprove = async (provider) => {                                  
     setActionLoading(provider.id);                                             
     try {
-      await approveProvider(provider.id, provider);                           
-      setProviders((prev) => prev.filter((p) => p.id !== provider.id));       
-    } catch (error) {
-      console.error("Approve failed:", error);
+      await approveProvider(uid);
+      setProviders((prev) => prev.filter((p) => p.id !== uid));
+    } catch (err) {
+      console.error("Approve failed:", err);
     } finally {
       setActionLoading(null);
     }
@@ -44,10 +65,10 @@ export default function AdminDashboard() {
   const handleReject = async (provider) => {                                   
     setActionLoading(provider.id);                                           
     try {
-      await rejectProvider(provider.id);
-      setProviders((prev) => prev.filter((p) => p.id !== provider.id));      
-    } catch (error) {
-      console.error("Reject failed:", error);
+      await rejectProvider(uid);
+      setProviders((prev) => prev.filter((p) => p.id !== uid));
+    } catch (err) {
+      console.error("Reject failed:", err);
     } finally {
       setActionLoading(null);
     }
@@ -58,7 +79,7 @@ export default function AdminDashboard() {
 
   return (
     <main className="container">
-      <h1 className="heading">Dashboard</h1>
+      <h1 className="heading">Admin Dashboard</h1>
 
       <section className="cardContainer">
         <article className="card">
