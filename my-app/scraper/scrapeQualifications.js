@@ -769,7 +769,7 @@ async function main() {
   search_targets_used: SEARCH_TARGETS.map((target) => target.label),
   scraped_rows_before_dedupe: scrapedQualifications.length,
   unique_qualifications_after_dedupe: allQualifications.length,
-  active_qualifications: activeQualifications.length,
+  active_qualificationpmns: activeQualifications.length,
   dropdown_items: qualificationDropdown.length,
   fields_found: fields.length,
   skill_tags_generated: skillTags.length,

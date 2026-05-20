@@ -1,6 +1,11 @@
-import AppRouter from './routes/appRouter';
+import AppRouter from "./routes/appRouter";
+import SaqaDataTest from "./components/SaqaDataTest";
 
-export default function App() { 
-  return <AppRouter />;
+export default function App() {
+  return (
+    <>
+      <AppRouter />
+      <SaqaDataTest />
+    </>
+  );
 }
-
