@@ -139,7 +139,11 @@ describe("NotificationBell", () => {
         fireEvent.click(screen.getByLabelText("Notifications"));
 
         await waitFor(() => {
-            expect(screen.getByText("Notifications (2)")).toBeInTheDocument();
+            // Header renders "Notifications" as text with the count in a sibling <mark>
+            expect(screen.getByText(/^Notifications/)).toBeInTheDocument();
+            // The inline badge inside the header shows the unread count
+            const marks = screen.getAllByText("2");
+            expect(marks.length).toBeGreaterThan(0);
         });
     });
 
@@ -220,13 +224,14 @@ describe("NotificationBell", () => {
         fireEvent.click(screen.getByLabelText("Notifications"));
 
         await waitFor(() => {
-            expect(screen.getByText("Notifications (2)")).toBeInTheDocument();
+            // Dropdown is open — header and notification list are visible
+            expect(screen.getByText("Application Shortlisted")).toBeInTheDocument();
         });
 
         fireEvent.mouseDown(document.body);
 
         await waitFor(() => {
-            expect(screen.queryByText("Notifications (2)")).not.toBeInTheDocument();
+            expect(screen.queryByText("Application Shortlisted")).not.toBeInTheDocument();
         });
     });
 

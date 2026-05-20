@@ -88,8 +88,10 @@ const mockOpportunities = [
     },
 ];
 
-// Instead of relying on call order, track which query type is being made
-// by inspecting the where() mock arguments and return the right data
+// Dashboard has a single useEffect that sequentially fetches:
+//   call 1 → applications for the current user
+//   call 2 → approved opportunities
+//   calls 3+ → one dedup check per opportunity that passes the filters
 function setupSmartGetDocs({
     applications    = mockApplications,
     opportunities   = mockOpportunities,
@@ -101,10 +103,7 @@ function setupSmartGetDocs({
     getDocs.mockImplementation(() => {
         callCount++;
 
-        // Calls come in pairs per useEffect: [apps, opps, apps, opps, ...dedup]
-        // Both useEffects run simultaneously so interleaving varies.
-        // We track by count and return safe defaults for dedup calls.
-        const appResult  = {
+        const appResult = {
             empty: applications.length === 0,
             docs:  applications.map(a => ({ id: a.id, data: () => a })),
         };
@@ -121,10 +120,8 @@ function setupSmartGetDocs({
                 docs:  dedupDocs.map((d, i) => ({ id: `dedup${i}`, data: () => d })),
             };
 
-        // First 4 calls are the two useEffects fetching apps + opps
-        // Remaining calls are dedup checks
-        if (callCount === 1 || callCount === 3) return Promise.resolve(appResult);
-        if (callCount === 2 || callCount === 4) return Promise.resolve(oppResult);
+        if (callCount === 1) return Promise.resolve(appResult);
+        if (callCount === 2) return Promise.resolve(oppResult);
         return Promise.resolve(dedupResult);
     });
 }

@@ -1,0 +1,327 @@
+/* ─────────────────────────────────────────────
+   AnalyticsPanel.css
+───────────────────────────────────────────── */
+
+.analytics-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fb;
+  font-family: "Inter", sans-serif;
+}
+
+/* ── Sidebar ─────────────────────────────── */
+
+.analytics-sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #0f172a, #111827);
+  color: white;
+  padding: 28px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 4px 0 18px rgba(0,0,0,0.08);
+}
+
+.analytics-sidebar__top {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.analytics-sidebar__logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.analytics-sidebar__menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.analytics-sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border-radius: 14px;
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  transition: 0.25s ease;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.analytics-sidebar__item:hover {
+  background: rgba(255,255,255,0.08);
+  color: white;
+}
+
+.analytics-sidebar__item--active {
+  background: linear-gradient(135deg, #378add, #2563eb);
+  color: white;
+  box-shadow: 0 6px 18px rgba(55,138,221,0.35);
+}
+
+.analytics-sidebar__footer {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.45);
+  padding-top: 18px;
+}
+
+/* ── Main Content ────────────────────────── */
+
+.analytics {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+}
+
+/* ── Header ─────────────────────────────── */
+
+.analytics__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.analytics__title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.analytics__subtitle {
+  color: #6b7280;
+  margin-top: 4px;
+  font-size: 0.95rem;
+}
+
+/* ── Summary Cards ──────────────────────── */
+
+.analytics__metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+.analytics__metric {
+  background: white;
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.04);
+  transition: 0.25s ease;
+}
+
+.analytics__metric:hover {
+  transform: translateY(-2px);
+}
+
+.analytics__metric-label {
+  display: block;
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.analytics__metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* ── Sections ───────────────────────────── */
+
+.analytics__section {
+  background: white;
+  border-radius: 22px;
+  padding: 24px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.analytics__section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.analytics__section-title {
+  font-size: 1.15rem;
+  font-weight: 650;
+  color: #111827;
+}
+
+/* ── Export Buttons ─────────────────────── */
+
+.analytics__export-row {
+  display: flex;
+  gap: 10px;
+}
+
+.analytics__export-btn {
+  border: none;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.analytics__export-btn:hover {
+  background: #dbeafe;
+}
+
+/* ── Legends ────────────────────────────── */
+
+.analytics__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.analytics__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: #4b5563;
+}
+
+.analytics__legend-sq {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+/* ── Canvas ─────────────────────────────── */
+
+.analytics__canvas {
+  width: 100%;
+  height: 260px;
+  display: block;
+}
+
+/* ── Divider ────────────────────────────── */
+
+.analytics__divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 26px 0;
+}
+
+/* ── Tabs ───────────────────────────────── */
+
+.analytics__tab-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.analytics__tab {
+  border: none;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #f3f4f6;
+  cursor: pointer;
+  font-weight: 600;
+  color: #4b5563;
+  transition: 0.2s ease;
+}
+
+.analytics__tab:hover {
+  background: #e5e7eb;
+}
+
+.analytics__tab--active {
+  background: #378add;
+  color: white;
+}
+
+/* ── Toast ─────────────────────────────── */
+
+.analytics__toast {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  background: #111827;
+  color: white;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  z-index: 999;
+}
+
+/* ── Empty + Error + Loading ───────────── */
+
+.analytics__empty,
+.ap-loading,
+.ap-error {
+  text-align: center;
+  padding: 30px;
+  color: #6b7280;
+}
+
+.ap-error {
+  color: #dc2626;
+}
+
+/* ── Responsive ────────────────────────── */
+
+@media (max-width: 950px) {
+  .analytics-layout {
+    flex-direction: column;
+  }
+
+  .analytics-sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px;
+  }
+
+  .analytics-sidebar__menu {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .analytics-sidebar__footer {
+    display: none;
+  }
+
+  .analytics {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .analytics__metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics__section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .analytics__export-row {
+    width: 100%;
+  }
+
+  .analytics__export-btn {
+    flex: 1;
+  }
+}

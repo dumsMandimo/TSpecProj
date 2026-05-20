@@ -13,14 +13,12 @@
     "react-scripts": "5.0.1"
   },
   "scripts": {
-    "start": "cd my-app && ../node_modules/.bin/react-scripts start",
+    "start": "node server.js",
     "client": "react-scripts start",
-    "build": "cd my-app && ../node_modules/.bin/react-scripts build",
-    "test": "cd my-app && ../node_modules/.bin/react-scripts test",
+    "build": "react-scripts build",
+    "test": "react-scripts test --watchAll=false",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
-    "eject": "react-scripts eject",
-    "start:client": "react-scripts start",
-    "start:server": "node my-app/server.js"
+    "eject": "react-scripts eject"
   },
   "engines": {
     "node": ">=18"
