@@ -7,6 +7,7 @@ import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
 import OverviewCards from "./components/OverviewCards";
 import ListingsPanel from "./components/ListingsPanel";
+import AnalyticsPanel from "./components/AnalyticsPanel";
 import ApplicationsPanel from "./components/ApplicationsPanel";
 import NotificationsPanel from "./components/NotificationsPanel";
 import CreateOpportunityForm from "./components/CreateOpportunityForm";
@@ -101,6 +102,7 @@ export default function ProviderDashboard() {
             )}
             {tab === "listings"      && <ListingsPanel      initialFilter={listingFilter} />}
             {tab === "applications"  && <ApplicationsPanel  initialFilter={applicationFilter} />}
+            {tab === "analytics" && <AnalyticsPanel />}
             {tab === "notifications" && <NotificationsPanel />}
             {tab === "create"        && <CreateOpportunityForm />}
           </section>
