@@ -7,7 +7,7 @@ import { auth, db } from "../../services/firebase";
 import { doc, getDoc } from "firebase/firestore";
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0 });
+  const [stats, setStats] = useState({ totalOpportunities: 0, pendingApprovals: 0, totalProviders: 0 });
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,13 +18,11 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function init() {
       try {
-        // 1. Check if logged in
         if (!auth.currentUser) {
           navigate("/login");
           return;
         }
 
-        // 2. Check if admin
         const userRef = doc(db, "users", auth.currentUser.uid);
         const userSnap = await getDoc(userRef);
         if (!userSnap.exists() || userSnap.data().role !== "admin") {
@@ -32,7 +30,6 @@ export default function AdminDashboard() {
           return;
         }
 
-        // 3. Fetch dashboard stats and pending providers
         const [dashboardData, pendingProviders] = await Promise.all([
           getAdminDashboard(),
           getPendingProviders(),
@@ -50,11 +47,16 @@ export default function AdminDashboard() {
     init();
   }, [navigate]);
 
-  const handleApprove = async (provider) => {                                  
-    setActionLoading(provider.id);                                             
+  const handleApprove = async (provider) => {
+    setActionLoading(provider.id);
     try {
-      await approveProvider(uid);
-      setProviders((prev) => prev.filter((p) => p.id !== uid));
+      await approveProvider(provider.id, provider);
+      setProviders((prev) => prev.filter((p) => p.id !== provider.id));
+      setStats((prev) => ({
+        ...prev,
+        pendingApprovals: prev.pendingApprovals - 1,  
+        totalProviders:   prev.totalProviders + 1,
+      }));
     } catch (err) {
       console.error("Approve failed:", err);
     } finally {
@@ -62,11 +64,15 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleReject = async (provider) => {                                   
-    setActionLoading(provider.id);                                           
+  const handleReject = async (provider) => {
+    setActionLoading(provider.id);
     try {
-      await rejectProvider(uid);
-      setProviders((prev) => prev.filter((p) => p.id !== uid));
+      await rejectProvider(provider.id);
+      setProviders((prev) => prev.filter((p) => p.id !== provider.id));
+      setStats((prev) => ({
+        ...prev,
+        pendingApprovals: prev.pendingApprovals - 1,  // ✅ keep stats in sync
+      }));
     } catch (err) {
       console.error("Reject failed:", err);
     } finally {
@@ -83,16 +89,16 @@ export default function AdminDashboard() {
 
       <section className="cardContainer">
         <article className="card">
-          <h2>Opportunities</h2>
-          <p className="number">{stats.total}</p>
+          <h2>Total Opportunities</h2>
+          <p className="number">{stats.totalOpportunities}</p>
         </article>
         <article className="card">
-          <h2>Approved</h2>
-          <p className="number">{stats.approved}</p>
+          <h2>Pending Approvals</h2>
+          <p className="number">{stats.pendingApprovals}</p>
         </article>
         <article className="card">
-          <h2>Pending</h2>
-          <p className="number">{stats.pending}</p>
+          <h2>Total Providers</h2>
+          <p className="number">{stats.totalProviders}</p>
         </article>
       </section>
 
@@ -125,14 +131,14 @@ export default function AdminDashboard() {
                 <div className="provider-actions">
                   <button
                     className="btn-approve"
-                    onClick={() => handleApprove(provider)}                    
+                    onClick={() => handleApprove(provider)}
                     disabled={actionLoading === provider.id}
                   >
                     {actionLoading === provider.id ? "..." : "Approve"}
                   </button>
                   <button
                     className="btn-reject"
-                    onClick={() => handleReject(provider)}                     
+                    onClick={() => handleReject(provider)}
                     disabled={actionLoading === provider.id}
                   >
                     {actionLoading === provider.id ? "..." : "Reject"}

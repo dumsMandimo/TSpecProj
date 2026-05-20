@@ -1,168 +1,186 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import AdminDashboard from './adminDashboard';
-import { getAdminDashboard, getPendingProviders } from '../../services/api';
+// adminDashboard.jsx
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./adminStyle.css";
+import { getAdminDashboard, getPendingProviders, approveProvider, rejectProvider } from "../../services/api";
+import { auth, db } from "../../services/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
-// ── Mock react-router-dom navigate ────────────────────────────────────────────
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockNavigate,
-}));
+function getInitials(name = "") {
+  return name.trim().split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+}
 
-// ── Mock API ──────────────────────────────────────────────────────────────────
-jest.mock('../../services/api', () => ({
-  getAdminDashboard:   jest.fn(),
-  getPendingProviders: jest.fn(),
-  approveProvider:     jest.fn(),
-  rejectProvider:      jest.fn(),
-}));
+function getDate() {
+  return new Date().toLocaleDateString("en-ZA", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+}
 
-// ── Mock Firebase services ────────────────────────────────────────────────────
-jest.mock('../../services/firebase', () => ({
-  auth: { currentUser: { uid: 'admin-uid-123' } },
-  db:   {},
-}));
+export default function AdminDashboard() {
+  const [stats, setStats] = useState({ totalOpportunities: 0, pendingApprovals: 0, totalProviders: 0 });
+  const [providers, setProviders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState(null);
+  const [adminName, setAdminName] = useState("Admin");
 
-jest.mock('firebase/firestore', () => ({
-  doc:     jest.fn(),
-  getDoc:  jest.fn(),
-}));
+  const navigate = useNavigate();
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-// Pull getDoc ref so individual tests can configure it
-const { getDoc } = jest.requireMock('firebase/firestore');
+  useEffect(() => {
+    async function init() {
+      try {
+        if (!auth.currentUser) {
+          navigate("/login");
+          return;
+        }
 
-// Admin Firestore snap — role === "admin" so the component proceeds normally
-const adminSnap = {
-  exists: () => true,
-  data:   () => ({ role: 'admin' }),
-};
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists() || userSnap.data().role !== "admin") {
+          navigate("/login");
+          return;
+        }
 
-// Wrap component in MemoryRouter (required by useNavigate)
-const renderDashboard = () =>
-  render(
-    <MemoryRouter>
-      <AdminDashboard />
-    </MemoryRouter>
+        const data = userSnap.data();
+        if (data.name) setAdminName(data.name);
+
+        const [dashboardData, pendingProviders] = await Promise.all([
+          getAdminDashboard(),
+          getPendingProviders(),
+        ]);
+        setStats(dashboardData);
+        setProviders(pendingProviders);
+      } catch (err) {
+        console.error("Failed to load dashboard:", err);
+        setError("Failed to load dashboard data. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    init();
+  }, [navigate]);
+
+  const handleApprove = async (provider) => {
+    setActionLoading(provider.id);
+    try {
+      await approveProvider(provider.id, provider);
+      setProviders((prev) => prev.filter((p) => p.id !== provider.id));
+      setStats((prev) => ({
+        ...prev,
+        pendingApprovals: prev.pendingApprovals - 1,
+        totalProviders: prev.totalProviders + 1,
+      }));
+    } catch (err) {
+      console.error("Approve failed:", err);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReject = async (provider) => {
+    setActionLoading(provider.id);
+    try {
+      await rejectProvider(provider.id);
+      setProviders((prev) => prev.filter((p) => p.id !== provider.id));
+      setStats((prev) => ({
+        ...prev,
+        pendingApprovals: prev.pendingApprovals - 1,
+      }));
+    } catch (err) {
+      console.error("Reject failed:", err);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  if (loading) return <main className="container"><p>Loading dashboard...</p></main>;
+  if (error) return <main className="container"><p className="error">{error}</p></main>;
+
+  return (
+    <main className="container">
+
+      {/* Top bar */}
+      <div className="topbar">
+        <div className="topbar-left">
+          <h1>Admin Dashboard</h1>
+          <p>{getDate()}</p>
+        </div>
+        <div className="admin-pill">
+          <div className="admin-avatar">{getInitials(adminName)}</div>
+          <span>{adminName}</span>
+        </div>
+      </div>
+
+      {/* Stat cards */}
+      <section className="cardContainer">
+        <article className="card">
+          <div className="card-accent" />
+          <h2>Total Opportunities</h2>
+          <p className="number">{stats.totalOpportunities}</p>
+          <p className="card-sub">Active listings</p>
+        </article>
+        <article className="card">
+          <div className="card-accent" />
+          <h2>Pending Approvals</h2>
+          <p className="number">{stats.pendingApprovals}</p>
+          <p className="card-sub">Awaiting review</p>
+        </article>
+        <article className="card">
+          <div className="card-accent" />
+          <h2>Total Providers</h2>
+          <p className="number">{stats.totalProviders}</p>
+          <p className="card-sub">Approved providers</p>
+        </article>
+      </section>
+
+      {/* Pending providers */}
+      <section className="providers-section">
+        <h2 className="providers-heading">
+          Pending Providers
+          {providers.length > 0 && (
+            <span className="providers-badge">{providers.length} awaiting</span>
+          )}
+        </h2>
+
+        {providers.length === 0 ? (
+          <p className="providers-empty">No providers pending approval.</p>
+        ) : (
+          <div className="providers-list">
+            {providers.map((provider) => (
+              <article key={provider.id} className="provider-card">
+                <div className="provider-initials">
+                  {getInitials(provider.organisationName)}
+                </div>
+                <div className="provider-info">
+                  <p className="provider-name">{provider.organisationName}</p>
+                  <div className="provider-meta">
+                    <span>{provider.contactName}</span>
+                    <span className="meta-dot" />
+                    <span>{provider.sector}</span>
+                    <span className="meta-dot" />
+                    <span>{provider.province}</span>
+                  </div>
+                </div>
+                <div className="provider-actions">
+                  <button
+                    className="btn-approve"
+                    onClick={() => handleApprove(provider)}
+                    disabled={actionLoading === provider.id}
+                  >
+                    {actionLoading === provider.id ? "..." : "Approve"}
+                  </button>
+                  <button
+                    className="btn-reject"
+                    onClick={() => handleReject(provider)}
+                    disabled={actionLoading === provider.id}
+                  >
+                    {actionLoading === provider.id ? "..." : "Reject"}
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
   );
-
-// ── Setup ─────────────────────────────────────────────────────────────────────
-beforeEach(() => {
-  jest.clearAllMocks();
-  // Default: valid admin session, no pending providers
-  getDoc.mockResolvedValue(adminSnap);
-  getPendingProviders.mockResolvedValue([]);
-});
-
-// ── Tests ─────────────────────────────────────────────────────────────────────
-
-describe('AdminDashboard', () => {
-
-  test('renders loading state initially', () => {
-    // Keep the promise pending so loading stays true
-    getAdminDashboard.mockImplementation(() => new Promise(() => {}));
-
-    renderDashboard();
-
-    expect(screen.getByText('Loading dashboard...')).toBeInTheDocument();
-  });
-
-  test('renders dashboard with stats when API call succeeds', async () => {
-    const mockStats = { total: 25, approved: 18, pending: 7 };
-    getAdminDashboard.mockResolvedValue(mockStats);
-
-    renderDashboard();
-
-    await waitFor(() => {
-      expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
-    });
-
-    expect(screen.getByText('25')).toBeInTheDocument();
-    expect(screen.getByText('18')).toBeInTheDocument();
-    expect(screen.getByText('7')).toBeInTheDocument();
-    expect(screen.getByText('Opportunities')).toBeInTheDocument();
-    expect(screen.getByText('Approved')).toBeInTheDocument();
-    expect(screen.getByText('Pending')).toBeInTheDocument();
-  });
-
-  test('displays error message when API call fails', async () => {
-    getAdminDashboard.mockRejectedValue(new Error('API Error'));
-
-    renderDashboard();
-
-    await waitFor(() => {
-      expect(
-        screen.getByText('Failed to load dashboard data. Please try again.')
-      ).toBeInTheDocument();
-    });
-  });
-
-  test('calls getAdminDashboard once on mount', async () => {
-    getAdminDashboard.mockResolvedValue({ total: 0, pending: 0, approved: 0 });
-
-    renderDashboard();
-
-    await waitFor(() => {
-      expect(getAdminDashboard).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  test('handles zero values correctly', async () => {
-    getAdminDashboard.mockResolvedValue({ total: 0, approved: 0, pending: 0 });
-
-    renderDashboard();
-
-    await waitFor(() => {
-      const zeroElements = screen.getAllByText('0');
-      expect(zeroElements).toHaveLength(3);
-    });
-  });
-
-  test('displays correct CSS classes', async () => {
-    getAdminDashboard.mockResolvedValue({ total: 10, pending: 5, approved: 5 });
-
-    renderDashboard();
-
-    await waitFor(() => {
-      const mainElement = screen.getByRole('main');
-      expect(mainElement).toHaveClass('container');
-
-      const heading = screen.getByText('Admin Dashboard');
-      expect(heading).toHaveClass('heading');
-    });
-  });
-
-  test('redirects to login when no user is logged in', async () => {
-    // Override firebase mock for this test — no current user
-    jest.resetModules();
-    const { auth } = jest.requireMock('../../services/firebase');
-    const originalUser = auth.currentUser;
-    auth.currentUser = null;
-
-    getAdminDashboard.mockResolvedValue({ total: 0, pending: 0, approved: 0 });
-
-    renderDashboard();
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/login');
-    });
-
-    auth.currentUser = originalUser; // restore
-  });
-
-  test('redirects to login when user is not an admin', async () => {
-    getDoc.mockResolvedValue({
-      exists: () => true,
-      data:   () => ({ role: 'provider' }),  // not admin
-    });
-
-    getAdminDashboard.mockResolvedValue({ total: 0, pending: 0, approved: 0 });
-
-    renderDashboard();
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/login');
-    });
-  });
-});
+}
