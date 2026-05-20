@@ -221,13 +221,8 @@ describe("OpportunityList", () => {
                     data: () => opp,
                 })),
             })
-            // applications — opp2 already applied
-            .mockResolvedValueOnce({
-                docs: [{
-                    id:   "app2",
-                    data: () => ({ id: "app2", opportunityId: "opp2", userId: "user123" }),
-                }],
-            });
+            // applications — none yet so both cards are visible
+            .mockResolvedValueOnce({ docs: [] });
 
         window.alert = jest.fn();
 
@@ -235,26 +230,23 @@ describe("OpportunityList", () => {
             render(<OpportunityList />);
         });
 
-        // Wait for opp1 to appear (opp2 is filtered out since already applied)
         await waitFor(() => {
             expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
         });
 
-        // Manually trigger duplicate apply by calling handleApply with opp2
-        // via a prop callback since opp2 is filtered from the UI
-        // Instead test with opp1 applied twice by clicking and then checking
+        // First click — applies successfully
         await act(async () => {
             fireEvent.click(screen.getAllByText("Apply Now")[0]);
         });
 
-        // First click submits successfully
         await waitFor(() => {
             expect(window.alert).toHaveBeenCalledWith("Application submitted!");
         });
 
-        // Second click on same opp should detect duplicate from local state
+        // The button now reads "Applied" (disabled). fireEvent bypasses disabled in jsdom,
+        // so clicking it still invokes handleApply which detects the sessionApplied duplicate.
         await act(async () => {
-            fireEvent.click(screen.getAllByText("Apply Now")[0]);
+            fireEvent.click(screen.getAllByText("Applied")[0]);
         });
 
         await waitFor(() => {
