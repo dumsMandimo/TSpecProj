@@ -1,4 +1,3 @@
-// api.js
 import { db } from './firebase';
 import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
 import emailjs from '@emailjs/browser';
@@ -43,7 +42,7 @@ export async function getPendingProviders() {
 
 export async function approveProvider(uid, provider) {
   try {
-    // ── Role guard ──────────────────────────────────────────────────────────
+    
     if (!provider) {
       throw new Error('approveProvider: provider object is missing.');
     }
@@ -54,9 +53,7 @@ export async function approveProvider(uid, provider) {
         `Fix this user's role in Firestore before approving.`
       );
     }
-    // ────────────────────────────────────────────────────────────────────────
-
-    // ── EmailJS config guard ─────────────────────────────────────────────────
+    
     if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
       throw new Error(
         'approveProvider: One or more EmailJS env vars are missing. ' +
@@ -64,13 +61,11 @@ export async function approveProvider(uid, provider) {
         'and REACT_APP_EMAILJS_PUBLIC_KEY in your .env file.'
       );
     }
-    // ────────────────────────────────────────────────────────────────────────
+   
 
-    // ── Update Firestore status ──────────────────────────────────────────────
+    
     await updateDoc(doc(db, 'users', uid), { status: 'approved' });
-    // ────────────────────────────────────────────────────────────────────────
-
-    // ── Send approval email ──────────────────────────────────────────────────
+  
     const templateParams = {
       email:             provider.email,
       contact_name:      provider.contactName,
@@ -81,19 +76,19 @@ export async function approveProvider(uid, provider) {
     console.log('Sending EmailJS approval:', { uid, templateParams });
 
     await emailjs.send(
-      EMAILJS_SERVICE_ID,
-      EMAILJS_TEMPLATE_ID,
+      REACT_APP_EMAILJS_SERVICE_ID,
+      REACT_APP_EMAILJS_TEMPLATE_ID,
       templateParams,
-      EMAILJS_PUBLIC_KEY
+      REACT_APP_EMAILJS_PUBLIC_KEY
     );
-    // ────────────────────────────────────────────────────────────────────────
+   
 
     console.log(`approveProvider: uid "${uid}" approved and notified successfully.`);
   } catch (error) {
     console.error('approveProvider error:', {
       message: error.message,
-      status:  error.status, // EmailJS-specific
-      text:    error.text,   // EmailJS-specific
+      status:  error.status,
+      text:    error.text,   
     });
     throw error;
   }
@@ -101,11 +96,11 @@ export async function approveProvider(uid, provider) {
 
 export async function rejectProvider(uid) {
   try {
-    // ── Basic guard ──────────────────────────────────────────────────────────
+    
     if (!uid) {
       throw new Error('rejectProvider: uid is missing.');
     }
-    // ────────────────────────────────────────────────────────────────────────
+    
 
     await updateDoc(doc(db, 'users', uid), { status: 'rejected' });
 
