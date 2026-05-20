@@ -26,7 +26,6 @@ function OpportunityList(props) {
     }, []);
 
     useEffect(() => {
-        // Reset both sets when the user changes
         setFetchedAppliedIds(new Set());
         setSessionApplied(new Set());
     }, [user]);
@@ -73,7 +72,6 @@ function OpportunityList(props) {
             return;
         }
 
-        // Check both pre-existing and in-session applications
         if (fetchedAppliedIds.has(opportunity.id) || sessionApplied.has(opportunity.id)) {
             alert("You already applied for this opportunity");
             return;
@@ -105,9 +103,6 @@ function OpportunityList(props) {
                 createdAt: Timestamp.now(),
             });
 
-            // FIX: track in sessionApplied (not fetchedAppliedIds) so the card
-            // stays visible — enabling the duplicate-click test to reach handleApply
-            // a second time and receive the "already applied" alert.
             setSessionApplied(prev => new Set([...prev, opportunity.id]));
 
             const newApp = { id: docRef.id, ...applicationData };
@@ -122,8 +117,6 @@ function OpportunityList(props) {
         }
     };
 
-    // Only filter out opportunities that were already applied for before
-    // this session. In-session applied opps remain visible (button disabled).
     const visibleOpportunities = opportunities.filter(
         opp => !fetchedAppliedIds.has(opp.id)
     );
@@ -144,33 +137,54 @@ function OpportunityList(props) {
                 )}
                 {visibleOpportunities.map((opportunity) => (
                     <article key={opportunity.id} className="opportunity-card">
-                        <h3>{opportunity.title}</h3>
-                        <p>{opportunity.description}</p>
-                        <p>📍 {opportunity.location}</p>
-                        <p>💰 {opportunity.stipend}</p>
-                        <p>📅 Closes: {opportunity.closingDate}</p>
+                        <div className="opportunity-card__header">
+                            <h3 className="opportunity-card__title">{opportunity.title}</h3>
+                            {opportunity.type && (
+                                <span className="opportunity-card__type">{opportunity.type}</span>
+                            )}
+                        </div>
 
-                        {opportunity.company || opportunity.companyName ? (
-                            <p>🏢 {opportunity.company || opportunity.companyName}</p>
-                        ) : null}
+                        <div className="opportunity-card__meta">
+                            <p className="opportunity-card__provider">
+                                {opportunity.company || opportunity.companyName}
+                            </p>
+                            {opportunity.location && (
+                                <p className="opportunity-card__location">📍 {opportunity.location}</p>
+                            )}
+                            {opportunity.stipend && (
+                                <p className="opportunity-card__stipend">💰 {opportunity.stipend}</p>
+                            )}
+                        </div>
+
+                        {opportunity.description && (
+                            <p className="opportunity-card__description">{opportunity.description}</p>
+                        )}
 
                         {opportunity.companyUrl && (
                             <a
                                 href={opportunity.companyUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="more-info-btn"
+                                className="opportunity-card__link"
                             >
                                 More about {opportunity.company || "this provider"}
                             </a>
                         )}
 
-                        <button
-                            className="apply-btn"
-                            onClick={() => handleApply(opportunity)}
-                        >
-                            Apply Now
-                        </button>
+                        <div className="opportunity-card__footer">
+                            {opportunity.closingDate && (
+                                <p className="opportunity-card__location" style={{ marginBottom: "0.5rem" }}>
+                                    📅 Closes: {opportunity.closingDate}
+                                </p>
+                            )}
+                            <button
+                                className="opportunity-card__apply-btn"
+                                onClick={() => handleApply(opportunity)}
+                                disabled={sessionApplied.has(opportunity.id)}
+                            >
+                                {sessionApplied.has(opportunity.id) ? "Applied" : "Apply Now"}
+                            </button>
+                        </div>
                     </article>
                 ))}
             </section>

@@ -19,7 +19,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .application-card__title {
@@ -30,45 +30,25 @@
   line-height: 1.3;
 }
 
-.application-card__type {
-  flex-shrink: 0;
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  background: var(--ad-orange-soft);
-  color: var(--ad-orange);
-  border: 1px solid rgba(255, 138, 31, 0.3);
-}
-
 .application-card__meta {
   margin-bottom: 1rem;
 }
 
 .application-card__company {
-  margin: 0 0 0.25rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--ad-text);
-}
-
-.application-card__location {
   margin: 0;
   font-size: 0.85rem;
   color: var(--ad-text-muted);
 }
 
+/* ── Progress Tracker ─────────────────────────────────────────── */
+
 .progress-tracker {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 0.5rem;
   margin-top: auto;
-  padding-top: 0.75rem;
+  padding-top: 1rem;
   border-top: 1px solid var(--ad-border);
-  overflow-x: auto;
 }
 
 .progress-tracker__step {
@@ -76,46 +56,46 @@
   flex-direction: column;
   align-items: center;
   flex: 1;
-  min-width: 3.5rem;
 }
 
 .progress-tracker__dot {
-  width: 10px;
-  height: 10px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.15);
   flex-shrink: 0;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .progress-tracker__dot--active {
   background: var(--ad-orange);
   border-color: var(--ad-orange);
-  box-shadow: 0 0 0 3px var(--ad-orange-soft);
+  box-shadow: 0 0 0 4px var(--ad-orange-soft);
 }
 
 .progress-tracker__dot--accepted {
   background: #2ecc71;
   border-color: #2ecc71;
-  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
+  box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.2);
 }
 
 .progress-tracker__dot--rejected {
   background: #e74c3c;
   border-color: #e74c3c;
-  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
+  box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.2);
 }
 
 .progress-tracker__dot--shortlisted {
   background: #f1c40f;
   border-color: #f1c40f;
-  box-shadow: 0 0 0 3px rgba(241, 196, 15, 0.2);
+  box-shadow: 0 0 0 4px rgba(241, 196, 15, 0.2);
 }
 
 .progress-tracker__label {
-  margin-top: 0.45rem;
-  font-size: 0.65rem;
-  line-height: 1.2;
+  margin-top: 0.5rem;
+  font-size: 0.62rem;
+  line-height: 1.3;
   text-align: center;
   color: var(--ad-text-muted);
 }
@@ -125,18 +105,16 @@
   font-weight: 600;
 }
 
-.progress-tracker__dot--accepted + .progress-tracker__label,
 .progress-tracker__step:has(.progress-tracker__dot--accepted) .progress-tracker__label {
   color: #2ecc71;
   font-weight: 600;
 }
 
-<.progress-tracker__dot--rejected + .progress-tracker__label,
 .progress-tracker__step:has(.progress-tracker__dot--rejected) .progress-tracker__label {
   color: #e74c3c;
   font-weight: 600;
 }
-.progress-tracker__dot--shortlisted + .progress-tracker__label,
+
 .progress-tracker__step:has(.progress-tracker__dot--shortlisted) .progress-tracker__label {
   color: #f1c40f;
   font-weight: 600;

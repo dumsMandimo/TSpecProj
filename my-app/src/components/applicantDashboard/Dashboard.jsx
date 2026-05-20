@@ -43,9 +43,7 @@ function Dashboard() {
 
                 if (oppsSnap.empty) return;
 
-                const today      = new Date();
-                const startOfDay = new Date();
-                startOfDay.setHours(0, 0, 0, 0);
+                const today = new Date();
 
                 for (const oppDoc of oppsSnap.docs) {
                     const opp = oppDoc.data();
@@ -73,8 +71,8 @@ function Dashboard() {
                         userId:        user.uid,
                         title:         type === "closing_soon" ? "Opportunity closing soon!" : "New opportunity available!",
                         body:          type === "closing_soon"
-                            ? `${opp.title} at ${opp.company || opp.companyName || "a provider"} closes in ${diffDays} day${diffDays === 1 ? "" : "s"}. Don't miss out — apply before it's too late!`
-                            : `${opp.title} at ${opp.company || opp.companyName || "a provider"} is now open for applications. Apply before ${opp.closingDate}!`,
+                            ? `${opp.title} at ${opp.company || opp.companyName || "a provider"} closes in ${diffDays} day${diffDays === 1 ? "" : "s"}. Don't miss out!`
+                            : `${opp.title} at ${opp.company || opp.companyName || "a provider"} is now open. Apply before ${opp.closingDate}!`,
                         read:          false,
                         type,
                         opportunityId: oppDoc.id,
@@ -91,19 +89,23 @@ function Dashboard() {
 
     return (
         <main className="applicant-dashboard">
-            <header style={{ display: "flex", justifyContent: "flex-end", padding: "1rem" }}>
+            <header className="applicant-dashboard__topbar">
                 <NotificationBell />
             </header>
 
-            <MyApplications applications={applications} />
-            <OpportunityList opportunities={opportunities} />
+            <div className="applicant-dashboard__content">
+                <MyApplications applications={applications} />
+                <OpportunityList opportunities={opportunities} />
 
-            <button
-                className="profile-button"
-                onClick={() => navigate("/dashboard/applicant/myProfile")}
-            >
-                My Profile
-            </button>
+                <div className="applicant-dashboard__profile-row">
+                    <button
+                        className="applicant-dashboard__profile-btn"
+                        onClick={() => navigate("/dashboard/applicant/myProfile")}
+                    >
+                        My Profile
+                    </button>
+                </div>
+            </div>
         </main>
     );
 }

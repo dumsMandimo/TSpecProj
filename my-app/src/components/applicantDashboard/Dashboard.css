@@ -19,61 +19,52 @@
   font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
 }
 
-.applicant-dashboard__header {
+.applicant-dashboard,
+.applicant-dashboard * {
+  font-family: inherit;
+}
+
+body:has(.applicant-dashboard) {
+  background: #060606;
+  color: #ffffff;
+  font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+}
+
+/* ── Top notification bar ─────────────────────────────────────── */
+
+.applicant-dashboard__topbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--ad-border);
+  background: rgba(6, 6, 6, 0.92);
+  backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
   z-index: 10;
+}
+
+/* ── Main content wrapper ─────────────────────────────────────── */
+
+.applicant-dashboard__content {
+  max-width: var(--ad-max-width);
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 1.25rem 1.5rem;
-  background: rgba(6, 6, 6, 0.92);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--ad-border);
+  flex-direction: column;
+  gap: 2.5rem;
 }
 
-.applicant-dashboard__brand {
-  min-width: 0;
-}
+/* ── Profile button row ───────────────────────────────────────── */
 
-.applicant-dashboard__eyebrow {
-  margin: 0;
-  color: var(--ad-orange);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-weight: 700;
-  font-size: 0.7rem;
-}
-
-.applicant-dashboard__title {
-  margin: 0.2rem 0 0;
-  font-size: clamp(1.25rem, 2.5vw, 1.6rem);
-  font-weight: 700;
-  line-height: 1.2;
-  color: var(--ad-text);
-}
-
-.applicant-dashboard__actions {
+.applicant-dashboard__profile-row {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-shrink: 0;
+  justify-content: flex-end;
 }
 
-.applicant-dashboard__greeting {
-  font-size: 0.9rem;
-  color: var(--ad-text-muted);
-  white-space: nowrap;
-}
-
-.applicant-dashboard__greeting strong {
-  color: var(--ad-text);
-  font-weight: 600;
-}
-
-.applicant-dashboard__logout-btn {
-  padding: 0.55rem 1.1rem;
+.applicant-dashboard__profile-btn {
+  padding: 0.6rem 1.4rem;
   border-radius: var(--ad-radius-sm);
   border: 1px solid var(--ad-border);
   background: var(--ad-panel);
@@ -84,22 +75,94 @@
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.applicant-dashboard__logout-btn:hover {
+.applicant-dashboard__profile-btn:hover {
   background: var(--ad-orange-soft);
   border-color: var(--ad-border-hover);
   color: var(--ad-orange);
 }
 
-.applicant-dashboard__content {
-  max-width: var(--ad-max-width);
-  margin: 0 auto;
-  padding: 1.75rem 1.5rem 3rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.75rem;
+/* ── Eyebrow label ────────────────────────────────────────────── */
+
+.eyebrow {
+  margin: 0 0 0.3rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ad-orange);
 }
 
-/* Shared panel styles used by child sections */
+/* ── My Applications section ──────────────────────────────────── */
+
+.applications-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.applications-header {
+  display: flex;
+  flex-direction: column;
+}
+
+.applications-title {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  font-weight: 700;
+  color: var(--ad-text);
+  line-height: 1.2;
+}
+
+.applications-subtitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--ad-text-muted);
+}
+
+.applications-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+/* ── Available Opportunities section ──────────────────────────── */
+
+.opportunities-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ad-border);
+}
+
+.opportunities-header {
+  display: flex;
+  flex-direction: column;
+}
+
+.opportunities-title {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  font-weight: 700;
+  color: var(--ad-text);
+  line-height: 1.2;
+}
+
+.opportunities-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ad-text-muted);
+}
+
+.opportunities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+/* ── Shared panel styles ──────────────────────────────────────── */
+
 .applicant-panel {
   background: var(--ad-surface);
   border: 1px solid var(--ad-border);
@@ -108,9 +171,7 @@
   box-shadow: var(--ad-shadow);
 }
 
-.applicant-panel__header {
-  margin-bottom: 1.25rem;
-}
+.applicant-panel__header { margin-bottom: 1.25rem; }
 
 .applicant-panel__title {
   margin: 0;
@@ -145,25 +206,21 @@
   padding: 0;
 }
 
+/* ── Responsive ───────────────────────────────────────────────── */
+
 @media (max-width: 640px) {
-  .applicant-dashboard__header {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1rem;
-  }
-
-  .applicant-dashboard__actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .applicant-dashboard__greeting {
-    white-space: normal;
-    font-size: 0.85rem;
+  .applicant-dashboard__topbar {
+    padding: 0.75rem 1rem;
   }
 
   .applicant-dashboard__content {
     padding: 1.25rem 1rem 2.5rem;
+    gap: 2rem;
+  }
+
+  .applications-grid,
+  .opportunities-grid {
+    grid-template-columns: 1fr;
   }
 
   .applicant-panel {

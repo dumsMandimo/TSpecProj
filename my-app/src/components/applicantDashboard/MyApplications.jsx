@@ -52,38 +52,46 @@ function ProgressTracker({ status = "" }) {
     const isShortlisted = normalized === "Shortlisted";
 
     return (
-        <section className="progress-container">
-            {stages.map((stage, index) => (
-                <article key={index} className="progress-step">
-                    <span
-                        className={`circle ${
-                            index <= stageIndex ? "active" : ""
-                        } ${
-                            stage === "Final Decision" && isAccepted
-                                ? "accepted"
-                                : stage === "Final Decision" && isRejected
-                                ? "rejected"
-                                : stage === "Final Decision" && isShortlisted
-                                ? "shortlisted"
-                                : ""
-                        }`}
-                    />
-                    <span className="stage-label">
-                        {stage === "Final Decision"
-                            ? isAccepted
-                                ? "Accepted"
-                                : isRejected
-                                ? "Rejected"
-                                : isShortlisted
-                                ? "Shortlisted"
-                                : "Final Decision"
-                            : stage === "Received" && normalized === "Pending"
-                            ? "Pending"
-                            : stage}
-                    </span>
-                </article>
-            ))}
-        </section>
+        <div className="progress-tracker">
+            {stages.map((stage, index) => {
+                const isActive       = index <= stageIndex;
+                const isFinalDecision = stage === "Final Decision";
+
+                const stepClass = [
+                    "progress-tracker__step",
+                    isActive ? "progress-tracker__step--active" : "",
+                ].filter(Boolean).join(" ");
+
+                const dotClass = [
+                    "progress-tracker__dot",
+                    isActive ? "progress-tracker__dot--active" : "",
+                    isFinalDecision && isAccepted    ? "progress-tracker__dot--accepted"    : "",
+                    isFinalDecision && isRejected    ? "progress-tracker__dot--rejected"    : "",
+                    isFinalDecision && isShortlisted ? "progress-tracker__dot--shortlisted" : "",
+                ].filter(Boolean).join(" ");
+
+                const labelClass = [
+                    "progress-tracker__label",
+                    isActive ? "progress-tracker__label--active" : "",
+                ].filter(Boolean).join(" ");
+
+                const label = isFinalDecision
+                    ? isAccepted    ? "Accepted"
+                    : isRejected    ? "Rejected"
+                    : isShortlisted ? "Shortlisted"
+                    : "Final Decision"
+                    : stage === "Received" && normalized === "Pending"
+                    ? "Pending"
+                    : stage;
+
+                return (
+                    <div key={index} className={stepClass}>
+                        <span className={dotClass} />
+                        <span className={labelClass}>{label}</span>
+                    </div>
+                );
+            })}
+        </div>
     );
 }
 
@@ -174,8 +182,12 @@ function MyApplications() {
                 )}
                 {applications.map((application) => (
                     <article key={application.id} className="application-card">
-                        <h3>{application.title}</h3>
-                        <p>{application.company}</p>
+                        <div className="application-card__header">
+                            <h3 className="application-card__title">{application.title}</h3>
+                        </div>
+                        <div className="application-card__meta">
+                            <p className="application-card__company">{application.company}</p>
+                        </div>
                         <ProgressTracker status={application.status} />
                     </article>
                 ))}
