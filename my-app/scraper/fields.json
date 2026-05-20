@@ -1,11 +1,19 @@
 [
   {
+    "field_code": "001",
+    "field_name": "Agriculture and Nature Conservation"
+  },
+  {
     "field_code": "002",
     "field_name": "Culture and Arts"
   },
   {
     "field_code": "003",
     "field_name": "Business, Commerce and Management Studies"
+  },
+  {
+    "field_code": "004",
+    "field_name": "Communication Studies and Language"
   },
   {
     "field_code": "005",
@@ -16,11 +24,27 @@
     "field_name": "Manufacturing, Engineering and Technology"
   },
   {
+    "field_code": "007",
+    "field_name": "Human and Social Studies"
+  },
+  {
+    "field_code": "008",
+    "field_name": "Law, Military Science and Security"
+  },
+  {
     "field_code": "009",
     "field_name": "Health Sciences and Social Services"
   },
   {
     "field_code": "010",
     "field_name": "Physical, Mathematical, Computer and Life Sciences"
+  },
+  {
+    "field_code": "011",
+    "field_name": "Services"
+  },
+  {
+    "field_code": "012",
+    "field_name": "Physical Planning and Construction"
   }
 ]

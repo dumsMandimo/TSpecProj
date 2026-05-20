@@ -205,6 +205,81 @@ const SEARCH_TARGETS = [
   },
 ];
 
+const SECTOR_TARGETS = [
+  {
+    label: "Sector - Agriculture and Nature Conservation",
+    field: "Agriculture and Nature Conservation",
+    fieldValue: FIELD_VALUES.AGRICULTURE,
+    maxPages: 1,
+  },
+  {
+    label: "Sector - Culture and Arts",
+    field: "Culture and Arts",
+    fieldValue: FIELD_VALUES.CULTURE_AND_ARTS,
+    maxPages: 1,
+  },
+  {
+    label: "Sector - Business, Commerce and Management Studies",
+    field: "Business, Commerce and Management Studies",
+    fieldValue: FIELD_VALUES.BUSINESS,
+    maxPages: 1,
+  },
+  {
+    label: "Sector - Communication Studies and Language",
+    field: "Communication Studies and Language",
+    fieldValue: FIELD_VALUES.COMMUNICATION,
+    maxPages: 1,
+  },
+  {
+    label: "Sector - Education, Training and Development",
+    field: "Education, Training and Development",
+    fieldValue: FIELD_VALUES.EDUCATION,
+    maxPages: 1,
+  },
+  {
+    label: "Sector - Manufacturing, Engineering and Technology",
+    field: "Manufacturing, Engineering and Technology",
+    fieldValue: FIELD_VALUES.ENGINEERING,
+    maxPages: 1,
+  },
+  {
+    label: "Sector - Human and Social Studies",
+    field: "Human and Social Studies",
+    fieldValue: FIELD_VALUES.HUMAN_SOCIAL_STUDIES,
+    maxPages: 1,
+  },
+  {
+    label: "Sector - Law, Military Science and Security",
+    field: "Law, Military Science and Security",
+    fieldValue: FIELD_VALUES.LAW_SECURITY,
+    maxPages: 1,
+  },
+  {
+    label: "Sector - Health Sciences and Social Services",
+    field: "Health Sciences and Social Services",
+    fieldValue: FIELD_VALUES.HEALTH,
+    maxPages: 1,
+  },
+  {
+    label: "Sector - Physical, Mathematical, Computer and Life Sciences",
+    field: "Physical, Mathematical, Computer and Life Sciences",
+    fieldValue: FIELD_VALUES.SCIENCE_COMPUTER,
+    maxPages: 1,
+  },
+  {
+    label: "Sector - Services",
+    field: "Services",
+    fieldValue: FIELD_VALUES.SERVICES,
+    maxPages: 1,
+  },
+  {
+    label: "Sector - Physical Planning and Construction",
+    field: "Physical Planning and Construction",
+    fieldValue: FIELD_VALUES.CONSTRUCTION,
+    maxPages: 1,
+  },
+];
+
 
 function clean(text) {
   return text.replace(/\s+/g, " ").trim();
@@ -249,6 +324,15 @@ function parseField(fieldText) {
   return {
     field_code: match ? match[1] : null,
     field_name: match ? match[2] : fieldText,
+  };
+}
+
+function getSectorSearchAttempt(target) {
+  return {
+    label: target.label,
+    nqfLevelValue: "",
+    qualificationTypeValue: "",
+    fieldValue: target.fieldValue,
   };
 }
 
@@ -409,6 +493,54 @@ async function applySearchAttempt(page, attempt) {
   await page.waitForTimeout(CONFIG.delayMs);
 }
 
+async function scrapeSectorPages(page, target) {
+  const sectorQualifications = [];
+
+  console.log(`\nSector target: ${target.label}`);
+
+  const attempt = getSectorSearchAttempt(target);
+
+  await applySearchAttempt(page, attempt);
+
+  for (let pageNumber = 1; pageNumber <= target.maxPages; pageNumber++) {
+    console.log(`Scraping sector page ${pageNumber}...`);
+
+    const html = await page.content();
+
+    const pageQualifications = parseQualificationsFromHtml(html).map((q) => ({
+      ...q,
+      target_label: target.label,
+      target_field: target.field,
+      target_type: "sector_coverage",
+    }));
+
+    console.log(`Found ${pageQualifications.length} qualifications`);
+
+    const first = pageQualifications[0];
+    const last = pageQualifications[pageQualifications.length - 1];
+
+    console.log("First:", first?.saqa_id, first?.title);
+    console.log("Last:", last?.saqa_id, last?.title);
+
+    sectorQualifications.push(...pageQualifications);
+
+    if (pageNumber === target.maxPages) break;
+
+    const nextOffset = pageNumber * 20;
+
+    await page.evaluate((offset) => {
+      if (typeof goPrevNext === "function") {
+        goPrevNext(offset);
+      }
+    }, nextOffset);
+
+    await page.waitForLoadState("domcontentloaded").catch(() => {});
+    await page.waitForTimeout(CONFIG.delayMs);
+  }
+
+  return sectorQualifications;
+}
+
 async function scrapeTargetPages(page, target) {
   const targetQualifications = [];
 
@@ -486,12 +618,25 @@ async function scrapePagesWithPlaywright() {
 
   const allQualifications = [];
 
+  console.log("\nScraping NQF and qualification type targets...");
+
   for (const target of SEARCH_TARGETS) {
     try {
       const targetResults = await scrapeTargetPages(page, target);
       allQualifications.push(...targetResults);
     } catch (error) {
       console.error(`Failed target "${target.label}":`, error.message);
+    }
+  }
+
+  console.log("\nScraping all 12 SAQA sector targets...");
+
+  for (const target of SECTOR_TARGETS) {
+    try {
+      const sectorResults = await scrapeSectorPages(page, target);
+      allQualifications.push(...sectorResults);
+    } catch (error) {
+      console.error(`Failed sector "${target.label}":`, error.message);
     }
   }
 
@@ -618,6 +763,7 @@ async function main() {
   } = buildProjectOutputs(allQualifications);
 
   const report = {
+    sector_targets_used: SECTOR_TARGETS.map((target) => target.label),
   scraper_mode: SCRAPER_MODE,
   delay_ms: CONFIG.delayMs,
   search_targets_used: SEARCH_TARGETS.map((target) => target.label),
