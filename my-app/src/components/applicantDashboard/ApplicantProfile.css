@@ -33,6 +33,16 @@
   margin-bottom: 20px;
 }
 
+.group label,
+.profile-card label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
 /* ===== INPUTS ===== */
 .input,
 .textarea {
@@ -43,11 +53,13 @@
   border: 1px solid #000;
   border-radius: 6px;
   font-size: 14px;
+  box-sizing: border-box;
 }
 
 /* ===== TEXTAREA ONLY ===== */
 .textarea {
   min-height: 80px;
+  resize: vertical;
 }
 
 /* ===== FILE INPUT ===== */
@@ -67,9 +79,94 @@
   cursor: pointer;
 }
 
+/* ===== SECONDARY BUTTON ===== */
+.button.secondary {
+  width: auto;
+  min-width: 80px;
+  padding: 10px 14px;
+  background-color: #fff;
+  color: #000;
+  border: 1px solid orange;
+}
+
 /* ===== BUTTON HOVER ===== */
 .button:hover {
   opacity: 0.9;
+}
+
+/* ===== SKILL CHIP INPUT ===== */
+.skill-input-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.skill-input-row .input {
+  flex: 1;
+  margin-top: 0;
+}
+
+.skill-input-row .button {
+  margin-top: 0;
+}
+
+/* ===== SKILL CHIPS ===== */
+.skill-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 8px 0 14px;
+  list-style: none;
+}
+
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: orange;
+  color: #000;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.skill-chip button {
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* ===== HELPER TEXT ===== */
+.helper-text {
+  color: #ddd;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin-top: 6px;
+  margin-bottom: 10px;
+}
+
+/* ===== PROFILE DISPLAY HELPERS ===== */
+.profile-divider {
+  border: none;
+  border-top: 1px solid rgba(255, 165, 0, 0.45);
+  margin: 16px 0;
+}
+
+.profile-summary-box {
+  border: 1px solid rgba(255, 165, 0, 0.5);
+  background-color: #111;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 12px 0;
 }
 
 /* ===== LOADING TEXT ===== */
@@ -83,4 +180,14 @@
   font-size: 0.8rem;
   margin-top: 2px;
   margin-bottom: 6px;
+}
+
+@media (max-width: 520px) {
+  .skill-input-row {
+    flex-direction: column;
+  }
+
+  .skill-input-row .button {
+    width: 100%;
+  }
 }

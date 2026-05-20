@@ -131,7 +131,7 @@
   font-weight: 600;
 }
 
-<.progress-tracker__dot--rejected + .progress-tracker__label,
+.progress-tracker__dot--rejected + .progress-tracker__label,
 .progress-tracker__step:has(.progress-tracker__dot--rejected) .progress-tracker__label {
   color: #e74c3c;
   font-weight: 600;
