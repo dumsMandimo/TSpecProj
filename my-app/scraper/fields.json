@@ -1,9 +1,5 @@
 [
   {
-    "field_code": "001",
-    "field_name": "Agriculture and Nature Conservation"
-  },
-  {
     "field_code": "002",
     "field_name": "Culture and Arts"
   },
@@ -16,11 +12,15 @@
     "field_name": "Education, Training and Development"
   },
   {
-    "field_code": "007",
-    "field_name": "Human and Social Studies"
+    "field_code": "006",
+    "field_name": "Manufacturing, Engineering and Technology"
   },
   {
-    "field_code": "008",
-    "field_name": "Law, Military Science and Security"
+    "field_code": "009",
+    "field_name": "Health Sciences and Social Services"
+  },
+  {
+    "field_code": "010",
+    "field_name": "Physical, Mathematical, Computer and Life Sciences"
   }
 ]

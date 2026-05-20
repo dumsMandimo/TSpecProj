@@ -1,6 +1,42 @@
 [
   {
+    "value": 1,
+    "label": "NQF Level 1"
+  },
+  {
+    "value": 2,
+    "label": "NQF Level 2"
+  },
+  {
+    "value": 3,
+    "label": "NQF Level 3"
+  },
+  {
+    "value": 4,
+    "label": "NQF Level 4"
+  },
+  {
+    "value": 5,
+    "label": "NQF Level 5"
+  },
+  {
     "value": 6,
     "label": "NQF Level 6"
+  },
+  {
+    "value": 7,
+    "label": "NQF Level 7"
+  },
+  {
+    "value": 8,
+    "label": "NQF Level 8"
+  },
+  {
+    "value": 9,
+    "label": "NQF Level 9"
+  },
+  {
+    "value": 10,
+    "label": "NQF Level 10"
   }
 ]

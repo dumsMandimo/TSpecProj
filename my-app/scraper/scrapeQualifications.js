@@ -4,8 +4,207 @@ const { chromium } = require("playwright");
 
 const START_URL = "https://allqs.saqa.org.za/search.php?id=";
 
-// Limit pages for proof of concept. Increase carefully if needed.
-const MAX_PAGES = 5;
+const SEARCH_URL = "https://allqs.saqa.org.za/search.php?cat=qual";
+
+const SCRAPER_MODE = process.env.SCRAPER_MODE || "demo";
+
+const SCRAPER_CONFIGS = {
+  demo: {
+    delayMs: 1500,
+    description: "Safe targeted demo mode for project proof of concept",
+  },
+  expanded: {
+    delayMs: 2500,
+    description: "Expanded targeted mode for broader coverage",
+  },
+};
+
+const CONFIG = SCRAPER_CONFIGS[SCRAPER_MODE];
+
+if (!CONFIG) {
+  throw new Error(
+    `Invalid SCRAPER_MODE "${SCRAPER_MODE}". Use "demo" or "expanded".`
+  );
+}
+
+const NQF_LEVEL_VALUES = {
+  1: "503",
+  2: "504",
+  3: "505",
+  4: "506",
+  5: "507",
+  6: "508",
+  7: "509",
+  8: "510",
+  9: "511",
+  10: "512",
+};
+
+const QUALIFICATION_TYPE_VALUES = {
+  GENERAL_CERTIFICATE: "743",
+  ELEMENTARY_CERTIFICATE: "742",
+  INTERMEDIATE_CERTIFICATE: "741",
+  NATIONAL_CERTIFICATE: "2",
+  HIGHER_CERTIFICATE: "680",
+  DIPLOMA_240: "720",
+  DIPLOMA_360: "698",
+  ADVANCED_CERTIFICATE: "678",
+  ADVANCED_DIPLOMA: "679",
+  BACHELORS_DEGREE: "4",
+  HONOURS_DEGREE: "509",
+  POSTGRADUATE_DIPLOMA: "533",
+  MASTERS_DEGREE: "505",
+  DOCTORAL_DEGREE: "503",
+};
+
+const FIELD_VALUES = {
+  AGRICULTURE: "1",
+  CULTURE_AND_ARTS: "2",
+  BUSINESS: "3",
+  COMMUNICATION: "4",
+  EDUCATION: "5",
+  ENGINEERING: "6",
+  HUMAN_SOCIAL_STUDIES: "7",
+  LAW_SECURITY: "8",
+  HEALTH: "9",
+  SCIENCE_COMPUTER: "10",
+  SERVICES: "11",
+  CONSTRUCTION: "12",
+};
+
+const SEARCH_TARGETS = [
+  {
+    label: "NQF 1 General Certificate - Services",
+    nqfLevel: 1,
+    nqfLevelValue: NQF_LEVEL_VALUES[1],
+    qualificationType: "General Certificate",
+    qualificationTypeValue: QUALIFICATION_TYPE_VALUES.GENERAL_CERTIFICATE,
+    field: "Services",
+    fieldValue: FIELD_VALUES.SERVICES,
+    maxPages: 1,
+  },
+  {
+    label: "NQF 2 Elementary Certificate - Agriculture",
+    nqfLevel: 2,
+    nqfLevelValue: NQF_LEVEL_VALUES[2],
+    qualificationType: "Elementary Certificate",
+    qualificationTypeValue: QUALIFICATION_TYPE_VALUES.ELEMENTARY_CERTIFICATE,
+    field: "Agriculture and Nature Conservation",
+    fieldValue: FIELD_VALUES.AGRICULTURE,
+    maxPages: 1,
+  },
+  {
+    label: "NQF 3 Intermediate Certificate - Engineering",
+    nqfLevel: 3,
+    nqfLevelValue: NQF_LEVEL_VALUES[3],
+    qualificationType: "Intermediate Certificate",
+    qualificationTypeValue: QUALIFICATION_TYPE_VALUES.INTERMEDIATE_CERTIFICATE,
+    field: "Manufacturing, Engineering and Technology",
+    fieldValue: FIELD_VALUES.ENGINEERING,
+    maxPages: 1,
+  },
+  {
+    label: "NQF 4 National Certificate - Computer Science",
+    nqfLevel: 4,
+    nqfLevelValue: NQF_LEVEL_VALUES[4],
+    qualificationType: "National Certificate",
+    qualificationTypeValue: QUALIFICATION_TYPE_VALUES.NATIONAL_CERTIFICATE,
+    field: "Physical, Mathematical, Computer and Life Sciences",
+    fieldValue: FIELD_VALUES.SCIENCE_COMPUTER,
+    maxPages: 2,
+  },
+  {
+    label: "NQF 5 Higher Certificate - Business",
+    nqfLevel: 5,
+    nqfLevelValue: NQF_LEVEL_VALUES[5],
+    qualificationType: "Higher Certificate",
+    qualificationTypeValue: QUALIFICATION_TYPE_VALUES.HIGHER_CERTIFICATE,
+    field: "Business, Commerce and Management Studies",
+    fieldValue: FIELD_VALUES.BUSINESS,
+    maxPages: 2,
+  },
+  {
+    label: "NQF 6 Diploma - Engineering",
+    nqfLevel: 6,
+    nqfLevelValue: NQF_LEVEL_VALUES[6],
+    qualificationType: "Diploma",
+    qualificationTypeValue: QUALIFICATION_TYPE_VALUES.DIPLOMA_360,
+    field: "Manufacturing, Engineering and Technology",
+    fieldValue: FIELD_VALUES.ENGINEERING,
+    maxPages: 2,
+  },
+  {
+    label: "NQF 6 Advanced Certificate - Business",
+    nqfLevel: 6,
+    nqfLevelValue: NQF_LEVEL_VALUES[6],
+    qualificationType: "Advanced Certificate",
+    qualificationTypeValue: QUALIFICATION_TYPE_VALUES.ADVANCED_CERTIFICATE,
+    field: "Business, Commerce and Management Studies",
+    fieldValue: FIELD_VALUES.BUSINESS,
+    maxPages: 2,
+  },
+  {
+    label: "NQF 7 Bachelor's Degree - Health",
+    nqfLevel: 7,
+    nqfLevelValue: NQF_LEVEL_VALUES[7],
+    qualificationType: "Bachelor's Degree",
+    qualificationTypeValue: QUALIFICATION_TYPE_VALUES.BACHELORS_DEGREE,
+    field: "Health Sciences and Social Services",
+    fieldValue: FIELD_VALUES.HEALTH,
+    maxPages: 2,
+  },
+  {
+    label: "NQF 7 Advanced Diploma - Education",
+    nqfLevel: 7,
+    nqfLevelValue: NQF_LEVEL_VALUES[7],
+    qualificationType: "Advanced Diploma",
+    qualificationTypeValue: QUALIFICATION_TYPE_VALUES.ADVANCED_DIPLOMA,
+    field: "Education, Training and Development",
+    fieldValue: FIELD_VALUES.EDUCATION,
+    maxPages: 2,
+  },
+  {
+    label: "NQF 8 Honours Degree - Science",
+    nqfLevel: 8,
+    nqfLevelValue: NQF_LEVEL_VALUES[8],
+    qualificationType: "Honours Degree",
+    qualificationTypeValue: QUALIFICATION_TYPE_VALUES.HONOURS_DEGREE,
+    field: "Physical, Mathematical, Computer and Life Sciences",
+    fieldValue: FIELD_VALUES.SCIENCE_COMPUTER,
+    maxPages: 2,
+  },
+  {
+    label: "NQF 8 Postgraduate Diploma - Business",
+    nqfLevel: 8,
+    nqfLevelValue: NQF_LEVEL_VALUES[8],
+    qualificationType: "Postgraduate Diploma",
+    qualificationTypeValue: QUALIFICATION_TYPE_VALUES.POSTGRADUATE_DIPLOMA,
+    field: "Business, Commerce and Management Studies",
+    fieldValue: FIELD_VALUES.BUSINESS,
+    maxPages: 2,
+  },
+  {
+    label: "NQF 9 Master's Degree - Education",
+    nqfLevel: 9,
+    nqfLevelValue: NQF_LEVEL_VALUES[9],
+    qualificationType: "Master's Degree",
+    qualificationTypeValue: QUALIFICATION_TYPE_VALUES.MASTERS_DEGREE,
+    field: "Education, Training and Development",
+    fieldValue: FIELD_VALUES.EDUCATION,
+    maxPages: 2,
+  },
+  {
+    label: "NQF 10 Doctoral Degree - Science",
+    nqfLevel: 10,
+    nqfLevelValue: NQF_LEVEL_VALUES[10],
+    qualificationType: "Doctoral Degree",
+    qualificationTypeValue: QUALIFICATION_TYPE_VALUES.DOCTORAL_DEGREE,
+    field: "Physical, Mathematical, Computer and Life Sciences",
+    fieldValue: FIELD_VALUES.SCIENCE_COMPUTER,
+    maxPages: 2,
+  },
+];
+
 
 function clean(text) {
   return text.replace(/\s+/g, " ").trim();
@@ -51,6 +250,35 @@ function parseField(fieldText) {
     field_code: match ? match[1] : null,
     field_name: match ? match[2] : fieldText,
   };
+}
+
+function getSearchAttempts(target) {
+  return [
+    {
+      label: `${target.label} — strict`,
+      nqfLevelValue: target.nqfLevelValue,
+      qualificationTypeValue: target.qualificationTypeValue,
+      fieldValue: target.fieldValue,
+    },
+    {
+      label: `${target.label} — NQF + qualification type`,
+      nqfLevelValue: target.nqfLevelValue,
+      qualificationTypeValue: target.qualificationTypeValue,
+      fieldValue: "",
+    },
+    {
+      label: `${target.label} — NQF + field`,
+      nqfLevelValue: target.nqfLevelValue,
+      qualificationTypeValue: "",
+      fieldValue: target.fieldValue,
+    },
+    {
+      label: `${target.label} — NQF only`,
+      nqfLevelValue: target.nqfLevelValue,
+      qualificationTypeValue: "",
+      fieldValue: "",
+    },
+  ];
 }
 
 function parseCredits(value) {
@@ -152,49 +380,119 @@ function parseQualificationsFromHtml(html) {
   return qualifications;
 }
 
-async function scrapePagesWithPlaywright() {
-  const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage();
-
-  const allQualifications = [];
-
-  await page.goto(START_URL, {
+async function applySearchAttempt(page, attempt) {
+  await page.goto(SEARCH_URL, {
     waitUntil: "domcontentloaded",
     timeout: 60000,
   });
 
-  for (let pageNumber = 1; pageNumber <= MAX_PAGES; pageNumber++) {
-    console.log(`Scraping page ${pageNumber}...`);
+  await page.selectOption(
+    'select[name="NQF_LEVEL_G2_ID"]',
+    attempt.nqfLevelValue || ""
+  );
+
+  await page.selectOption(
+    'select[name="QUALIFICATION_TYPE_ID"]',
+    attempt.qualificationTypeValue || ""
+  );
+
+  await page.selectOption(
+    'select[name="FIELD_ID"]',
+    attempt.fieldValue || ""
+  );
+
+  await Promise.all([
+    page.waitForLoadState("domcontentloaded").catch(() => {}),
+    page.click('input[name="GO"]'),
+  ]);
+
+  await page.waitForTimeout(CONFIG.delayMs);
+}
+
+async function scrapeTargetPages(page, target) {
+  const targetQualifications = [];
+
+  console.log(`\nTarget: ${target.label}`);
+
+const attempts = getSearchAttempts(target);
+let selectedAttempt = null;
+let firstPageQualifications = [];
+
+for (const attempt of attempts) {
+  console.log(`Trying: ${attempt.label}`);
+
+  await applySearchAttempt(page, attempt);
+
+  const html = await page.content();
+  firstPageQualifications = parseQualificationsFromHtml(html);
+
+  console.log(`Found ${firstPageQualifications.length} qualifications`);
+
+  if (firstPageQualifications.length > 0) {
+    selectedAttempt = attempt;
+    break;
+  }
+}
+
+if (!selectedAttempt) {
+  console.warn(`No qualifications found for target: ${target.label}`);
+  return [];
+}
+
+console.log(`Using search attempt: ${selectedAttempt.label}`);
+
+for (let pageNumber = 1; pageNumber <= target.maxPages; pageNumber++) {
+    console.log(`Scraping target page ${pageNumber}...`);
 
     const html = await page.content();
-    const pageQualifications = parseQualificationsFromHtml(html);
+    const pageQualifications = parseQualificationsFromHtml(html).map((q) => ({
+      ...q,
+      target_label: target.label,
+      target_nqf_level: target.nqfLevel,
+      target_qualification_type: target.qualificationType,
+      target_field: target.field,
+    }));
 
     console.log(`Found ${pageQualifications.length} qualifications`);
 
     const first = pageQualifications[0];
     const last = pageQualifications[pageQualifications.length - 1];
 
-    console.log("First qualification on this page:", first?.saqa_id, first?.title);
-    console.log("Last qualification on this page:", last?.saqa_id, last?.title);
+    console.log("First:", first?.saqa_id, first?.title);
+    console.log("Last:", last?.saqa_id, last?.title);
 
-    allQualifications.push(...pageQualifications);
+    targetQualifications.push(...pageQualifications);
 
-    if (pageNumber === MAX_PAGES) break;
+    if (pageNumber === target.maxPages) break;
 
     const nextOffset = pageNumber * 20;
-
-    console.log(`Moving to next offset: ${nextOffset}`);
 
     await page.evaluate((offset) => {
       if (typeof goPrevNext === "function") {
         goPrevNext(offset);
-      } else {
-        throw new Error("goPrevNext function not found on page");
       }
     }, nextOffset);
 
     await page.waitForLoadState("domcontentloaded").catch(() => {});
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(CONFIG.delayMs);
+  }
+
+  return targetQualifications;
+}
+
+async function scrapePagesWithPlaywright() {
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage();
+
+  const allQualifications = [];
+
+  for (const target of SEARCH_TARGETS) {
+    try {
+      const targetResults = await scrapeTargetPages(page, target);
+      allQualifications.push(...targetResults);
+    } catch (error) {
+      console.error(`Failed target "${target.label}":`, error.message);
+    }
   }
 
   await browser.close();
@@ -295,12 +593,22 @@ function dedupeBySaqaId(qualifications) {
 }
 
 async function main() {
+  console.log(`Running scraper in ${SCRAPER_MODE} mode`);
+  console.log(CONFIG.description);
+  console.log(`Delay between pages: ${CONFIG.delayMs}ms`);
+
   const scrapedQualifications = await scrapePagesWithPlaywright();
   const allQualifications = dedupeBySaqaId(scrapedQualifications);
 
+  if (allQualifications.length === 0) {
+    throw new Error(
+      "Scraper found 0 qualifications. Stopping before overwriting output files."
+    );
+  }
+
   console.log(`Scraped rows before dedupe: ${scrapedQualifications.length}`);
   console.log(`Unique qualifications after dedupe: ${allQualifications.length}`);
-
+  
   const {
     activeQualifications,
     qualificationDropdown,
@@ -310,14 +618,17 @@ async function main() {
   } = buildProjectOutputs(allQualifications);
 
   const report = {
-    scraped_rows_before_dedupe: scrapedQualifications.length,
-    unique_qualifications_after_dedupe: allQualifications.length,
-    active_qualifications: activeQualifications.length,
-    dropdown_items: qualificationDropdown.length,
-    fields_found: fields.length,
-    skill_tags_generated: skillTags.length,
-    nqf_levels_in_scraped_active_data: nqfLevels.map((level) => level.value),
-    note:
+  scraper_mode: SCRAPER_MODE,
+  delay_ms: CONFIG.delayMs,
+  search_targets_used: SEARCH_TARGETS.map((target) => target.label),
+  scraped_rows_before_dedupe: scrapedQualifications.length,
+  unique_qualifications_after_dedupe: allQualifications.length,
+  active_qualifications: activeQualifications.length,
+  dropdown_items: qualificationDropdown.length,
+  fields_found: fields.length,
+  skill_tags_generated: skillTags.length,
+  nqf_levels_in_scraped_active_data: nqfLevels.map((level) => level.value),
+  note:
       "Canonical NQF 1-10 levels are handled separately in the application. Scraped SAQA data is used for specific qualification titles, fields, subfields, source URLs, and skill-tag generation.",
     generated_at: new Date().toISOString(),
   };
