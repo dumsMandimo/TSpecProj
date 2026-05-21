@@ -13,7 +13,8 @@
     "react-scripts": "5.0.1"
   },
   "scripts": {
-    "start": "node server.js",
+    "start": "react-scripts start",
+  "serve": "node server.js",
     "build": "react-scripts build",
     "test": "react-scripts test --watchAll=false",
     "test:coverage": "react-scripts test --coverage --watchAll=false",

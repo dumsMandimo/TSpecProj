@@ -5,23 +5,13 @@ import "./CreateOpportunityForm.css";
 import saqaFields from "../../../data/saqa/fields.json";
 import saqaSkillTags from "../../../data/saqa/skill_tags.json";
 import saqaQualifications from "../../../data/saqa/qualification_dropdown.json";
+import saqaNqfLevels from "../../../data/saqa/nqf_levels.json";
 
 const today = new Date().toISOString().split("T")[0];
 
 const OTHER_QUALIFICATION_VALUE = "OTHER_NOT_LISTED";
 
-const NQF_LEVELS = [
-  { value: "1", label: "NQF 1" },
-  { value: "2", label: "NQF 2" },
-  { value: "3", label: "NQF 3" },
-  { value: "4", label: "NQF 4" },
-  { value: "5", label: "NQF 5" },
-  { value: "6", label: "NQF 6" },
-  { value: "7", label: "NQF 7" },
-  { value: "8", label: "NQF 8" },
-  { value: "9", label: "NQF 9" },
-  { value: "10", label: "NQF 10" },
-];
+const NQF_LEVELS = saqaNqfLevels;
 
 const EMPTY_FORM = {
   title: "",
@@ -625,8 +615,8 @@ export default function CreateOpportunityForm() {
             >
               <option value="">Select minimum NQF level</option>
               {NQF_LEVELS.map((level) => (
-                <option key={level.value} value={level.value}>
-                  {level.label}
+                <option key={level.level} value={String(level.level)}>
+                  {level.group}
                 </option>
               ))}
             </select>
