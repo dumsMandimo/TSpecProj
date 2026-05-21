@@ -1,9 +1,9 @@
-import "@testing-library/jest-dom";
+// src/components/signupProvider.test.js
+import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import SignupProvider from "./signupProvider";
 
 const mockNavigate = jest.fn();
-
 jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
@@ -11,123 +11,127 @@ jest.mock("react-router-dom", () => ({
 jest.mock("../services/authService", () => ({
   signUpWithGoogle: jest.fn(),
 }));
-
 import { signUpWithGoogle } from "../services/authService";
 
-global.alert = jest.fn();
-
-const renderComponent = () => render(<SignupProvider />);
+// ✅ Replace SectorDropdown with a plain <select> so fireEvent.change works
+jest.mock("./nqfSelect", () => ({
+  SectorDropdown: ({ value, onChange, required }) => (
+    <select
+      aria-label="Sector"
+      value={value}
+      onChange={onChange}
+      required={required}
+    >
+      <option value="">Select sector</option>
+      <option value="Education">Education</option>
+      <option value="Health">Health</option>
+      <option value="Technology">Technology</option>
+    </select>
+  ),
+}));
 
 describe("SignupProvider Tests", () => {
+  const renderComponent = () => render(<SignupProvider />);
+
+  const fillRequiredFields = () => {
+    fireEvent.change(screen.getByLabelText(/organisation name/i), {
+      target: { value: "Test Org" },
+    });
+    fireEvent.change(screen.getByLabelText(/contact person/i), {
+      target: { value: "John Doe" },
+    });
+    fireEvent.change(screen.getByLabelText(/sector/i), {
+      target: { value: "Education" },
+    });
+    fireEvent.change(screen.getByLabelText(/province/i), {
+      target: { value: "Gauteng" },
+    });
+    fireEvent.change(screen.getByLabelText(/description/i), {
+      target: { value: "We provide learnerships" },
+    });
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  // Renders correctly
   test("renders all form fields", () => {
-  renderComponent();
-  expect(screen.getByText("Organisation details")).toBeInTheDocument();
-  expect(screen.getByText(/Organisation name/i)).toBeInTheDocument();
-  expect(screen.getByText(/Contact person/i)).toBeInTheDocument();
-  expect(screen.getByLabelText(/Sector/i)).toBeInTheDocument();
-  expect(screen.getByLabelText(/Province/i)).toBeInTheDocument();
-  expect(screen.getByText(/Description/i)).toBeInTheDocument();
-});
+    renderComponent();
+    expect(screen.getByLabelText(/organisation name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/contact person/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/sector/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/province/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/description/i)).toBeInTheDocument();
+  });
 
-  // Renders button
   test("renders continue with google button", () => {
     renderComponent();
-    expect(screen.getByRole("button", { name: /Continue with Google/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /continue with google/i })
+    ).toBeInTheDocument();
   });
 
-  // UAT 2.2 — Shows error if fields are empty
-  test("shows error if fields are empty on submit", async () => {
+  test("shows field-specific errors if fields are empty on submit", async () => {
     renderComponent();
-    fireEvent.click(screen.getByRole("button", { name: /Continue with Google/i }));
-    expect(await screen.findByText("Please fill in all required fields before continuing.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /continue with google/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/organisation name is required/i)
+      ).toBeInTheDocument();
+    });
   });
 
-  // UAT 2.1 — Successful provider signup navigates to provider dashboard
   test("successful signup navigates to provider dashboard", async () => {
-    signUpWithGoogle.mockResolvedValue({ user: { uid: "123" }, role: "provider" });
+    signUpWithGoogle.mockResolvedValue({
+      user: { uid: "123" },
+      role: "provider",
+      existingUser: false,
+    });
+
     renderComponent();
-
-    fireEvent.change(screen.getByLabelText(/Organisation name/i), {
-      target: { value: "Test Org" },
-    });
-    fireEvent.change(screen.getByLabelText(/Contact person/i), {
-      target: { value: "John Doe" },
-    });
-    fireEvent.change(screen.getByLabelText(/Sector/i), {
-      target: { value: "ICT" },
-    });
-    fireEvent.change(screen.getByLabelText(/Province/i), {
-      target: { value: "Gauteng" },
-    });
-    fireEvent.change(screen.getByLabelText(/Description/i), {
-      target: { value: "We provide learnerships" },
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: /Continue with Google/i }));
+    fillRequiredFields();
+    fireEvent.click(screen.getByRole("button", { name: /continue with google/i }));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/provider-dashboard");
+      expect(signUpWithGoogle).toHaveBeenCalledWith("provider", {
+        organisationName: "Test Org",
+        contactName: "John Doe",
+        sector: "Education",
+        province: "Gauteng",
+        description: "We provide learnerships",
+      });
+      expect(mockNavigate).toHaveBeenCalledWith("/pending-approval");
     });
   });
 
-  // UAT 2.3 — Duplicate account shows error
   test("shows error if user already has an account with different role", async () => {
-    signUpWithGoogle.mockResolvedValue({ user: { uid: "123" }, role: "applicant" });
+    signUpWithGoogle.mockResolvedValue({
+      user: { uid: "123" },
+      role: "applicant",
+      existingUser: true,
+    });
+
     renderComponent();
-
-    fireEvent.change(screen.getByLabelText(/Organisation name/i), {
-      target: { value: "Test Org" },
-    });
-    fireEvent.change(screen.getByLabelText(/Contact person/i), {
-      target: { value: "John Doe" },
-    });
-    fireEvent.change(screen.getByLabelText(/Sector/i), {
-      target: { value: "ICT" },
-    });
-    fireEvent.change(screen.getByLabelText(/Province/i), {
-      target: { value: "Gauteng" },
-    });
-    fireEvent.change(screen.getByLabelText(/Description/i), {
-      target: { value: "We provide learnerships" },
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: /Continue with Google/i }));
+    fillRequiredFields();
+    fireEvent.click(screen.getByRole("button", { name: /continue with google/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("You already have an account. Please use the login page.")).toBeInTheDocument();
+      expect(
+        screen.getByText(/you already have an account/i)
+      ).toBeInTheDocument();
     });
   });
 
-  // UAT 2.2 — Signup failure shows error
-  test("shows error message on signup failure", async () => {
-    signUpWithGoogle.mockRejectedValue(new Error("Signup failed. Please try again."));
+  test("shows generic error message on signup failure", async () => {
+    signUpWithGoogle.mockRejectedValue(new Error("Signup failed"));
+
     renderComponent();
-
-    fireEvent.change(screen.getByLabelText(/Organisation name/i), {
-      target: { value: "Test Org" },
-    });
-    fireEvent.change(screen.getByLabelText(/Contact person/i), {
-      target: { value: "John Doe" },
-    });
-    fireEvent.change(screen.getByLabelText(/Sector/i), {
-      target: { value: "ICT" },
-    });
-    fireEvent.change(screen.getByLabelText(/Province/i), {
-      target: { value: "Gauteng" },
-    });
-    fireEvent.change(screen.getByLabelText(/Description/i), {
-      target: { value: "We provide learnerships" },
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: /Continue with Google/i }));
+    fillRequiredFields();
+    fireEvent.click(screen.getByRole("button", { name: /continue with google/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("Signup failed. Please try again.")).toBeInTheDocument();
+      expect(screen.getByText(/signup failed/i)).toBeInTheDocument();
     });
   });
 });

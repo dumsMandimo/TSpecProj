@@ -1,42 +1,46 @@
-// ── Mocks (hoisted) ───────────────────────────────────────────────────────────
+// ── Top of authService.test.js ──
+// Mocks must be hoisted above all imports
+
+jest.mock('firebase/auth', () => {
+  class GoogleAuthProvider {
+    setCustomParameters = jest.fn();
+  }
+
+  return {
+    GoogleAuthProvider,
+    signInWithPopup: jest.fn(),
+  };
+});
 
 jest.mock('./firebase', () => ({
   auth: { signOut: jest.fn() },
-  db:   {},
+  db: {},
 }));
 
 jest.mock('firebase/firestore', () => ({
-  doc:      jest.fn(),
-  getDoc:   jest.fn(),
-  setDoc:   jest.fn(),
+  doc: jest.fn(),
+  getDoc: jest.fn(),
+  setDoc: jest.fn(),
   updateDoc: jest.fn(),
 }));
 
-jest.mock('firebase/auth', () => ({
-  GoogleAuthProvider: jest.fn().mockImplementation(() => ({
-    setCustomParameters: jest.fn(),
-  })),
-  signInWithPopup: jest.fn(),
-}));
-
-// ── Imports (after mocks) ─────────────────────────────────────────────────────
-
+// ── Imports (after mocks) ──
 import { signUpWithGoogle } from './authService';
-import { signInWithPopup }  from 'firebase/auth';
+import { signInWithPopup } from 'firebase/auth';
 import { getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth } from './firebase';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Helpers ──
 
 const mockUser = {
-  uid:           'uid-123',
-  email:         'test@gmail.com',
+  uid: 'uid-123',
+  email: 'test@gmail.com',
   emailVerified: true,
 };
 
 const makeSnap = (exists, data = {}) => ({
   exists: () => exists,
-  data:   () => data,
+  data: () => data,
 });
 
 beforeEach(() => {
@@ -45,7 +49,7 @@ beforeEach(() => {
   signInWithPopup.mockResolvedValue({ user: mockUser });
 });
 
-// ── New user flows ────────────────────────────────────────────────────────────
+// ── New user flows ──
 
 describe('new user', () => {
   beforeEach(() => {
@@ -96,7 +100,7 @@ describe('new user', () => {
   });
 });
 
-// ── Existing user flows ───────────────────────────────────────────────────────
+// ── Existing user flows ──
 
 describe('existing user', () => {
   it('returns existing applicant role without writing to Firestore', async () => {
@@ -158,7 +162,7 @@ describe('existing user', () => {
   });
 });
 
-// ── Google auth failure ───────────────────────────────────────────────────────
+// ── Google auth failure ──
 
 describe('Google auth failure', () => {
   it('throws if signInWithPopup rejects', async () => {
