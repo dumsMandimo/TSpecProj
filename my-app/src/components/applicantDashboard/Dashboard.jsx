@@ -34,7 +34,9 @@ function Dashboard() {
                     collection(db, "applications"),
                     where("userId", "==", user.uid)
                 ));
-                const appliedOpportunityIds = appsSnap.docs.map(d => d.data().opportunityId);
+
+                const appliedOpportunityIds =
+                    appsSnap.docs.map(d => d.data().opportunityId);
 
                 const oppsSnap = await getDocs(query(
                     collection(db, "opportunities"),
@@ -51,12 +53,17 @@ function Dashboard() {
                     if (appliedOpportunityIds.includes(oppDoc.id)) continue;
                     if (!opp.closingDate) continue;
 
-                    const closing  = new Date(opp.closingDate);
-                    const diffDays = Math.ceil((closing - today) / (1000 * 60 * 60 * 24));
+                    const closing = new Date(opp.closingDate);
+                    const diffDays = Math.ceil(
+                        (closing - today) / (1000 * 60 * 60 * 24)
+                    );
 
                     if (diffDays < 0) continue;
 
-                    const type = diffDays <= DAYS_BEFORE ? "closing_soon" : "new_opportunity";
+                    const type =
+                        diffDays <= DAYS_BEFORE
+                            ? "closing_soon"
+                            : "new_opportunity";
 
                     const existingSnap = await getDocs(query(
                         collection(db, "notifications"),
@@ -68,15 +75,19 @@ function Dashboard() {
                     if (!existingSnap.empty) continue;
 
                     await addDoc(collection(db, "notifications"), {
-                        userId:        user.uid,
-                        title:         type === "closing_soon" ? "Opportunity closing soon!" : "New opportunity available!",
-                        body:          type === "closing_soon"
-                            ? `${opp.title} at ${opp.company || opp.companyName || "a provider"} closes in ${diffDays} day${diffDays === 1 ? "" : "s"}. Don't miss out!`
-                            : `${opp.title} at ${opp.company || opp.companyName || "a provider"} is now open. Apply before ${opp.closingDate}!`,
-                        read:          false,
+                        userId: user.uid,
+                        title:
+                            type === "closing_soon"
+                                ? "Opportunity closing soon!"
+                                : "New opportunity available!",
+                        body:
+                            type === "closing_soon"
+                                ? `${opp.title} at ${opp.company || opp.companyName || "a provider"} closes in ${diffDays} day${diffDays === 1 ? "" : "s"}. Don't miss out!`
+                                : `${opp.title} at ${opp.company || opp.companyName || "a provider"} is now open. Apply before ${opp.closingDate}!`,
+                        read: false,
                         type,
                         opportunityId: oppDoc.id,
-                        createdAt:     Timestamp.now(),
+                        createdAt: Timestamp.now(),
                     });
                 }
             } catch (err) {
@@ -89,23 +100,42 @@ function Dashboard() {
 
     return (
         <main className="applicant-dashboard">
+            
+            {/* Top navigation / status area */}
             <header className="applicant-dashboard__topbar">
                 <NotificationBell />
             </header>
 
-            <div className="applicant-dashboard__content">
-                <MyApplications applications={applications} />
-                <OpportunityList opportunities={opportunities} />
+            {/* Main content area */}
+            <section className="applicant-dashboard__content">
 
-                <div className="applicant-dashboard__profile-row">
+                <section aria-labelledby="my-applications">
+                    <h2 id="my-applications" className="sr-only">
+                        My Applications
+                    </h2>
+                    <MyApplications applications={applications} />
+                </section>
+
+                <section aria-labelledby="opportunities">
+                    <h2 id="opportunities" className="sr-only">
+                        Opportunities
+                    </h2>
+                    <OpportunityList opportunities={opportunities} />
+                </section>
+
+                {/* Profile action area */}
+                <footer className="applicant-dashboard__profile-row">
                     <button
                         className="applicant-dashboard__profile-btn"
-                        onClick={() => navigate("/dashboard/applicant/myProfile")}
+                        onClick={() =>
+                            navigate("/dashboard/applicant/myProfile")
+                        }
                     >
                         My Profile
                     </button>
-                </div>
-            </div>
+                </footer>
+
+            </section>
         </main>
     );
 }
