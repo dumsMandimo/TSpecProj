@@ -229,3 +229,479 @@
   color: #e74c3c;
   text-align: center;
 }
+/* ═══════════════════════════════════════════════════════════════
+   ADDITIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Filter bar ─────────────────────────────────────────────── */
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  margin-bottom: 1.75rem;
+}
+
+.filter-bar__search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-bar__search-icon {
+  position: absolute;
+  left: 0.75rem;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.filter-bar__search {
+  width: 100%;
+  padding: 0.5rem 2.2rem 0.5rem 2.2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filter-bar__search:focus {
+  border-color: rgba(255, 138, 31, 0.5);
+}
+
+.filter-bar__search::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.filter-bar__clear {
+  position: absolute;
+  right: 0.6rem;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.2rem;
+  line-height: 1;
+}
+
+.filter-bar__clear:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.filter-bar__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.filter-pill {
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.filter-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.filter-pill--active {
+  background: rgba(255, 138, 31, 0.18);
+  border-color: rgba(255, 138, 31, 0.5);
+  color: #ff8a1f;
+}
+
+.filter-bar__select {
+  padding: 0.45rem 0.75rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.82rem;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.4)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  padding-right: 2rem;
+  transition: border-color 0.2s;
+}
+
+.filter-bar__select:focus {
+  border-color: rgba(255, 138, 31, 0.4);
+}
+
+.filter-bar__select option {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.filter-bar__select--sort {
+  min-width: 150px;
+}
+
+.filter-bar__count {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* ── Opportunity card updates ───────────────────────────────── */
+
+.opportunity-card__actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.opportunity-card__view-btn {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.opportunity-card__view-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.opportunities-empty {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.95rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* ── Modals shared ──────────────────────────────────────────── */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.18s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal-sheet {
+  position: relative;
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 640px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-sheet--confirm {
+  max-width: 440px;
+  text-align: center;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.3rem 0.6rem;
+  line-height: 1;
+  transition: all 0.15s ease;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+/* ── Opportunity detail modal ───────────────────────────────── */
+
+.modal-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.opp-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.opp-badge--type {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.opp-badge--match { border: none; }
+.opp-badge--strong    { background: rgba(46, 204, 113, 0.18); color: #2ecc71; }
+.opp-badge--good      { background: rgba(74, 158, 255, 0.18); color: #4a9eff; }
+.opp-badge--partial   { background: rgba(245, 158, 11, 0.18); color: #f59e0b; }
+.opp-badge--low       { background: rgba(239, 68, 68, 0.18);  color: #ef4444; }
+.opp-badge--neutral   { background: rgba(161, 161, 170, 0.12); color: #a1a1aa; }
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.4rem;
+  line-height: 1.25;
+  padding-right: 2.5rem;
+}
+
+.modal-provider {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 1.25rem;
+}
+
+.modal-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.modal-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.modal-meta-icon { font-size: 0.9rem; }
+
+.modal-section { margin-bottom: 1.25rem; }
+
+.modal-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0 0 0.6rem;
+}
+
+.modal-description {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+.modal-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.modal-chip {
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.modal-chip--matched {
+  background: rgba(46, 204, 113, 0.14);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.25);
+}
+
+.modal-chip--missing {
+  background: rgba(239, 68, 68, 0.1);
+  color: rgba(239, 68, 68, 0.75);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.modal-reason-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.modal-reason-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.modal-reason-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff8a1f;
+  flex-shrink: 0;
+}
+
+.modal-company-link {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  color: #4a9eff;
+  text-decoration: none;
+}
+
+.modal-company-link:hover { text-decoration: underline; }
+
+.modal-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 0.72rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s;
+}
+
+.modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.modal-btn--primary {
+  background: #ff8a1f;
+  color: #111;
+}
+
+.modal-btn--primary:hover:not(:disabled) { opacity: 0.9; }
+
+.modal-btn--secondary {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-btn--secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+/* ── Confirm modal specifics ────────────────────────────────── */
+
+.confirm-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.confirm-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.75rem;
+}
+
+.confirm-body {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 0.75rem;
+  line-height: 1.6;
+}
+
+.confirm-note {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0 0 1.5rem;
+  padding: 0.6rem 0.9rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  line-height: 1.5;
+}
+
+/* ── Success toast ──────────────────────────────────────────── */
+
+.success-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a2e1a;
+  border: 1px solid rgba(46, 204, 113, 0.35);
+  color: #2ecc71;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  z-index: 2000;
+  white-space: nowrap;
+  animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes toastIn {
+  from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+}

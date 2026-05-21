@@ -12,6 +12,8 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
+// ─── Mocks ───────────────────────────────────────────────────────────────────
+
 jest.mock("../../firebase", () => ({
   db: {},
   auth: {},
@@ -36,7 +38,31 @@ jest.mock("firebase/auth", () => ({
 
 jest.mock("./OpportunityList.css", () => ({}));
 
+// react-router mocks
+const mockNavigate = jest.fn();
+
+jest.mock("react-router-dom", () => ({
+  useLocation: jest.fn(() => ({
+    search: "",
+    pathname: "/dashboard/applicant",
+  })),
+  useNavigate: jest.fn(() => mockNavigate),
+}));
+
+// ─── Fixtures ────────────────────────────────────────────────────────────────
+
 const mockUser = { uid: "user123" };
+
+const applicantProfile = {
+  sector: "Technology",
+  nqfLevel: 6,
+  qualification: "NQF Level 6",
+  saqaLearningArea: "Software Development",
+  learningSubfield: "Software Development",
+  saqaQualificationId: "QUAL123",
+  qualificationTitle: "Diploma in IT",
+  skills: ["JavaScript", "React", "Node.js", "SQL"],
+};
 
 const mockOpportunities = [
   {

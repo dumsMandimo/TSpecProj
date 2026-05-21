@@ -1,4 +1,5 @@
-import { render, screen, waitFor, act } from "@testing-library/react";
+import { within } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import MyApplications from "./MyApplications";
 import { db, auth } from "../../firebase";
 import {
@@ -9,9 +10,11 @@ import {
     getDoc,
     onSnapshot,
     addDoc,
-    Timestamp
+    Timestamp,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+
+// ─── Mocks ───────────────────────────────────────────────────────────────────
 
 jest.mock("../../firebase", () => ({
     db:   {},
@@ -34,23 +37,28 @@ jest.mock("firebase/auth", () => ({
 }));
 
 jest.mock("./MyApplications.css", () => ({}));
+jest.mock("./Dashboard.css",      () => ({}));
+
+// ─── Fixtures ────────────────────────────────────────────────────────────────
 
 const mockUser = { uid: "user123" };
 
 const mockApplications = [
     {
-        id:      "app1",
-        title:   "Junior Developer Learnership",
-        company: "TechCorp",
-        status:  "Submitted",
-        userId:  "user123",
+        id:        "app1",
+        title:     "Junior Developer Learnership",
+        company:   "TechCorp",
+        status:    "Submitted",
+        userId:    "user123",
+        appliedAt: { toMillis: () => 1000, toDate: () => new Date("2026-05-01") },
     },
     {
-        id:      "app2",
-        title:   "Data Analyst Internship",
-        company: "DataCo",
-        status:  "Shortlisted",
-        userId:  "user123",
+        id:        "app2",
+        title:     "Data Analyst Internship",
+        company:   "DataCo",
+        status:    "Shortlisted",
+        userId:    "user123",
+        appliedAt: { toMillis: () => 2000, toDate: () => new Date("2026-05-10") },
     },
 ];
 
@@ -67,12 +75,9 @@ beforeEach(() => {
         data:   () => ({ name: "Peace" }),
     });
 
-    onSnapshot.mockImplementation((q, successCallback, errorCallback) => {
+    onSnapshot.mockImplementation((q, successCallback) => {
         successCallback({
-            docs: mockApplications.map(app => ({
-                id:   app.id,
-                data: () => app,
-            })),
+            docs: mockApplications.map(app => ({ id: app.id, data: () => app })),
         });
         return jest.fn();
     });
@@ -84,7 +89,9 @@ beforeEach(() => {
     doc.mockReturnValue("mockedDoc");
 });
 
-describe("MyApplications", () => {
+// ─── Rendering ───────────────────────────────────────────────────────────────
+
+describe("MyApplications — rendering", () => {
 
     test("renders the My Applications heading", async () => {
         render(<MyApplications />);
@@ -126,16 +133,6 @@ describe("MyApplications", () => {
         });
     });
 
-    test("renders progress tracker for each application", async () => {
-        render(<MyApplications />);
-
-        await waitFor(() => {
-            // Both apps should show stage labels
-            const submittedLabels = screen.getAllByText("Submitted");
-            expect(submittedLabels.length).toBeGreaterThan(0);
-        });
-    });
-
     test("clears applications when user is not logged in", async () => {
         onAuthStateChanged.mockImplementation((auth, callback) => {
             callback(null);
@@ -151,18 +148,277 @@ describe("MyApplications", () => {
         });
     });
 
+    test("renders filter bar when there are applications", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByPlaceholderText("Search applications…")).toBeInTheDocument();
+        });
+    });
+
+    test("does not render filter bar when there are no applications", async () => {
+        onSnapshot.mockImplementation((q, successCallback) => {
+            successCallback({ docs: [] });
+            return jest.fn();
+        });
+
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(
+                screen.queryByPlaceholderText("Search applications…")
+            ).not.toBeInTheDocument();
+        });
+    });
+
+    test("renders company name on each application card", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("TechCorp")).toBeInTheDocument();
+            expect(screen.getByText("DataCo")).toBeInTheDocument();
+        });
+    });
+
+    test("renders applied date on each card", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getAllByText(/Applied/).length).toBeGreaterThan(0);
+        });
+    });
+
+    test("renders click to view details prompt on each card", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getAllByText("Click to view details →").length).toBe(2);
+        });
+    });
+});
+
+// ─── Filter & sort ────────────────────────────────────────────────────────────
+
+describe("MyApplications — filter and sort", () => {
+
+    test("search filters applications by title", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
+
+        fireEvent.change(screen.getByPlaceholderText("Search applications…"), {
+            target: { value: "data analyst" },
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText("Data Analyst Internship")).toBeInTheDocument();
+            expect(screen.queryByText("Junior Developer Learnership")).not.toBeInTheDocument();
+        });
+    });
+
+    test("search filters applications by company", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("TechCorp")).toBeInTheDocument();
+        });
+
+        fireEvent.change(screen.getByPlaceholderText("Search applications…"), {
+            target: { value: "DataCo" },
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText("DataCo")).toBeInTheDocument();
+            expect(screen.queryByText("TechCorp")).not.toBeInTheDocument();
+        });
+    });
+
+    test("clear search button resets search query", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
+
+        fireEvent.change(screen.getByPlaceholderText("Search applications…"), {
+            target: { value: "data" },
+        });
+
+        await waitFor(() => {
+            expect(screen.queryByText("Junior Developer Learnership")).not.toBeInTheDocument();
+        });
+
+        fireEvent.click(screen.getByLabelText("Clear search"));
+
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
+    });
+
+    test("status filter pill filters by Submitted", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
+
+        fireEvent.click(screen.getByRole("button", { name: "Submitted" }));
+
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+            expect(screen.queryByText("Data Analyst Internship")).not.toBeInTheDocument();
+        });
+    });
+
+    test("shows no-match message when filter matches nothing", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
+
+        fireEvent.click(screen.getByRole("button", { name: "Rejected" }));
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("No applications match your filters.")
+            ).toBeInTheDocument();
+        });
+    });
+
+    test("result count updates when filter is applied", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("2 applications")).toBeInTheDocument();
+        });
+
+        fireEvent.click(screen.getByRole("button", { name: "Submitted" }));
+
+        await waitFor(() => {
+            expect(screen.getByText("1 application")).toBeInTheDocument();
+        });
+    });
+});
+
+// ─── Detail modal ─────────────────────────────────────────────────────────────
+
+describe("MyApplications — detail modal", () => {
+
+    test("opens detail modal when a card is clicked", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
+
+        fireEvent.click(screen.getByText("Junior Developer Learnership"));
+
+        await waitFor(() => {
+            expect(screen.getByText("Application Progress")).toBeInTheDocument();
+        });
+    });
+
+    test("closes detail modal when close button is clicked", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
+
+        fireEvent.click(screen.getByText("Junior Developer Learnership"));
+
+        await waitFor(() => {
+            expect(screen.getByText("Application Progress")).toBeInTheDocument();
+        });
+
+        fireEvent.click(screen.getByLabelText("Close"));
+
+        await waitFor(() => {
+            expect(screen.queryByText("Application Progress")).not.toBeInTheDocument();
+        });
+    });
+
+    test("closes detail modal when backdrop is clicked", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
+
+        fireEvent.click(screen.getByText("Junior Developer Learnership"));
+        await waitFor(() => { expect(screen.getByRole("dialog")).toBeInTheDocument(); });
+
+        fireEvent.click(screen.getByRole("dialog"));
+
+        await waitFor(() => {
+            expect(screen.queryByText("Application Progress")).not.toBeInTheDocument();
+        });
+    });
+
+    test("modal shows status message for Shortlisted application", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Data Analyst Internship")).toBeInTheDocument();
+        });
+
+        fireEvent.click(screen.getByText("Data Analyst Internship"));
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Great news! You have been shortlisted.")
+            ).toBeInTheDocument();
+        });
+    });
+
+    test("modal shows readonly note", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
+
+        fireEvent.click(screen.getByText("Junior Developer Learnership"));
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("🔒 Applications cannot be edited after submission.")
+            ).toBeInTheDocument();
+        });
+    });
+
+    test("card is keyboard accessible via Enter key", async () => {
+        render(<MyApplications />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
+
+        const card = screen.getByLabelText("View details for Junior Developer Learnership");
+        fireEvent.keyDown(card, { key: "Enter" });
+
+        await waitFor(() => {
+            expect(screen.getByText("Application Progress")).toBeInTheDocument();
+        });
+    });
+});
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+describe("MyApplications — notifications", () => {
+
     test("writes notification when application status changes", async () => {
-        const prevApps = [{ id: "app1", title: "Junior Developer Learnership", company: "TechCorp", status: "Submitted", userId: "user123" }];
+        const prevApps    = [{ id: "app1", title: "Junior Developer Learnership", company: "TechCorp", status: "Submitted", userId: "user123" }];
         const updatedApps = [{ id: "app1", title: "Junior Developer Learnership", company: "TechCorp", status: "Shortlisted", userId: "user123" }];
 
         let callCount = 0;
         onSnapshot.mockImplementation((q, successCallback) => {
-            // First call returns prev, second returns updated
             callCount++;
             if (callCount === 1) {
-                successCallback({
-                    docs: prevApps.map(app => ({ id: app.id, data: () => app })),
-                });
+                successCallback({ docs: prevApps.map(a => ({ id: a.id, data: () => a })) });
             }
             return jest.fn();
         });
@@ -170,20 +426,18 @@ describe("MyApplications", () => {
         render(<MyApplications />);
 
         await act(async () => {
-            // Simulate status change
             const snapshotCallback = onSnapshot.mock.calls[0][1];
-            snapshotCallback({
-                docs: updatedApps.map(app => ({ id: app.id, data: () => app })),
-            });
+            snapshotCallback({ docs: updatedApps.map(a => ({ id: a.id, data: () => a })) });
         });
 
         await waitFor(() => {
             expect(addDoc).toHaveBeenCalledWith(
                 expect.anything(),
                 expect.objectContaining({
-                    userId: "user123",
-                    type:   "status_update",
-                    title:  "Application Shortlisted",
+                    userId:        "user123",
+                    type:          "status_update",
+                    title:         "Application Shortlisted",
+                    applicationId: "app1",
                 })
             );
         });
@@ -196,88 +450,113 @@ describe("MyApplications", () => {
             expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
         });
 
-        // addDoc should not be called on initial load since there is no prev state
+        expect(addDoc).not.toHaveBeenCalled();
+    });
+
+    test("does not write notification when status has not changed", async () => {
+        onSnapshot.mockImplementation((q, successCallback) => {
+            successCallback({
+                docs: mockApplications.map(a => ({ id: a.id, data: () => a })),
+            });
+            return jest.fn();
+        });
+
+        render(<MyApplications />);
+
+        await act(async () => {
+            const snapshotCallback = onSnapshot.mock.calls[0][1];
+            // Same status — no change
+            snapshotCallback({
+                docs: mockApplications.map(a => ({ id: a.id, data: () => a })),
+            });
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText("Junior Developer Learnership")).toBeInTheDocument();
+        });
+
         expect(addDoc).not.toHaveBeenCalled();
     });
 });
 
+// ─── ProgressTracker ──────────────────────────────────────────────────────────
+
+
+
 describe("ProgressTracker", () => {
 
-    test("shows Shortlisted label on Final Decision circle", async () => {
+    function renderWithStatus(status) {
         onSnapshot.mockImplementation((q, successCallback) => {
             successCallback({
-                docs: [
-                    {
-                        id:   "app1",
-                        data: () => ({
-                            id:      "app1",
-                            title:   "Junior Developer Learnership",
-                            company: "TechCorp",
-                            status:  "Shortlisted",
-                            userId:  "user123",
-                        }),
-                    },
-                ],
+                docs: [{
+                    id: "app1",
+                    data: () => ({
+                        id: "app1",
+                        title: "Test App",
+                        company: "TestCo",
+                        status,
+                        userId: "user123",
+                    }),
+                }],
             });
             return jest.fn();
         });
 
-        render(<MyApplications />);
+        return render(<MyApplications />);
+    }
 
-        await waitFor(() => {
-            expect(screen.getByText("Shortlisted")).toBeInTheDocument();
-        });
+    const getTracker = async () => {
+        const card = await screen.findByLabelText(
+            "View details for Test App"
+        );
+        return card.querySelector(".progress-tracker");
+    };
+
+    test("shows Shortlisted label on Final Decision circle", async () => {
+        renderWithStatus("Shortlisted");
+
+        const tracker = await getTracker();
+        const utils = within(tracker);
+
+        expect(utils.getByText("Shortlisted")).toBeInTheDocument();
     });
 
     test("shows Accepted label on Final Decision circle", async () => {
-        onSnapshot.mockImplementation((q, successCallback) => {
-            successCallback({
-                docs: [
-                    {
-                        id:   "app1",
-                        data: () => ({
-                            id:      "app1",
-                            title:   "Junior Developer Learnership",
-                            company: "TechCorp",
-                            status:  "Accepted",
-                            userId:  "user123",
-                        }),
-                    },
-                ],
-            });
-            return jest.fn();
-        });
+        renderWithStatus("Accepted");
 
-        render(<MyApplications />);
+        const tracker = await getTracker();
+        const utils = within(tracker);
 
-        await waitFor(() => {
-            expect(screen.getByText("Accepted")).toBeInTheDocument();
-        });
+        expect(utils.getByText("Accepted")).toBeInTheDocument();
     });
 
     test("shows Rejected label on Final Decision circle", async () => {
-        onSnapshot.mockImplementation((q, successCallback) => {
-            successCallback({
-                docs: [
-                    {
-                        id:   "app1",
-                        data: () => ({
-                            id:      "app1",
-                            title:   "Junior Developer Learnership",
-                            company: "TechCorp",
-                            status:  "Rejected",
-                            userId:  "user123",
-                        }),
-                    },
-                ],
-            });
-            return jest.fn();
-        });
+        renderWithStatus("Rejected");
 
+        const tracker = await getTracker();
+        const utils = within(tracker);
+
+        expect(utils.getByText("Rejected")).toBeInTheDocument();
+    });
+
+    test("renders all four stage labels for a Submitted application", async () => {
+        renderWithStatus("Submitted");
+
+        const tracker = await getTracker();
+        const utils = within(tracker);
+
+        expect(utils.getByText("Submitted")).toBeInTheDocument();
+        expect(utils.getByText("Received")).toBeInTheDocument();
+        expect(utils.getByText("Under Evaluation")).toBeInTheDocument();
+        expect(utils.getByText("Final Decision")).toBeInTheDocument();
+    });
+
+    test("renders progress tracker for each application", async () => {
         render(<MyApplications />);
 
         await waitFor(() => {
-            expect(screen.getByText("Rejected")).toBeInTheDocument();
+            const submitted = screen.getAllByText("Submitted");
+            expect(submitted.length).toBeGreaterThan(0);
         });
     });
 });
