@@ -1,0 +1,762 @@
+[
+  {
+    "name": "Adult Learning",
+    "field_name": "Education, Training and Development",
+    "field_code": "005",
+    "nqf_level_number": 1,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "97519",
+    "example_qualification_title": "General Education and Training Certificate for Adults",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=97519"
+  },
+  {
+    "name": "Adult Learning",
+    "field_name": "Education, Training and Development",
+    "field_code": "005",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "111274",
+    "example_qualification_title": "Advanced Diploma in Adult and Community Education and Training",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=111274"
+  },
+  {
+    "name": "Adult Learning",
+    "field_name": "Education, Training and Development",
+    "field_code": "005",
+    "nqf_level_number": 9,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "109480",
+    "example_qualification_title": "Master of Education",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109480"
+  },
+  {
+    "name": "Building Construction",
+    "field_name": "Physical Planning and Construction",
+    "field_code": "012",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "103079",
+    "example_qualification_title": "Advanced Diploma in Architectural Design",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=103079"
+  },
+  {
+    "name": "Civil Engineering Construction",
+    "field_name": "Physical Planning and Construction",
+    "field_code": "012",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "101172",
+    "example_qualification_title": "Advanced Diploma in Civil Engineering",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101172"
+  },
+  {
+    "name": "Communication Studies",
+    "field_name": "Communication Studies and Language",
+    "field_code": "004",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "73369",
+    "example_qualification_title": "Advanced Diploma in Brand Innovation",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=73369"
+  },
+  {
+    "name": "Communication Studies",
+    "field_name": "Communication Studies and Language",
+    "field_code": "004",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "121157",
+    "example_qualification_title": "Advanced Occupational Certificate: Media/Programme Content Production Manager",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=121157"
+  },
+  {
+    "name": "Consumer Services",
+    "field_name": "Services",
+    "field_code": "011",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "101695",
+    "example_qualification_title": "Advanced Diploma in Consumer Science in Food and Nutrition",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101695"
+  },
+  {
+    "name": "Curative Health",
+    "field_name": "Health Sciences and Social Services",
+    "field_code": "009",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "60089",
+    "example_qualification_title": "Bachelor of Clinical Medical Practice",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=60089"
+  },
+  {
+    "name": "Curative Health",
+    "field_name": "Health Sciences and Social Services",
+    "field_code": "009",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "90596",
+    "example_qualification_title": "Advanced Certificate: Pharmacy Technical Support",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=90596"
+  },
+  {
+    "name": "Design Studies",
+    "field_name": "Culture and Arts",
+    "field_code": "002",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "109763",
+    "example_qualification_title": "Advanced Diploma in Apparel Technology",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109763"
+  },
+  {
+    "name": "Electrical Infrastructure Construction",
+    "field_name": "Physical Planning and Construction",
+    "field_code": "012",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "101173",
+    "example_qualification_title": "Advanced Diploma in Electrical Engineering",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101173"
+  },
+  {
+    "name": "Engineering and Related Design",
+    "field_name": "Manufacturing, Engineering and Technology",
+    "field_code": "006",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "118148",
+    "example_qualification_title": "Diploma in Agricultural Engineering",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=118148"
+  },
+  {
+    "name": "Engineering and Related Design",
+    "field_name": "Manufacturing, Engineering and Technology",
+    "field_code": "006",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "112054",
+    "example_qualification_title": "Advanced Diploma in Chemical Engineering",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=112054"
+  },
+  {
+    "name": "Environmental Relations",
+    "field_name": "Human and Social Studies",
+    "field_code": "007",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "101505",
+    "example_qualification_title": "Advanced Diploma in Environmental Management",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101505"
+  },
+  {
+    "name": "Environmental Sciences",
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "field_code": "010",
+    "nqf_level_number": 8,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "116725",
+    "example_qualification_title": "Bachelor of Arts Honours in Environmental Sciences",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=116725"
+  },
+  {
+    "name": "Environmental Sciences",
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "field_code": "010",
+    "nqf_level_number": 10,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "96556",
+    "example_qualification_title": "Doctor of Philosophy Environmental Science",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=96556"
+  },
+  {
+    "name": "Fabrication and Extraction",
+    "field_name": "Manufacturing, Engineering and Technology",
+    "field_code": "006",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "113013",
+    "example_qualification_title": "Advanced Diploma in Geology",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=113013"
+  },
+  {
+    "name": "Film Television and Video",
+    "field_name": "Culture and Arts",
+    "field_code": "002",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "97233",
+    "example_qualification_title": "Advanced Certificate in Acting for Film",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=97233"
+  },
+  {
+    "name": "Finance Economics and Accounting",
+    "field_name": "Business, Commerce and Management Studies",
+    "field_code": "003",
+    "nqf_level_number": 5,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "99552",
+    "example_qualification_title": "Higher Certificate in Accountancy",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=99552"
+  },
+  {
+    "name": "Finance Economics and Accounting",
+    "field_name": "Business, Commerce and Management Studies",
+    "field_code": "003",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "101812",
+    "example_qualification_title": "Advanced Certificate in Accountancy",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101812"
+  },
+  {
+    "name": "Finance Economics and Accounting",
+    "field_name": "Business, Commerce and Management Studies",
+    "field_code": "003",
+    "nqf_level_number": 8,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "98917",
+    "example_qualification_title": "Postgraduate Diploma in Accountancy",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=98917"
+  },
+  {
+    "name": "General Social Science",
+    "field_name": "Human and Social Studies",
+    "field_code": "007",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "91831",
+    "example_qualification_title": "Advanced Certificate in Monitoring and Evaluation",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=91831"
+  },
+  {
+    "name": "Generic Management",
+    "field_name": "Business, Commerce and Management Studies",
+    "field_code": "003",
+    "nqf_level_number": 5,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "111416",
+    "example_qualification_title": "Higher Certificate in Business Administration",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=111416"
+  },
+  {
+    "name": "Generic Management",
+    "field_name": "Business, Commerce and Management Studies",
+    "field_code": "003",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "122981",
+    "example_qualification_title": "Advanced Certificate in Agile Leadership",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=122981"
+  },
+  {
+    "name": "Generic Management",
+    "field_name": "Business, Commerce and Management Studies",
+    "field_code": "003",
+    "nqf_level_number": 8,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "71776",
+    "example_qualification_title": "Post Graduate Diploma in Educational Management and Leadership",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=71776"
+  },
+  {
+    "name": "Higher Education and Training",
+    "field_name": "Education, Training and Development",
+    "field_code": "005",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "111152",
+    "example_qualification_title": "Advanced Diploma in Computer Integrated Education",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=111152"
+  },
+  {
+    "name": "Higher Education and Training",
+    "field_name": "Education, Training and Development",
+    "field_code": "005",
+    "nqf_level_number": 9,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "97386",
+    "example_qualification_title": "Master of Arts in Teaching French as a Foreign Language",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=97386"
+  },
+  {
+    "name": "Hospitality, Tourism, Travel, Gaming and Leisure",
+    "field_name": "Services",
+    "field_code": "011",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "117950",
+    "example_qualification_title": "Advanced Certificate in Hospitality Management",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=117950"
+  },
+  {
+    "name": "Hospitality, Tourism, Travel, Gaming and Leisure",
+    "field_name": "Services",
+    "field_code": "011",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "109235",
+    "example_qualification_title": "Advanced Diploma in Catering Management",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109235"
+  },
+  {
+    "name": "Information Studies",
+    "field_name": "Communication Studies and Language",
+    "field_code": "004",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "116407",
+    "example_qualification_title": "Advanced Diploma in Library and Information Science",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=116407"
+  },
+  {
+    "name": "Information Technology and Computer Sciences",
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "field_code": "010",
+    "nqf_level_number": 8,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "115663",
+    "example_qualification_title": "Bachelor of Arts Honours in Computer and Information Science",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=115663"
+  },
+  {
+    "name": "Information Technology and Computer Sciences",
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "field_code": "010",
+    "nqf_level_number": 10,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "116743",
+    "example_qualification_title": "Doctor of Computer and Information Sciences",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=116743"
+  },
+  {
+    "name": "Information Technology and Computer Sciences",
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "field_code": "010",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "117408",
+    "example_qualification_title": "Advanced Certificate in Information Security",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=117408"
+  },
+  {
+    "name": "Justice in Society",
+    "field_name": "Law, Military Science and Security",
+    "field_code": "008",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "102427",
+    "example_qualification_title": "Advance Certificate in Labour Law",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=102427"
+  },
+  {
+    "name": "Justice in Society",
+    "field_name": "Law, Military Science and Security",
+    "field_code": "008",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "118632",
+    "example_qualification_title": "Advanced Diploma in Labour Law",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=118632"
+  },
+  {
+    "name": "Language",
+    "field_name": "Communication Studies and Language",
+    "field_code": "004",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "115397",
+    "example_qualification_title": "Advanced Diploma in Language Practice",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=115397"
+  },
+  {
+    "name": "Life Sciences",
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "field_code": "010",
+    "nqf_level_number": 8,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "111240",
+    "example_qualification_title": "Bachelor of Applied Science Honours in Food Science",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=111240"
+  },
+  {
+    "name": "Life Sciences",
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "field_code": "010",
+    "nqf_level_number": 10,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "118681",
+    "example_qualification_title": "Doctor of Philosophy",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=118681"
+  },
+  {
+    "name": "Literature",
+    "field_name": "Communication Studies and Language",
+    "field_code": "004",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "109295",
+    "example_qualification_title": "Advanced Diploma in Copywriting",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109295"
+  },
+  {
+    "name": "Manufacturing and Assembly",
+    "field_name": "Manufacturing, Engineering and Technology",
+    "field_code": "006",
+    "nqf_level_number": 2,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "119943",
+    "example_qualification_title": "Elementary Certificate: Non-woven Needlepunch Production Machine Operator",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=119943"
+  },
+  {
+    "name": "Manufacturing and Assembly",
+    "field_name": "Manufacturing, Engineering and Technology",
+    "field_code": "006",
+    "nqf_level_number": 3,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "123382",
+    "example_qualification_title": "Intermediate Occupational Certificate: Automated Chemical Packaging Operator",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=123382"
+  },
+  {
+    "name": "Manufacturing and Assembly",
+    "field_name": "Manufacturing, Engineering and Technology",
+    "field_code": "006",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "121217",
+    "example_qualification_title": "Diploma in Electrical and Electronic Engineering",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=121217"
+  },
+  {
+    "name": "Manufacturing and Assembly",
+    "field_name": "Manufacturing, Engineering and Technology",
+    "field_code": "006",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "111289",
+    "example_qualification_title": "Advanced Diploma in Clothing and Textile Technology",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=111289"
+  },
+  {
+    "name": "Mathematical Sciences",
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "field_code": "010",
+    "nqf_level_number": 8,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "100905",
+    "example_qualification_title": "Bachelor of Commerce Honours in Business Statistics",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=100905"
+  },
+  {
+    "name": "Mathematical Sciences",
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "field_code": "010",
+    "nqf_level_number": 10,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "23703",
+    "example_qualification_title": "Doctor of Dentistry in Odontology",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=23703"
+  },
+  {
+    "name": "Mathematical Sciences",
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "field_code": "010",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "99629",
+    "example_qualification_title": "Advanced Diploma in Actuarial Science",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=99629"
+  },
+  {
+    "name": "Music",
+    "field_name": "Culture and Arts",
+    "field_code": "002",
+    "nqf_level_number": 4,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "48811",
+    "example_qualification_title": "Further Education and Training Certificate: Music Industry: Sound Technology",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=48811"
+  },
+  {
+    "name": "Nature Conservation",
+    "field_name": "Agriculture and Nature Conservation",
+    "field_code": "001",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "82006",
+    "example_qualification_title": "Advanced Certificate in Nature Conservation in Trans-Frontier Conservation Management",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=82006"
+  },
+  {
+    "name": "Office Administration",
+    "field_name": "Business, Commerce and Management Studies",
+    "field_code": "003",
+    "nqf_level_number": 5,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "36130",
+    "example_qualification_title": "Higher Certificate in Administration",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=36130"
+  },
+  {
+    "name": "Personal Care",
+    "field_name": "Services",
+    "field_code": "011",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "97898",
+    "example_qualification_title": "Advanced Diploma in Dermal Aesthetics",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=97898"
+  },
+  {
+    "name": "Physical Planning Design and Management",
+    "field_name": "Physical Planning and Construction",
+    "field_code": "012",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "109781",
+    "example_qualification_title": "Advanced Diploma in Architectural Technology",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109781"
+  },
+  {
+    "name": "Physical Planning Design and Management",
+    "field_name": "Physical Planning and Construction",
+    "field_code": "012",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "125076",
+    "example_qualification_title": "Advanced Occupational Certificate: Building Inspector Practitioner",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125076"
+  },
+  {
+    "name": "Physical Sciences",
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "field_code": "010",
+    "nqf_level_number": 8,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "86182",
+    "example_qualification_title": "Bachelor of Arts Honours in Biokinetics",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=86182"
+  },
+  {
+    "name": "Physical Sciences",
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "field_code": "010",
+    "nqf_level_number": 10,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "101690",
+    "example_qualification_title": "Doctor of Philosophy in Applied Sciences",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101690"
+  },
+  {
+    "name": "Physical Sciences",
+    "field_name": "Physical, Mathematical, Computer and Life Sciences",
+    "field_code": "010",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "111822",
+    "example_qualification_title": "Advanced Diploma in Analytical Chemistry",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=111822"
+  },
+  {
+    "name": "Preventive Health",
+    "field_name": "Health Sciences and Social Services",
+    "field_code": "009",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "21545",
+    "example_qualification_title": "Bachelor of Arts in Health Care Studies",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=21545"
+  },
+  {
+    "name": "Preventive Health",
+    "field_name": "Health Sciences and Social Services",
+    "field_code": "009",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "109900",
+    "example_qualification_title": "Advanced Certificate in Medical Rescue",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=109900"
+  },
+  {
+    "name": "Primary Agriculture",
+    "field_name": "Agriculture and Nature Conservation",
+    "field_code": "001",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "125263",
+    "example_qualification_title": "Advanced Certificate in Conservation Agriculture",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=125263"
+  },
+  {
+    "name": "Primary Agriculture",
+    "field_name": "Agriculture and Nature Conservation",
+    "field_code": "001",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "93620",
+    "example_qualification_title": "Advanced Diploma in Agricultural Extension",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=93620"
+  },
+  {
+    "name": "Promotive Health and Developmental Services",
+    "field_name": "Health Sciences and Social Services",
+    "field_code": "009",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "5365",
+    "example_qualification_title": "Bachelor of Arts: Nursing Science",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=5365"
+  },
+  {
+    "name": "Psychology",
+    "field_name": "Human and Social Studies",
+    "field_code": "007",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "88524",
+    "example_qualification_title": "Advanced Certificate in Counselling and Communication Skills",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=88524"
+  },
+  {
+    "name": "Public Administration",
+    "field_name": "Business, Commerce and Management Studies",
+    "field_code": "003",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "102037",
+    "example_qualification_title": "Advanced Certificate in Local Governance and Management",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=102037"
+  },
+  {
+    "name": "Public Policy Politics and Democratic Citizenship",
+    "field_name": "Human and Social Studies",
+    "field_code": "007",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "97810",
+    "example_qualification_title": "Advanced Diploma in Public Administration",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=97810"
+  },
+  {
+    "name": "Rehabilitative Health/Services",
+    "field_name": "Health Sciences and Social Services",
+    "field_code": "009",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "105742",
+    "example_qualification_title": "Bachelor of Complementary Medicine in Unani Tibb Medicine",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=105742"
+  },
+  {
+    "name": "Rehabilitative Health/Services",
+    "field_name": "Health Sciences and Social Services",
+    "field_code": "009",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "115517",
+    "example_qualification_title": "Advanced Certificate in Medical Rescue",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=115517"
+  },
+  {
+    "name": "Religious and Ethical Foundations of Society",
+    "field_name": "Human and Social Studies",
+    "field_code": "007",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "99576",
+    "example_qualification_title": "Advanced Diploma in Ministry",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=99576"
+  },
+  {
+    "name": "Safety in Society",
+    "field_name": "Law, Military Science and Security",
+    "field_code": "008",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "102417",
+    "example_qualification_title": "Advance Certificate in Social Security",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=102417"
+  },
+  {
+    "name": "Safety in Society",
+    "field_name": "Law, Military Science and Security",
+    "field_code": "008",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "110811",
+    "example_qualification_title": "Advanced Diploma in Correctional and Rehabilitation Studies",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=110811"
+  },
+  {
+    "name": "Schooling",
+    "field_name": "Education, Training and Development",
+    "field_code": "005",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "119492",
+    "example_qualification_title": "Advanced Diploma in Adult and Community Education and Training Teaching",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=119492"
+  },
+  {
+    "name": "Schooling",
+    "field_name": "Education, Training and Development",
+    "field_code": "005",
+    "nqf_level_number": 9,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "113281",
+    "example_qualification_title": "Master of Education",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=113281"
+  },
+  {
+    "name": "Secondary Agriculture",
+    "field_name": "Agriculture and Nature Conservation",
+    "field_code": "001",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "101894",
+    "example_qualification_title": "Advanced Diploma in Agricultural Extension and Community Development",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=101894"
+  },
+  {
+    "name": "Sovereignty of the State",
+    "field_name": "Law, Military Science and Security",
+    "field_code": "008",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "120693",
+    "example_qualification_title": "Advanced Occupational Certificate: Legislation Facilitator",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=120693"
+  },
+  {
+    "name": "Sport",
+    "field_name": "Culture and Arts",
+    "field_code": "002",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "104536",
+    "example_qualification_title": "Advanced Certificate in Coaching Science",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=104536"
+  },
+  {
+    "name": "Traditions History and Legacies",
+    "field_name": "Human and Social Studies",
+    "field_code": "007",
+    "nqf_level_number": 7,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "96694",
+    "example_qualification_title": "Advanced Diploma in Family History",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=96694"
+  },
+  {
+    "name": "Visual Arts",
+    "field_name": "Culture and Arts",
+    "field_code": "002",
+    "nqf_level_number": 6,
+    "source": "Derived from SAQA qualification learning subfield",
+    "example_qualification_id": "99640",
+    "example_qualification_title": "Advanced Certificate in Photography",
+    "source_url": "https://allqs.saqa.org.za/showQualification.php?id=99640"
+  }
+]

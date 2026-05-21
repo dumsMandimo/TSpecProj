@@ -1,0 +1,23 @@
+{
+  "scraped_rows_before_dedupe": 660,
+  "unique_qualifications_after_dedupe": 630,
+  "active_qualifications": 402,
+  "dropdown_items": 402,
+  "fields_found": 12,
+  "skill_tags_generated": 76,
+  "nqf_levels_in_scraped_active_data": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "nqf_qualification_types_generated": 13,
+  "note": "NQF level and qualification type options are derived from scraped SAQA qualification records. Specific qualification titles, fields, subfields, source URLs, and skill tags are also sourced from SAQA data.",
+  "generated_at": "2026-05-20T23:40:02.120Z"
+}

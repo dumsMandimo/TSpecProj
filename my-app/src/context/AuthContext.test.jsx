@@ -1,6 +1,6 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react";
-import { AuthProvider, useAuth } from "./AuthTests";
+import { AuthProvider, useAuth } from "./AuthContext";
 import { onAuthStateChanged } from "firebase/auth";
 import { getDoc } from "firebase/firestore";
 

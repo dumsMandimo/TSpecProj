@@ -1,448 +1,695 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import ApplicantProfile from './ApplicantProfile';
+import React from "react";
+import "@testing-library/jest-dom";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-// ── Mocks ──────────────────────────────────────────────────────────────────
+const mockUpload = jest.fn();
+const mockGetPublicUrl = jest.fn();
+const mockFrom = jest.fn();
 
-jest.mock('../../firebase', () => ({
-  db: {},
-  auth: {}
+jest.mock("../../firebase", () => ({
+  db: { name: "mock-db" },
+  auth: { currentUser: null },
 }));
 
-jest.mock('firebase/firestore', () => ({
+jest.mock("firebase/firestore", () => ({
   doc: jest.fn(),
   getDoc: jest.fn(),
   updateDoc: jest.fn(),
 }));
 
-jest.mock('firebase/auth', () => ({
+jest.mock("firebase/auth", () => ({
   onAuthStateChanged: jest.fn(),
 }));
 
-jest.mock('@supabase/supabase-js', () => ({
+jest.mock("@supabase/supabase-js", () => ({
   createClient: jest.fn(() => ({
     storage: {
-      from: jest.fn(() => ({
-        upload: jest.fn().mockResolvedValue({ data: {}, error: null }),
-        getPublicUrl: jest.fn().mockReturnValue({
-          data: { publicUrl: 'https://mock-supabase.co/cvs/test.pdf' }
-        })
-      }))
-    }
-  }))
+      from: (...args) => mockFrom(...args),
+    },
+  })),
 }));
 
-jest.mock('./ApplicantProfile.css', () => ({}));
+jest.mock("../nqfSelect", () => ({
+  OTHER_QUALIFICATION_VALUE: "OTHER",
 
-import { onAuthStateChanged } from 'firebase/auth';
-import { getDoc, updateDoc } from 'firebase/firestore';
+  NqfDropdown: ({ value, onChange }) => (
+    <select
+      data-testid="nqf-dropdown"
+      value={value}
+      onChange={onChange}
+    >
+      <option value="">Select NQF</option>
+      <option value="NQF 4">NQF 4</option>
+    </select>
+  ),
 
-// ── Sample profile data ────────────────────────────────────────────────────
+  SectorDropdown: ({ value, onChange }) => (
+    <select
+      data-testid="sector-dropdown"
+      value={value}
+      onChange={onChange}
+    >
+      <option value="">Select Sector</option>
+      <option value="IT">IT</option>
+    </select>
+  ),
+
+  SaqaQualificationDropdown: ({ value, onChange }) => (
+    <select
+      data-testid="saqa-dropdown"
+      value={value}
+      onChange={(e) =>
+        onChange({
+          target: {
+            value: e.target.value,
+            dataset: {
+              title:
+                e.target.value === "OTHER"
+                  ? ""
+                  : "National Certificate",
+              isOther: e.target.value === "OTHER" ? "true" : "false",
+              sourceUrl: "https://saqa.org.za/test",
+              learningSubfield: "Information Technology",
+            },
+          },
+        })
+      }
+    >
+      <option value="">Select Qualification</option>
+      <option value="QUAL123">Qualification</option>
+      <option value="OTHER">Other</option>
+    </select>
+  ),
+}));
+
+jest.mock("./ApplicantProfile.css", () => ({}));
+
+import ApplicantProfile from "./ApplicantProfile";
+import { onAuthStateChanged } from "firebase/auth";
+import { getDoc, updateDoc, doc } from "firebase/firestore";
+import { OTHER_QUALIFICATION_VALUE } from "../nqfSelect";
+
+const mockUser = { uid: "mock-uid-123" };
 
 const mockProfile = {
-  name: 'Thabo Nkosi',
-  phone: '0821234567',
-  education: 'Matric',
-  province: 'Gauteng',
-  skills: 'JavaScript, React',
-  interests: 'Web development',
-  qualification: 'NQF 4 — National Certificate',
-  cvUrl: 'https://mock-supabase.co/cvs/thabo_cv.pdf'
+  name: "Thabo Nkosi",
+  phone: "0821234567",
+  education: "Matric",
+  province: "Gauteng",
+  skills: ["JavaScript", "React"],
+  interests: "Web development",
+  qualification: "NQF 4",
+  sector: "IT",
+  saqaQualificationId: "QUAL123",
+  qualificationTitle: "National Certificate",
+  qualificationSource: "SAQA",
+  qualificationSourceUrl: "https://saqa.org.za/test",
+  saqaLearningArea: "Information Technology",
+  cvUrl: "https://mock-supabase.co/cvs/thabo_cv.pdf",
 };
 
-// ── Helpers ────────────────────────────────────────────────────────────────
+let mockUnsubscribe;
 
-function setupAuthWithProfile(profileData = mockProfile) {
-  onAuthStateChanged.mockImplementation((auth, callback) => {
-    callback({ uid: 'mock-uid-123' });
-    return jest.fn(); // unsubscribe
-  });
-
-  getDoc.mockResolvedValue({
-    exists: () => true,
-    id: 'mock-uid-123',
-    data: () => profileData
-  });
+function snap(data, exists = true) {
+  return {
+    exists: () => exists,
+    data: () => data,
+  };
 }
 
-function setupAuthNoProfile() {
-  onAuthStateChanged.mockImplementation((auth, callback) => {
-    callback({ uid: 'mock-uid-123' });
-    return jest.fn();
+function setupAuthWithDocs({
+  applicantData = mockProfile,
+  userData = { province: mockProfile.province },
+  applicantExists = true,
+  userExists = true,
+  user = mockUser,
+} = {}) {
+  onAuthStateChanged.mockImplementation((_auth, callback) => {
+    callback(user);
+    return mockUnsubscribe;
   });
 
-  getDoc.mockResolvedValue({
-    exists: () => false,
-    id: null,
-    data: () => null
-  });
+  getDoc
+    .mockResolvedValueOnce(snap(applicantData, applicantExists))
+    .mockResolvedValueOnce(snap(userData, userExists));
 }
 
-function setupNoUser() {
-  onAuthStateChanged.mockImplementation((auth, callback) => {
-    callback(null);
-    return jest.fn();
-  });
+async function renderLoaded() {
+  render(<ApplicantProfile />);
+  await screen.findByRole("heading", { name: /my profile/i });
 }
 
-// ── Tests ──────────────────────────────────────────────────────────────────
+async function enterEditMode() {
+  fireEvent.click(
+    await screen.findByRole("button", {
+      name: /update profile/i,
+    }),
+  );
 
-describe('ApplicantProfile', () => {
+  expect(
+    await screen.findByText(/edit profile/i),
+  ).toBeInTheDocument();
+}
 
+describe("ApplicantProfile", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(window, 'alert').mockImplementation(() => {});
+
+    mockUnsubscribe = jest.fn();
+
+    doc.mockImplementation((_db, collection, uid) => ({
+      collection,
+      uid,
+    }));
+
+    mockFrom.mockReturnValue({
+      upload: mockUpload,
+      getPublicUrl: mockGetPublicUrl,
+    });
+
+    mockUpload.mockResolvedValue({
+      data: {},
+      error: null,
+    });
+
+    mockGetPublicUrl.mockReturnValue({
+      data: {
+        publicUrl:
+          "https://mock-supabase.co/cvs/uploaded.pdf",
+      },
+    });
+
+    updateDoc.mockResolvedValue({});
+
+    jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
+    jest
+      .spyOn(window, "alert")
+      .mockImplementation(() => {});
+
+    const { auth } = require("../../firebase");
+    auth.currentUser = mockUser;
   });
 
   afterEach(() => {
-    console.error.mockRestore();
-    console.log.mockRestore();
-    window.alert.mockRestore();
+    jest.restoreAllMocks();
   });
 
-  // ─── Loading state ─────────────────────────────────────────
+  test("shows loading state before profile loads", () => {
+    onAuthStateChanged.mockImplementation(
+      () => mockUnsubscribe,
+    );
 
-  test('shows loading state before profile loads', () => {
-    onAuthStateChanged.mockImplementation(() => jest.fn());
     render(<ApplicantProfile />);
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/loading/i),
+    ).toBeInTheDocument();
   });
 
-  test('does not show profile content while loading', () => {
-    onAuthStateChanged.mockImplementation(() => jest.fn());
-    render(<ApplicantProfile />);
-    expect(screen.queryByText('My Profile')).not.toBeInTheDocument();
+  test("renders profile details", async () => {
+    setupAuthWithDocs();
+
+    await renderLoaded();
+
+    expect(
+      screen.getByText(/thabo nkosi/i),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/0821234567/i),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/matric/i),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/web development/i),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/information technology/i),
+    ).toBeInTheDocument();
   });
 
-  // ─── Profile view mode ─────────────────────────────────────
+  test("renders CV link", async () => {
+    setupAuthWithDocs();
 
-  test('renders profile heading after data loads', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /my profile/i })).toBeInTheDocument();
+    await renderLoaded();
+
+    const link = screen.getByRole("link", {
+      name: /download cv/i,
     });
+
+    expect(link).toHaveAttribute(
+      "href",
+      mockProfile.cvUrl,
+    );
   });
 
-  test('renders profile name in view mode', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      expect(screen.getByText(/thabo nkosi/i)).toBeInTheDocument();
-    });
+  test("switches to edit mode", async () => {
+    setupAuthWithDocs();
+
+    await renderLoaded();
+    await enterEditMode();
+
+    expect(
+      screen.getByDisplayValue("Thabo Nkosi"),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByDisplayValue("0821234567"),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByDisplayValue("Matric"),
+    ).toBeInTheDocument();
   });
 
-  test('renders profile phone in view mode', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      expect(screen.getByText(/0821234567/)).toBeInTheDocument();
+  test("adds a skill", async () => {
+    setupAuthWithDocs({
+      applicantData: {
+        ...mockProfile,
+        skills: [],
+      },
     });
+
+    await renderLoaded();
+    await enterEditMode();
+
+    const input = screen.getByPlaceholderText(
+      /excel, java, bookkeeping/i,
+    );
+
+    fireEvent.change(input, {
+      target: { value: "Python" },
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /add/i }),
+    );
+
+    expect(
+      screen.getByText("Python"),
+    ).toBeInTheDocument();
   });
 
-  test('renders profile education in view mode', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      expect(screen.getByText(/matric/i)).toBeInTheDocument();
-    });
+  test("removes a skill", async () => {
+    setupAuthWithDocs();
+
+    await renderLoaded();
+    await enterEditMode();
+
+    fireEvent.click(
+      screen.getByLabelText(/remove javascript/i),
+    );
+
+    expect(
+      screen.queryByText("JavaScript"),
+    ).not.toBeInTheDocument();
   });
 
-  test('renders profile province in view mode', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      expect(screen.getByText(/gauteng/i)).toBeInTheDocument();
+  test("prevents duplicate skills", async () => {
+    setupAuthWithDocs();
+
+    await renderLoaded();
+    await enterEditMode();
+
+    const input = screen.getByPlaceholderText(
+      /excel, java, bookkeeping/i,
+    );
+
+    fireEvent.change(input, {
+      target: { value: "javascript" },
     });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /add/i }),
+    );
+
+    const skills = screen.getAllByText(/javascript/i);
+
+    expect(skills.length).toBe(1);
   });
 
-  test('renders profile skills in view mode', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      expect(screen.getByText(/javascript, react/i)).toBeInTheDocument();
+  test("adds skill using Enter key", async () => {
+    setupAuthWithDocs({
+      applicantData: {
+        ...mockProfile,
+        skills: [],
+      },
     });
+
+    await renderLoaded();
+    await enterEditMode();
+
+    const input = screen.getByPlaceholderText(
+      /excel, java, bookkeeping/i,
+    );
+
+    fireEvent.change(input, {
+      target: { value: "NodeJS" },
+    });
+
+    fireEvent.keyDown(input, {
+      key: "Enter",
+      code: "Enter",
+    });
+
+    expect(
+      screen.getByText("NodeJS"),
+    ).toBeInTheDocument();
   });
 
-  test('renders profile interests in view mode', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      expect(screen.getByText(/web development/i)).toBeInTheDocument();
+  test("shows helper text when no skills exist", async () => {
+    setupAuthWithDocs({
+      applicantData: {
+        ...mockProfile,
+        skills: [],
+      },
     });
+
+    await renderLoaded();
+    await enterEditMode();
+
+    expect(
+      screen.getByText(
+        /no practical skills added yet/i,
+      ),
+    ).toBeInTheDocument();
   });
 
-  test('renders NQF qualification in view mode', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      expect(screen.getByText(/NQF 4/i)).toBeInTheDocument();
+  test("renders SAQA source link", async () => {
+    setupAuthWithDocs();
+
+    await renderLoaded();
+
+    const link = screen.getByRole("link", {
+      name: /view qualification source/i,
     });
+
+    expect(link).toHaveAttribute(
+      "href",
+      "https://saqa.org.za/test",
+    );
   });
 
-  test('renders CV download link when cvUrl exists', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      const link = screen.getByRole('link', { name: /download cv/i });
-      expect(link).toBeInTheDocument();
-      expect(link).toHaveAttribute('href', mockProfile.cvUrl);
+  test("alerts when qualification is missing", async () => {
+    setupAuthWithDocs({
+      applicantData: {
+        ...mockProfile,
+        qualification: "",
+      },
     });
-  });
 
-  test('CV link opens in new tab', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      const link = screen.getByRole('link', { name: /download cv/i });
-      expect(link).toHaveAttribute('target', '_blank');
-    });
-  });
+    await renderLoaded();
+    await enterEditMode();
 
-  test('does not render CV link when cvUrl is missing', async () => {
-    setupAuthWithProfile({ ...mockProfile, cvUrl: null });
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      expect(screen.queryByRole('link', { name: /download cv/i })).not.toBeInTheDocument();
-    });
-  });
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /save changes/i,
+      }),
+    );
 
-  test('renders Update Profile button in view mode', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /update profile/i })).toBeInTheDocument();
-    });
-  });
-
-  test('renders Profile Details legend in view mode', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      expect(screen.getByText('Profile Details')).toBeInTheDocument();
-    });
-  });
-
-  // ─── Edit mode ─────────────────────────────────────────────
-
-  test('clicking Update Profile switches to edit mode', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    expect(screen.getByText('Edit Profile')).toBeInTheDocument();
-  });
-
-  test('edit mode shows name input pre-filled', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    expect(screen.getByDisplayValue('Thabo Nkosi')).toBeInTheDocument();
-  });
-
-  test('edit mode shows phone input pre-filled', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    expect(screen.getByDisplayValue('0821234567')).toBeInTheDocument();
-  });
-
-  test('edit mode shows education textarea pre-filled', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    expect(screen.getByDisplayValue('Matric')).toBeInTheDocument();
-  });
-
-  test('edit mode shows province select pre-filled', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    expect(screen.getByDisplayValue('Gauteng')).toBeInTheDocument();
-  });
-
-  test('edit mode shows skills textarea pre-filled', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    expect(screen.getByDisplayValue('JavaScript, React')).toBeInTheDocument();
-  });
-
-  test('edit mode shows interests textarea pre-filled', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    expect(screen.getByDisplayValue('Web development')).toBeInTheDocument();
-  });
-
-  test('edit mode shows Save Changes button', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument();
-  });
-
-  test('edit mode shows file input for CV upload', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    const fileInput = screen.getByLabelText(/update cv/i);
-    expect(fileInput).toBeInTheDocument();
-    expect(fileInput).toHaveAttribute('accept', '.pdf');
-  });
-
-  test('edit mode shows all nine province options', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    const provinces = [
-      'Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal',
-      'Limpopo', 'Mpumalanga', 'Northern Cape', 'North West', 'Western Cape'
-    ];
-    provinces.forEach(province => {
-      expect(screen.getByRole('option', { name: province })).toBeInTheDocument();
-    });
-  });
-
-  // ─── Field editing ─────────────────────────────────────────
-
-  test('user can type in the name field', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    const nameInput = screen.getByDisplayValue('Thabo Nkosi');
-    fireEvent.change(nameInput, { target: { value: 'Thabo Updated' } });
-    expect(screen.getByDisplayValue('Thabo Updated')).toBeInTheDocument();
-  });
-
-  test('user can type in the phone field', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    const phoneInput = screen.getByDisplayValue('0821234567');
-    fireEvent.change(phoneInput, { target: { value: '0839876543' } });
-    expect(screen.getByDisplayValue('0839876543')).toBeInTheDocument();
-  });
-
-  test('user can change province selection', async () => {
-    setupAuthWithProfile();
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    const select = screen.getByDisplayValue('Gauteng');
-    fireEvent.change(select, { target: { value: 'Western Cape' } });
-    expect(screen.getByDisplayValue('Western Cape')).toBeInTheDocument();
-  });
-
-  // ─── Save changes ──────────────────────────────────────────
-
-  test('clicking Save Changes calls updateDoc', async () => {
-    setupAuthWithProfile();
-    updateDoc.mockResolvedValue({});
-    const { auth: mockAuth } = require('../../firebase');
-    mockAuth.currentUser = { uid: 'mock-uid-123' };
-
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
-    await waitFor(() => {
-      expect(updateDoc).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  test('successful save shows alert', async () => {
-    setupAuthWithProfile();
-    updateDoc.mockResolvedValue({});
-    const { auth: mockAuth } = require('../../firebase');
-    mockAuth.currentUser = { uid: 'mock-uid-123' };
-
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
-    await waitFor(() => {
-      expect(window.alert).toHaveBeenCalledWith('Profile updated!');
-    });
-  });
-
-  test('successful save switches back to view mode', async () => {
-    setupAuthWithProfile();
-    updateDoc.mockResolvedValue({});
-    const { auth: mockAuth } = require('../../firebase');
-    mockAuth.currentUser = { uid: 'mock-uid-123' };
-
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
-    await waitFor(() => {
-      expect(screen.getByText('Profile Details')).toBeInTheDocument();
-    });
-  });
-
-  test('failed save shows error alert', async () => {
-    setupAuthWithProfile();
-    updateDoc.mockRejectedValue(new Error('Firestore error'));
-    const { auth: mockAuth } = require('../../firebase');
-    mockAuth.currentUser = { uid: 'mock-uid-123' };
-
-    render(<ApplicantProfile />);
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /update profile/i }));
-    });
-    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
     await waitFor(() => {
       expect(window.alert).toHaveBeenCalledWith(
-        'Failed to update profile. Please try again.'
+        "Please select an NQF level / qualification type.",
       );
     });
   });
 
-  // ─── No profile found ──────────────────────────────────────
+  test("alerts when sector is missing", async () => {
+    setupAuthWithDocs({
+      applicantData: {
+        ...mockProfile,
+        sector: "",
+      },
+    });
 
-  test('stays on loading when no profile document exists', async () => {
-    setupAuthNoProfile();
-    render(<ApplicantProfile />);
+    await renderLoaded();
+    await enterEditMode();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /save changes/i,
+      }),
+    );
+
     await waitFor(() => {
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
+      expect(window.alert).toHaveBeenCalledWith(
+        "Please select a career interest sector.",
+      );
     });
   });
 
-  // ─── No user logged in ─────────────────────────────────────
+  test("alerts when qualification selection is missing", async () => {
+    setupAuthWithDocs({
+      applicantData: {
+        ...mockProfile,
+        saqaQualificationId: "",
+      },
+    });
 
-  test('stays on loading when no user is authenticated', async () => {
-    setupNoUser();
-    render(<ApplicantProfile />);
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    await renderLoaded();
+    await enterEditMode();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /save changes/i,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith(
+        "Please select a specific qualification or Other / Not listed.",
+      );
+    });
   });
 
+  test("alerts when custom qualification title is missing", async () => {
+    setupAuthWithDocs({
+      applicantData: {
+        ...mockProfile,
+        saqaQualificationId:
+          OTHER_QUALIFICATION_VALUE,
+        qualificationTitle: "",
+        customQualificationTitle: "",
+      },
+    });
+
+    await renderLoaded();
+    await enterEditMode();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /save changes/i,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith(
+        "Please enter your qualification title.",
+      );
+    });
+  });
+
+  test("updates profile successfully", async () => {
+    setupAuthWithDocs();
+
+    await renderLoaded();
+    await enterEditMode();
+
+    fireEvent.change(
+      screen.getByDisplayValue("Thabo Nkosi"),
+      {
+        target: { value: "Updated User" },
+      },
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /save changes/i,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(updateDoc).toHaveBeenCalledTimes(2);
+    });
+
+    expect(updateDoc).toHaveBeenNthCalledWith(
+      1,
+      {
+        collection: "applicants",
+        uid: "mock-uid-123",
+      },
+      expect.objectContaining({
+        name: "Updated User",
+        normalizedSkills: [
+          "javascript",
+          "react",
+        ],
+      }),
+    );
+
+    expect(window.alert).toHaveBeenCalledWith(
+      "Profile updated!",
+    );
+  });
+
+  test("uploads CV successfully", async () => {
+    setupAuthWithDocs();
+
+    jest
+      .spyOn(Date, "now")
+      .mockReturnValue(1710000000000);
+
+    await renderLoaded();
+    await enterEditMode();
+
+    const file = new File(
+      ["fake pdf"],
+      "cv.pdf",
+      {
+        type: "application/pdf",
+      },
+    );
+
+    const input = screen.getByLabelText(
+      /update cv/i,
+    );
+
+    Object.defineProperty(input, "files", {
+      value: [file],
+      configurable: true,
+    });
+
+    fireEvent.change(input);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /save changes/i,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(mockUpload).toHaveBeenCalled();
+    });
+
+    expect(mockGetPublicUrl).toHaveBeenCalled();
+
+    expect(updateDoc).toHaveBeenCalled();
+  });
+
+  test("handles upload failure", async () => {
+    setupAuthWithDocs();
+
+    mockUpload.mockResolvedValueOnce({
+      data: null,
+      error: {
+        message: "Upload failed",
+      },
+    });
+
+    await renderLoaded();
+    await enterEditMode();
+
+    const file = new File(
+      ["fake pdf"],
+      "cv.pdf",
+      {
+        type: "application/pdf",
+      },
+    );
+
+    const input = screen.getByLabelText(
+      /update cv/i,
+    );
+
+    Object.defineProperty(input, "files", {
+      value: [file],
+      configurable: true,
+    });
+
+    fireEvent.change(input);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /save changes/i,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith(
+        "Failed to update profile. Please try again.",
+      );
+    });
+  });
+
+  test("handles update failure", async () => {
+    setupAuthWithDocs();
+
+    updateDoc.mockRejectedValueOnce(
+      new Error("Failed"),
+    );
+
+    await renderLoaded();
+    await enterEditMode();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /save changes/i,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith(
+        "Failed to update profile. Please try again.",
+      );
+    });
+  });
+
+  test("logs error when no current user exists during save", async () => {
+    setupAuthWithDocs();
+
+    const { auth } = require("../../firebase");
+
+    auth.currentUser = null;
+
+    await renderLoaded();
+    await enterEditMode();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /save changes/i,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(console.error).toHaveBeenCalledWith(
+        "No user logged in",
+      );
+    });
+
+    expect(updateDoc).not.toHaveBeenCalled();
+  });
+
+  test("cancel exits edit mode", async () => {
+    setupAuthWithDocs();
+
+    await renderLoaded();
+    await enterEditMode();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /cancel/i,
+      }),
+    );
+
+    expect(
+      screen.getByText(/profile details/i),
+    ).toBeInTheDocument();
+  });
 });

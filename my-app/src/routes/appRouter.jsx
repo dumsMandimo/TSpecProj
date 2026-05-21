@@ -12,6 +12,8 @@ import NotificationDetail from "../components/applicantDashboard/NotificationDet
 import ApplicantDashboard from "../components/applicantDashboard/Dashboard";
 import ApplicantProfile from '../components/applicantDashboard/ApplicantProfile';
 import CreateProfile from '../components/applicantDashboard/CreateProfile';
+import MyApplications from '../components/applicantDashboard/MyApplications';
+import ApplicationDetail from '../components/applicantDashboard/ApplicationDetail';
 
 import ProviderDashboard from "../pages/ProviderDashboard/ProviderDashboard";
 import providerApproval from "../components/providerApproval";
@@ -36,6 +38,8 @@ export default function AppRouter() {
         <Route path="/dashboard/applicant/myProfile" element={<ApplicantProfile />} />
         <Route path="/dashboard/applicant/createProfile" element={<CreateProfile />} />
         <Route path="/dashboard/applicant/notifications/:notificationId" element={<NotificationDetail />} />
+        <Route path="/dashboard/applicant/applications" element={<MyApplications />} />
+        <Route path="/dashboard/applicant/applications/:applicationId" element={<ApplicationDetail />} />
 
         <Route path="/dashboard/provider" element={<ProviderDashboard />} />
         <Route path="/pending-approval" element={<PendingApproval/>} />

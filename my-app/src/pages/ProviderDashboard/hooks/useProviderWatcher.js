@@ -86,7 +86,7 @@ export function useProviderWatcher(providerUid) {
       const ids = snap.docs.map((d) => d.id);
       const titleMap = {};
 
-      snap.forEach((d) => {
+      snap.docs.forEach((d) => {
         titleMap[d.id] = d.data().title ?? "Untitled";
       });
 

@@ -70,7 +70,7 @@ export default function SignupProvider() {
 
       if (role && role !== "provider") {
         setErrorMsg(
-          "You already have an account with a different role. Please log in."
+          "You already have an account with a different role. Please log in.",
         );
         setLoading(false);
         return;
@@ -78,7 +78,6 @@ export default function SignupProvider() {
 
       console.log("Provider created:", user?.uid);
       navigate("/pending-approval");
-
     } catch (error) {
       console.error("Signup failed:", error);
       setErrorMsg(error?.message || "Signup failed. Please try again.");

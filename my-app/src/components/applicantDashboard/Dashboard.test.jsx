@@ -1,360 +1,482 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import Dashboard from "./Dashboard";
-import { db, auth } from "../../firebase";
 import {
-    collection,
-    query,
-    where,
-    getDocs,
-    addDoc,
-    Timestamp
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  Timestamp,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
+// ─── Mocks ───────────────────────────────────────────────────────────────────
 
 jest.mock("../../firebase", () => ({
-    db:   {},
-    auth: {},
+  db: {},
+  auth: {},
 }));
 
 jest.mock("firebase/firestore", () => ({
-    collection: jest.fn(),
-    query:      jest.fn(),
-    where:      jest.fn(),
-    getDocs:    jest.fn(),
-    addDoc:     jest.fn(),
-    Timestamp:  { now: jest.fn(() => ({ seconds: 1234567890 })) },
+  collection: jest.fn(),
+  query: jest.fn(),
+  where: jest.fn(),
+  getDocs: jest.fn(),
+  addDoc: jest.fn(),
+  Timestamp: {
+    now: jest.fn(() => ({
+      seconds: 1234567890,
+    })),
+  },
 }));
 
 jest.mock("firebase/auth", () => ({
-    onAuthStateChanged: jest.fn(),
+  onAuthStateChanged: jest.fn(),
 }));
 
 jest.mock("react-router-dom", () => ({
-    useNavigate: jest.fn(),
+  useNavigate: jest.fn(),
+  useLocation: jest.fn(),
 }));
 
-jest.mock("./MyApplications",   () => () => <section>MyApplications</section>);
-jest.mock("./OpportunityList",  () => () => <section>OpportunityList</section>);
-jest.mock("./NotificationBell", () => () => <button>NotificationBell</button>);
-jest.mock("./Dashboard.css",    () => ({}));
+jest.mock("./MyApplications", () => () => (
+  <section>MyApplications</section>
+));
+
+jest.mock("./OpportunityList", () => () => (
+  <section>OpportunityList</section>
+));
+
+jest.mock("./NotificationBell", () => () => (
+  <button>NotificationBell</button>
+));
+
+jest.mock("./Dashboard.css", () => ({}));
+
+// ─── Constants ───────────────────────────────────────────────────────────────
 
 const mockNavigate = jest.fn();
-const mockUser     = { uid: "user123" };
+
+const mockUser = {
+  uid: "user123",
+};
 
 const mockApplications = [
-    { id: "app1", opportunityId: "opp1", userId: "user123" },
-    { id: "app2", opportunityId: "opp2", userId: "user123" },
+  {
+    id: "app1",
+    opportunityId: "opp1",
+    userId: "user123",
+  },
+
+  {
+    id: "app2",
+    opportunityId: "opp2",
+    userId: "user123",
+  },
 ];
 
-const today     = new Date();
-const in3Days   = new Date(today);
-const in10Days  = new Date(today);
-const yesterday = new Date(today);
+const today = new Date();
+
+const in3Days = new Date(today);
 in3Days.setDate(today.getDate() + 3);
+
+const in10Days = new Date(today);
 in10Days.setDate(today.getDate() + 10);
+
+const yesterday = new Date(today);
 yesterday.setDate(today.getDate() - 1);
 
-const formatDate = (date) => date.toISOString().split("T")[0];
+const formatDate = (date) =>
+  date.toISOString().split("T")[0];
 
 const mockOpportunities = [
-    {
-        id:          "opp1",
-        title:       "Junior Developer Learnership",
-        company:     "TechCorp",
-        closingDate: formatDate(in3Days),
-        status:      "approved",
-    },
-    {
-        id:          "opp2",
-        title:       "Data Analyst Internship",
-        company:     "DataCo",
-        closingDate: formatDate(in10Days),
-        status:      "approved",
-    },
-    {
-        id:          "opp3",
-        title:       "UX Designer Internship",
-        company:     "DesignCo",
-        closingDate: formatDate(in3Days),
-        status:      "approved",
-    },
-    {
-        id:          "opp4",
-        title:       "Expired Opportunity",
-        company:     "OldCo",
-        closingDate: formatDate(yesterday),
-        status:      "approved",
-    },
+  {
+    id: "opp1",
+    title: "Junior Developer Learnership",
+    company: "TechCorp",
+    closingDate: formatDate(in3Days),
+    status: "approved",
+  },
+
+  {
+    id: "opp2",
+    title: "Data Analyst Internship",
+    company: "DataCo",
+    closingDate: formatDate(in10Days),
+    status: "approved",
+  },
+
+  {
+    id: "opp3",
+    title: "UX Designer Internship",
+    company: "DesignCo",
+    closingDate: formatDate(in3Days),
+    status: "approved",
+  },
+
+  {
+    id: "opp4",
+    title: "Expired Opportunity",
+    company: "OldCo",
+    closingDate: formatDate(yesterday),
+    status: "approved",
+  },
 ];
 
-// Instead of relying on call order, track which query type is being made
-// by inspecting the where() mock arguments and return the right data
+// ─── Smart Firestore Mock ────────────────────────────────────────────────────
+
 function setupSmartGetDocs({
-    applications    = mockApplications,
-    opportunities   = mockOpportunities,
-    dedupEmpty      = true,
-    dedupDocs       = [],
+  applications = mockApplications,
+  opportunities = mockOpportunities,
+  dedupEmpty = true,
+  dedupDocs = [],
 } = {}) {
-    let callCount = 0;
+  let callCount = 0;
 
-    getDocs.mockImplementation(() => {
-        callCount++;
+  getDocs.mockImplementation(() => {
+    callCount++;
 
-        // Calls come in pairs per useEffect: [apps, opps, apps, opps, ...dedup]
-        // Both useEffects run simultaneously so interleaving varies.
-        // We track by count and return safe defaults for dedup calls.
-        const appResult  = {
-            empty: applications.length === 0,
-            docs:  applications.map(a => ({ id: a.id, data: () => a })),
+    const appResult = {
+      empty: applications.length === 0,
+
+      docs: applications.map((a) => ({
+        id: a.id,
+        data: () => a,
+      })),
+    };
+
+    const oppResult = {
+      empty: opportunities.length === 0,
+
+      docs: opportunities.map((o) => ({
+        id: o.id,
+        data: () => o,
+      })),
+    };
+
+    const dedupResult = dedupEmpty
+      ? {
+          empty: true,
+          docs: [],
+        }
+      : {
+          empty: false,
+
+          docs: dedupDocs.map((d, i) => ({
+            id: `dedup${i}`,
+            data: () => d,
+          })),
         };
 
-        const oppResult = {
-            empty: opportunities.length === 0,
-            docs:  opportunities.map(o => ({ id: o.id, data: () => o })),
-        };
+    // applications query
+    if (callCount === 1) {
+      return Promise.resolve(appResult);
+    }
 
-        const dedupResult = dedupEmpty
-            ? { empty: true, docs: [] }
-            : {
-                empty: false,
-                docs:  dedupDocs.map((d, i) => ({ id: `dedup${i}`, data: () => d })),
-            };
+    // opportunities query
+    if (callCount === 2) {
+      return Promise.resolve(oppResult);
+    }
 
-        // First 4 calls are the two useEffects fetching apps + opps
-        // Remaining calls are dedup checks
-        if (callCount === 1 || callCount === 3) return Promise.resolve(appResult);
-        if (callCount === 2 || callCount === 4) return Promise.resolve(oppResult);
-        return Promise.resolve(dedupResult);
-    });
+    // dedup notification query
+    return Promise.resolve(dedupResult);
+  });
 }
 
+// ─── Setup ───────────────────────────────────────────────────────────────────
+
 beforeEach(() => {
-    jest.clearAllMocks();
+  jest.clearAllMocks();
 
-    useNavigate.mockReturnValue(mockNavigate);
+  useNavigate.mockReturnValue(mockNavigate);
 
-    onAuthStateChanged.mockImplementation((auth, callback) => {
-        callback(mockUser);
-        return jest.fn();
-    });
+  useLocation.mockReturnValue({
+    pathname: "/dashboard/applicant",
+  });
 
-    query.mockReturnValue("mockedQuery");
-    collection.mockReturnValue("mockedCollection");
-    where.mockReturnValue("mockedWhere");
-    addDoc.mockResolvedValue({ id: "notif123" });
+  onAuthStateChanged.mockImplementation(
+    (auth, callback) => {
+      callback(mockUser);
+      return jest.fn();
+    }
+  );
+
+  query.mockReturnValue("mockedQuery");
+
+  collection.mockReturnValue("mockedCollection");
+
+  where.mockReturnValue("mockedWhere");
+
+  addDoc.mockResolvedValue({
+    id: "notif123",
+  });
 });
 
+// ─── Tests ───────────────────────────────────────────────────────────────────
+
 describe("Dashboard", () => {
-
-    test("renders child components", async () => {
-        getDocs.mockResolvedValue({ docs: [], empty: true });
-
-        render(<Dashboard />);
-
-        expect(screen.getByText("MyApplications")).toBeInTheDocument();
-        expect(screen.getByText("OpportunityList")).toBeInTheDocument();
-        expect(screen.getByText("NotificationBell")).toBeInTheDocument();
+  test("renders child components", async () => {
+    getDocs.mockResolvedValue({
+      docs: [],
+      empty: true,
     });
 
-    test("renders My Profile button", () => {
-        getDocs.mockResolvedValue({ docs: [], empty: true });
+    render(<Dashboard />);
 
-        render(<Dashboard />);
+    expect(
+      screen.getByText("MyApplications")
+    ).toBeInTheDocument();
 
-        expect(screen.getByText("My Profile")).toBeInTheDocument();
+    expect(
+      screen.getByText("OpportunityList")
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText("NotificationBell")
+    ).toBeInTheDocument();
+  });
+
+  test("renders My Profile button", () => {
+    getDocs.mockResolvedValue({
+      docs: [],
+      empty: true,
     });
 
-    test("My Profile button navigates to profile page", async () => {
-        getDocs.mockResolvedValue({ docs: [], empty: true });
+    render(<Dashboard />);
 
-        render(<Dashboard />);
+    expect(
+      screen.getByText("My Profile")
+    ).toBeInTheDocument();
+  });
 
-        screen.getByText("My Profile").click();
-
-        expect(mockNavigate).toHaveBeenCalledWith("/dashboard/applicant/myProfile");
+  test("My Profile button navigates correctly", () => {
+    getDocs.mockResolvedValue({
+      docs: [],
+      empty: true,
     });
 
-    test("does nothing when user is not logged in", async () => {
-        onAuthStateChanged.mockImplementation((auth, callback) => {
-            callback(null);
-            return jest.fn();
-        });
+    render(<Dashboard />);
 
-        getDocs.mockResolvedValue({ docs: [], empty: true });
+    fireEvent.click(
+      screen.getByText("My Profile")
+    );
 
-        render(<Dashboard />);
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "/dashboard/applicant/myProfile"
+    );
+  });
 
-        await waitFor(() => {
-            expect(addDoc).not.toHaveBeenCalled();
-        });
+  test("does nothing when user not logged in", async () => {
+    onAuthStateChanged.mockImplementation(
+      (auth, callback) => {
+        callback(null);
+        return jest.fn();
+      }
+    );
+
+    getDocs.mockResolvedValue({
+      docs: [],
+      empty: true,
     });
 
-    test("does not write any notification when no opportunities exist", async () => {
-        setupSmartGetDocs({
-            applications:  [],
-            opportunities: [],
-        });
+    render(<Dashboard />);
 
-        render(<Dashboard />);
+    await waitFor(() => {
+      expect(addDoc).not.toHaveBeenCalled();
+    });
+  });
 
-        await waitFor(() => {
-            expect(addDoc).not.toHaveBeenCalled();
-        });
+  test("does not write notifications when no opportunities exist", async () => {
+    setupSmartGetDocs({
+      applications: [],
+      opportunities: [],
     });
 
-    test("writes closing soon notification for unapplied opportunity closing within 7 days", async () => {
-        // opp3 closes in 3 days and is NOT in applications (opp1, opp2 are applied)
-        setupSmartGetDocs({
-            applications:  mockApplications,
-            opportunities: mockOpportunities,
-            dedupEmpty:    true,
-        });
+    render(<Dashboard />);
 
-        render(<Dashboard />);
+    await waitFor(() => {
+      expect(addDoc).not.toHaveBeenCalled();
+    });
+  });
 
-        await waitFor(() => {
-            expect(addDoc).toHaveBeenCalledWith(
-                expect.anything(),
-                expect.objectContaining({
-                    userId: "user123",
-                    type:   "closing_soon",
-                    title:  "Opportunity closing soon!",
-                })
-            );
-        });
+  test("writes closing soon notification", async () => {
+    setupSmartGetDocs({
+      applications: mockApplications,
+      opportunities: mockOpportunities,
+      dedupEmpty: true,
     });
 
-    test("does not write closing soon notification for opportunity closing beyond 7 days", async () => {
-        // opp2 closes in 10 days — beyond threshold — and no one applied
-        setupSmartGetDocs({
-            applications:  [],
-            opportunities: [mockOpportunities[1]],
-            dedupEmpty:    true,
-        });
+    render(<Dashboard />);
 
-        render(<Dashboard />);
+    await waitFor(() => {
+      expect(addDoc).toHaveBeenCalledWith(
+        expect.anything(),
 
-        await waitFor(() => {
-            // Only new_opportunity notification should fire, not closing_soon
-            expect(addDoc).not.toHaveBeenCalledWith(
-                expect.anything(),
-                expect.objectContaining({ type: "closing_soon" })
-            );
-        });
+        expect.objectContaining({
+          userId: "user123",
+          type: "closing_soon",
+          title: "Opportunity closing soon!",
+        })
+      );
+    });
+  });
+
+  test("does not notify for opportunities closing after 7 days", async () => {
+    setupSmartGetDocs({
+      applications: [],
+      opportunities: [mockOpportunities[1]],
+      dedupEmpty: true,
     });
 
-    test("does not write closing soon notification for already closed opportunity", async () => {
-        // opp4 closed yesterday
-        setupSmartGetDocs({
-            applications:  [],
-            opportunities: [mockOpportunities[3]],
-            dedupEmpty:    true,
-        });
+    render(<Dashboard />);
 
-        render(<Dashboard />);
+    await waitFor(() => {
+      expect(addDoc).not.toHaveBeenCalledWith(
+        expect.anything(),
 
-        await waitFor(() => {
-            expect(addDoc).not.toHaveBeenCalledWith(
-                expect.anything(),
-                expect.objectContaining({ type: "closing_soon" })
-            );
-        });
+        expect.objectContaining({
+          type: "closing_soon",
+        })
+      );
+    });
+  });
+
+  test("does not notify for expired opportunities", async () => {
+    setupSmartGetDocs({
+      applications: [],
+      opportunities: [mockOpportunities[3]],
+      dedupEmpty: true,
     });
 
-    test("does not write closing soon notification for opportunity user already applied for", async () => {
-        // opp1 closes in 3 days but user already applied
-        setupSmartGetDocs({
-            applications:  mockApplications,
-            opportunities: [mockOpportunities[0]],
-            dedupEmpty:    true,
-        });
+    render(<Dashboard />);
 
-        render(<Dashboard />);
+    await waitFor(() => {
+      expect(addDoc).not.toHaveBeenCalledWith(
+        expect.anything(),
 
-        await waitFor(() => {
-            expect(addDoc).not.toHaveBeenCalledWith(
-                expect.anything(),
-                expect.objectContaining({ type: "closing_soon" })
-            );
-        });
+        expect.objectContaining({
+          type: "closing_soon",
+        })
+      );
+    });
+  });
+
+  test("does not notify for already applied opportunity", async () => {
+    setupSmartGetDocs({
+      applications: mockApplications,
+      opportunities: [mockOpportunities[0]],
+      dedupEmpty: true,
     });
 
-    test("does not write duplicate closing soon notification if already sent today", async () => {
-        setupSmartGetDocs({
-            applications:  [],
-            opportunities: [mockOpportunities[2]], // opp3 closes in 3 days
-            dedupEmpty:    false,
-            dedupDocs:     [{
-                createdAt: { toDate: () => new Date() },
-            }],
-        });
+    render(<Dashboard />);
 
-        render(<Dashboard />);
+    await waitFor(() => {
+      expect(addDoc).not.toHaveBeenCalledWith(
+        expect.anything(),
 
-        await waitFor(() => {
-            expect(addDoc).not.toHaveBeenCalledWith(
-                expect.anything(),
-                expect.objectContaining({ type: "closing_soon" })
-            );
-        });
+        expect.objectContaining({
+          type: "closing_soon",
+        })
+      );
+    });
+  });
+
+  test("does not create duplicate closing soon notification", async () => {
+    setupSmartGetDocs({
+      applications: [],
+      opportunities: [mockOpportunities[2]],
+
+      dedupEmpty: false,
+
+      dedupDocs: [
+        {
+          createdAt: {
+            toDate: () => new Date(),
+          },
+        },
+      ],
     });
 
-    test("writes new opportunity notification for unapplied opportunity", async () => {
-        // opp2 closes in 10 days — no closing soon — but IS a new opportunity
-        setupSmartGetDocs({
-            applications:  [],
-            opportunities: [mockOpportunities[1]],
-            dedupEmpty:    true,
-        });
+    render(<Dashboard />);
 
-        render(<Dashboard />);
+    await waitFor(() => {
+      expect(addDoc).not.toHaveBeenCalledWith(
+        expect.anything(),
 
-        await waitFor(() => {
-            expect(addDoc).toHaveBeenCalledWith(
-                expect.anything(),
-                expect.objectContaining({
-                    userId: "user123",
-                    type:   "new_opportunity",
-                    title:  "New opportunity available!",
-                })
-            );
-        });
+        expect.objectContaining({
+          type: "closing_soon",
+        })
+      );
+    });
+  });
+
+  test("writes new opportunity notification", async () => {
+    setupSmartGetDocs({
+      applications: [],
+      opportunities: [mockOpportunities[1]],
+      dedupEmpty: true,
     });
 
-    test("does not write new opportunity notification if already sent before", async () => {
-        setupSmartGetDocs({
-            applications:  [],
-            opportunities: [mockOpportunities[1]],
-            dedupEmpty:    false,
-            dedupDocs:     [{}],
-        });
+    render(<Dashboard />);
 
-        render(<Dashboard />);
+    await waitFor(() => {
+      expect(addDoc).toHaveBeenCalledWith(
+        expect.anything(),
 
-        await waitFor(() => {
-            expect(addDoc).not.toHaveBeenCalledWith(
-                expect.anything(),
-                expect.objectContaining({ type: "new_opportunity" })
-            );
-        });
+        expect.objectContaining({
+          userId: "user123",
+          type: "new_opportunity",
+          title: "New opportunity available!",
+        })
+      );
+    });
+  });
+
+  test("does not duplicate new opportunity notification", async () => {
+    setupSmartGetDocs({
+      applications: [],
+      opportunities: [mockOpportunities[1]],
+
+      dedupEmpty: false,
+
+      dedupDocs: [{}],
     });
 
-    test("does not write new opportunity notification for opportunity user already applied for", async () => {
-        // opp1 and opp2 both already applied for
-        setupSmartGetDocs({
-            applications:  mockApplications,
-            opportunities: [mockOpportunities[0], mockOpportunities[1]],
-            dedupEmpty:    true,
-        });
+    render(<Dashboard />);
 
-        render(<Dashboard />);
+    await waitFor(() => {
+      expect(addDoc).not.toHaveBeenCalledWith(
+        expect.anything(),
 
-        await waitFor(() => {
-            expect(addDoc).not.toHaveBeenCalledWith(
-                expect.anything(),
-                expect.objectContaining({ type: "new_opportunity" })
-            );
-        });
+        expect.objectContaining({
+          type: "new_opportunity",
+        })
+      );
     });
+  });
+
+  test("does not notify for already applied new opportunity", async () => {
+    setupSmartGetDocs({
+      applications: mockApplications,
+      opportunities: [
+        mockOpportunities[0],
+        mockOpportunities[1],
+      ],
+
+      dedupEmpty: true,
+    });
+
+    render(<Dashboard />);
+
+    await waitFor(() => {
+      expect(addDoc).not.toHaveBeenCalledWith(
+        expect.anything(),
+
+        expect.objectContaining({
+          type: "new_opportunity",
+        })
+      );
+    });
+  });
 });
