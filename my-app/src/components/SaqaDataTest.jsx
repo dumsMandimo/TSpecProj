@@ -63,7 +63,7 @@ export default function SaqaDataTest() {
           ))}
         </select>
       </label>
-
+      {/*
       <h2>Qualifications</h2>
       <ul>
         {filteredQualifications.map((qualification) => (
@@ -72,7 +72,7 @@ export default function SaqaDataTest() {
           </li>
         ))}
       </ul>
-
+*/}
       <h2>SAQA-aligned Skill Tags</h2>
       <ul>
         {filteredSkillTags.map((tag) => (
