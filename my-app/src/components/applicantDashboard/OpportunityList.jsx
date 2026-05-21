@@ -235,7 +235,9 @@ function getMatchDetails(applicant, opportunity) {
   if (qualificationMatchedEducation) {
     score += opportunity.requiredQualificationId ? 25 : 20;
     reasons.push("Specific qualification match from education history");
+
   }
+
 
   const bestEducationForDisplay =
     qualificationMatchedEducation ||
@@ -265,10 +267,6 @@ function getMatchDetails(applicant, opportunity) {
   }
 
   let label = "Partial match", className = "partial";
-  if (score >= 80) { label = "Strong match"; className = "strong"; }
-  else if (score >= 50) { label = "Good match"; className = "good"; }
-  else if (minimumNqfLevel && applicantNqfLevel && applicantNqfLevel < minimumNqfLevel) { label = "Below NQF requirement"; className = "low"; }
-  else if (score < 25) { label = "Low match"; className = "low"; }
 
 
   if (score >= 80) {
