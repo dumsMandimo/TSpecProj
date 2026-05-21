@@ -1,6 +1,5 @@
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import OpportunityList from "./OpportunityList";
-import { db, auth } from "../../firebase";
 import {
   collection,
   getDocs,
@@ -26,11 +25,11 @@ jest.mock("firebase/firestore", () => ({
   addDoc: jest.fn(),
   query: jest.fn(),
   where: jest.fn(),
-  doc: jest.fn(),
-  getDoc: jest.fn(),
   Timestamp: {
     now: jest.fn(() => ({ seconds: 1234567890 })),
   },
+  doc: jest.fn(),
+  getDoc: jest.fn(),
 }));
 
 jest.mock("firebase/auth", () => ({
@@ -75,18 +74,7 @@ const mockOpportunities = [
     closingDate: "2026-12-31",
     company: "TechCorp",
     status: "approved",
-    type: "Learnership",
-
-    // Match data to push score above 80
-    sector: "Technology",
-    minimumNqfLevel: 5,
-    preferredLearningArea: "Software Development",
-    requiredQualificationId: "QUAL123",
-    requiredQualificationTitle: "Diploma in IT",
-    requiredSkills: ["JavaScript", "React"],
-    preferredSkills: ["Node.js", "SQL"],
   },
-
   {
     id: "opp2",
     title: "Data Analyst Internship",
@@ -96,8 +84,6 @@ const mockOpportunities = [
     closingDate: "2026-11-30",
     company: "DataCo",
     status: "approved",
-    type: "Internship",
-    sector: "Data",
   },
 ];
 
@@ -109,7 +95,23 @@ const mockApplications = [
   },
 ];
 
-// ─── Setup ───────────────────────────────────────────────────────────────────
+function mockOpportunityDocs(opportunities) {
+  return {
+    docs: opportunities.map((opp) => ({
+      id: opp.id,
+      data: () => opp,
+    })),
+  };
+}
+
+function mockApplicationDocs(applications) {
+  return {
+    docs: applications.map((app) => ({
+      id: app.id,
+      data: () => app,
+    })),
+  };
+}
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -119,48 +121,38 @@ beforeEach(() => {
     return jest.fn();
   });
 
+  doc.mockReturnValue("mockedDocRef");
   addDoc.mockResolvedValue({ id: "newDoc123" });
-
   query.mockReturnValue("mockedQuery");
   collection.mockReturnValue("mockedCollection");
   where.mockReturnValue("mockedWhere");
-  doc.mockReturnValue("mockedDoc");
+  getDoc.mockResolvedValue({ exists: () => false });
 
-  getDoc.mockResolvedValue({
-    exists: () => true,
-    data: () => applicantProfile,
-  });
-
-  require("react-router-dom").useLocation.mockReturnValue({
-    search: "",
-    pathname: "/dashboard/applicant",
-  });
-
-  require("react-router-dom").useNavigate.mockReturnValue(mockNavigate);
+  // Default: empty opportunities + empty applications
+  getDocs
+    .mockResolvedValueOnce({ docs: [] })
+    .mockResolvedValueOnce({ docs: [] });
 });
 
-// ─── Rendering ───────────────────────────────────────────────────────────────
-
-describe("OpportunityList — rendering", () => {
+describe("OpportunityList", () => {
   test("renders the opportunities section heading", async () => {
-    getDocs.mockResolvedValue({ docs: [] });
+    getDocs
+      .mockReset()
+      .mockResolvedValueOnce({ docs: [] })
+      .mockResolvedValueOnce({ docs: [] });
 
     await act(async () => {
       render(<OpportunityList />);
     });
 
-    expect(
-      screen.getByText("Available Opportunities")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Available Opportunities")).toBeInTheDocument();
   });
 
   test("renders opportunities fetched from Firestore", async () => {
-    getDocs.mockResolvedValue({
-      docs: mockOpportunities.map((o) => ({
-        id: o.id,
-        data: () => o,
-      })),
-    });
+    getDocs
+      .mockReset()
+      .mockResolvedValueOnce(mockOpportunityDocs(mockOpportunities))
+      .mockResolvedValueOnce({ docs: [] });
 
     await act(async () => {
       render(<OpportunityList />);
@@ -170,104 +162,14 @@ describe("OpportunityList — rendering", () => {
       expect(
         screen.getByText("Junior Developer Learnership")
       ).toBeInTheDocument();
-    });
-  });
-
-  test("shows strong match badge when score is above 80", async () => {
-    getDocs.mockResolvedValue({
-      docs: [
-        {
-          id: "opp1",
-          data: () => mockOpportunities[0],
-        },
-      ],
-    });
-
-    await act(async () => {
-      render(<OpportunityList />);
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText("Strong match")).toBeInTheDocument();
     });
   });
 
   test("shows empty message when no opportunities available", async () => {
-    getDocs.mockResolvedValue({ docs: [] });
-
-    await act(async () => {
-      render(<OpportunityList />);
-    });
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(
-          "No opportunities available at the moment."
-        )
-      ).toBeInTheDocument();
-    });
-  });
-
-  test("renders opportunity meta data", async () => {
-    getDocs.mockResolvedValue({
-      docs: [
-        {
-          id: "opp1",
-          data: () => mockOpportunities[0],
-        },
-      ],
-    });
-
-    await act(async () => {
-      render(<OpportunityList />);
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText(/Johannesburg/)).toBeInTheDocument();
-      expect(screen.getByText(/R5000\/month/)).toBeInTheDocument();
-      expect(screen.getByText(/2026-12-31/)).toBeInTheDocument();
-      expect(screen.getByText(/TechCorp/)).toBeInTheDocument();
-    });
-  });
-
-  test("renders both View Details and Apply Now buttons", async () => {
-    getDocs.mockResolvedValue({
-      docs: [
-        {
-          id: "opp1",
-          data: () => mockOpportunities[0],
-        },
-      ],
-    });
-
-    await act(async () => {
-      render(<OpportunityList />);
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText("View Details")).toBeInTheDocument();
-      expect(screen.getByText("Apply Now")).toBeInTheDocument();
-    });
-  });
-});
-
-// ─── Filtering ───────────────────────────────────────────────────────────────
-
-describe("OpportunityList — filtering", () => {
-  test("filters out opportunities already applied for", async () => {
     getDocs
-      .mockResolvedValueOnce({
-        docs: mockOpportunities.map((o) => ({
-          id: o.id,
-          data: () => o,
-        })),
-      })
-      .mockResolvedValueOnce({
-        docs: mockApplications.map((a) => ({
-          id: a.id,
-          data: () => a,
-        })),
-      });
+      .mockReset()
+      .mockResolvedValueOnce({ docs: [] })
+      .mockResolvedValueOnce({ docs: [] });
 
     await act(async () => {
       render(<OpportunityList />);
@@ -275,99 +177,40 @@ describe("OpportunityList — filtering", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Data Analyst Internship")
+        screen.getByText("No opportunities available at the moment.")
       ).toBeInTheDocument();
+    });
+  });
 
+  test("filters out opportunities the user already applied for", async () => {
+    getDocs
+      .mockReset()
+      .mockResolvedValueOnce(mockOpportunityDocs(mockOpportunities))
+      .mockResolvedValueOnce(mockApplicationDocs(mockApplications));
+
+    await act(async () => {
+      render(<OpportunityList />);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Data Analyst Internship")).toBeInTheDocument();
       expect(
         screen.queryByText("Junior Developer Learnership")
       ).not.toBeInTheDocument();
     });
   });
 
-  test("search filters by title", async () => {
-    getDocs.mockResolvedValue({
-      docs: mockOpportunities.map((o) => ({
-        id: o.id,
-        data: () => o,
-      })),
+  test("shows alert when user is not logged in and tries to apply", async () => {
+    onAuthStateChanged.mockImplementation((auth, callback) => {
+      callback(null);
+      return jest.fn();
     });
 
-    await act(async () => {
-      render(<OpportunityList />);
-    });
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("Junior Developer Learnership")
-      ).toBeInTheDocument();
-    });
-
-    fireEvent.change(
-      screen.getByPlaceholderText(/Search by title/i),
-      {
-        target: { value: "data analyst" },
-      }
-    );
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("Data Analyst Internship")
-      ).toBeInTheDocument();
-
-      expect(
-        screen.queryByText("Junior Developer Learnership")
-      ).not.toBeInTheDocument();
-    });
-  });
-});
-
-// ─── Apply flow ──────────────────────────────────────────────────────────────
-
-describe("OpportunityList — apply flow", () => {
-  test("opens confirm modal when Apply Now clicked", async () => {
-    getDocs.mockResolvedValue({
-      docs: [
-        {
-          id: "opp1",
-          data: () => mockOpportunities[0],
-        },
-      ],
-    });
-
-    await act(async () => {
-      render(<OpportunityList />);
-    });
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("Junior Developer Learnership")
-      ).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByText("Apply Now"));
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("Confirm Application")
-      ).toBeInTheDocument();
-    });
-  });
-
-  test("submits application and notification", async () => {
     getDocs
-      .mockResolvedValueOnce({
-        docs: mockOpportunities.map((o) => ({
-          id: o.id,
-          data: () => o,
-        })),
-      })
-      .mockResolvedValueOnce({
-        docs: [],
-      });
+      .mockReset()
+      .mockResolvedValueOnce(mockOpportunityDocs(mockOpportunities));
 
-    addDoc.mockResolvedValue({
-      id: "newApp123",
-    });
+    window.alert = jest.fn();
 
     await act(async () => {
       render(<OpportunityList />);
@@ -381,38 +224,142 @@ describe("OpportunityList — apply flow", () => {
 
     fireEvent.click(screen.getAllByText("Apply Now")[0]);
 
+    expect(window.alert).toHaveBeenCalledWith("Please log in first");
+  });
+
+  test("submits application and writes notification to Firestore", async () => {
+    getDocs
+      .mockReset()
+      .mockResolvedValueOnce(mockOpportunityDocs(mockOpportunities))
+      .mockResolvedValueOnce({ docs: [] });
+
+    window.alert = jest.fn();
+    addDoc.mockResolvedValue({ id: "newApp123" });
+
+    await act(async () => {
+      render(<OpportunityList />);
+    });
+
     await waitFor(() => {
       expect(
-        screen.getByText("Confirm Application")
+        screen.getByText("Junior Developer Learnership")
       ).toBeInTheDocument();
     });
 
     await act(async () => {
-      fireEvent.click(screen.getByText("Confirm & Submit"));
+      fireEvent.click(screen.getAllByText("Apply Now")[0]);
     });
 
     await waitFor(() => {
       expect(addDoc).toHaveBeenCalledTimes(2);
+      expect(window.alert).toHaveBeenCalledWith("Application submitted!");
     });
   });
 
-  test("shows success toast after applying", async () => {
+  test("removes opportunity from list after successful application", async () => {
     getDocs
+      .mockReset()
+      .mockResolvedValueOnce(mockOpportunityDocs(mockOpportunities))
+      .mockResolvedValueOnce({ docs: [] });
+
+    window.alert = jest.fn();
+    addDoc.mockResolvedValue({ id: "newApp123" });
+
+    await act(async () => {
+      render(<OpportunityList />);
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Junior Developer Learnership")
+      ).toBeInTheDocument();
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getAllByText("Apply Now")[0]);
+    });
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith("Application submitted!");
+      expect(
+        screen.queryByText("Junior Developer Learnership")
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  test("renders opportunity details correctly", async () => {
+    getDocs
+      .mockReset()
+      .mockResolvedValueOnce(mockOpportunityDocs([mockOpportunities[0]]))
+      .mockResolvedValueOnce({ docs: [] });
+
+    await act(async () => {
+      render(<OpportunityList />);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Johannesburg/)).toBeInTheDocument();
+      expect(screen.getByText(/R5000\/month/)).toBeInTheDocument();
+      expect(screen.getByText(/2026-12-31/)).toBeInTheDocument();
+      expect(screen.getByText(/TechCorp/)).toBeInTheDocument();
+    });
+  });
+
+  test("renders strong match when applicant qualifications align", async () => {
+    getDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({
+        skills: ["javascript", "react"],
+        educationHistory: [
+          {
+            sector: "Technology",
+            qualification: "NQF Level 6",
+            qualificationTitle: "Software Engineering",
+            saqaLearningArea: "Software Development",
+          },
+        ],
+      }),
+    });
+
+    getDocs
+      .mockReset()
       .mockResolvedValueOnce({
         docs: [
           {
             id: "opp1",
-            data: () => mockOpportunities[0],
+            data: () => ({
+              title: "Frontend Internship",
+              company: "TechCorp",
+              status: "approved",
+              sector: "Technology",
+              minimumNqfLevel: 5,
+              preferredLearningArea: "Software Development",
+              requiredSkills: ["javascript", "react"],
+            }),
           },
         ],
       })
-      .mockResolvedValueOnce({
-        docs: [],
-      });
+      .mockResolvedValueOnce({ docs: [] });
 
-    addDoc.mockResolvedValue({
-      id: "newApp123",
+    await act(async () => {
+      render(<OpportunityList />);
     });
+
+    await waitFor(() => {
+      expect(screen.getByText("Strong match")).toBeInTheDocument();
+    });
+  });
+
+  test("shows error alert when application submission fails", async () => {
+    getDoc.mockResolvedValue({ exists: () => false });
+
+    getDocs
+      .mockReset()
+      .mockResolvedValueOnce(mockOpportunityDocs([mockOpportunities[0]]))
+      .mockResolvedValueOnce({ docs: [] });
+
+    addDoc.mockRejectedValue(new Error("Firestore failure"));
+    window.alert = jest.fn();
 
     await act(async () => {
       render(<OpportunityList />);
@@ -424,151 +371,32 @@ describe("OpportunityList — apply flow", () => {
       ).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText("Apply Now"));
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("Confirm Application")
-      ).toBeInTheDocument();
-    });
-
     await act(async () => {
-      fireEvent.click(screen.getByText("Confirm & Submit"));
+      fireEvent.click(screen.getByText("Apply Now"));
     });
 
     await waitFor(() => {
-      expect(
-        screen.getByText(
-          /Application for "Junior Developer Learnership" submitted!/
-        )
-      ).toBeInTheDocument();
-    });
-  });
-});
-
-// ─── Detail modal ────────────────────────────────────────────────────────────
-
-describe("OpportunityList — detail modal", () => {
-  test("opens detail modal when View Details clicked", async () => {
-    getDocs.mockResolvedValue({
-      docs: [
-        {
-          id: "opp1",
-          data: () => mockOpportunities[0],
-        },
-      ],
-    });
-
-    await act(async () => {
-      render(<OpportunityList />);
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText("View Details")).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByText("View Details"));
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("About this opportunity")
-      ).toBeInTheDocument();
-    });
-  });
-
-  test("closes detail modal when close button clicked", async () => {
-    getDocs.mockResolvedValue({
-      docs: [
-        {
-          id: "opp1",
-          data: () => mockOpportunities[0],
-        },
-      ],
-    });
-
-    await act(async () => {
-      render(<OpportunityList />);
-    });
-
-    fireEvent.click(await screen.findByText("View Details"));
-
-    fireEvent.click(await screen.findByLabelText("Close"));
-
-    await waitFor(() => {
-      expect(
-        screen.queryByText("About this opportunity")
-      ).not.toBeInTheDocument();
-    });
-  });
-});
-
-// ─── Query param auto-open ───────────────────────────────────────────────────
-
-describe("OpportunityList — opportunityId query param", () => {
-  test("auto-opens detail modal when query param exists", async () => {
-    require("react-router-dom").useLocation.mockReturnValue({
-      search: "?opportunityId=opp1",
-      pathname: "/dashboard/applicant",
-    });
-
-    getDocs.mockResolvedValue({
-      docs: mockOpportunities.map((o) => ({
-        id: o.id,
-        data: () => o,
-      })),
-    });
-
-    await act(async () => {
-      render(<OpportunityList />);
-    });
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("About this opportunity")
-      ).toBeInTheDocument();
-    });
-  });
-
-  test("clears query param after opening modal", async () => {
-    require("react-router-dom").useLocation.mockReturnValue({
-      search: "?opportunityId=opp1",
-      pathname: "/dashboard/applicant",
-    });
-
-    getDocs.mockResolvedValue({
-      docs: mockOpportunities.map((o) => ({
-        id: o.id,
-        data: () => o,
-      })),
-    });
-
-    await act(async () => {
-      render(<OpportunityList />);
-    });
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(
-        "/dashboard/applicant",
-        { replace: true }
+      expect(window.alert).toHaveBeenCalledWith(
+        "Failed to submit application. Please try again."
       );
     });
   });
 
-  test("does not open modal for invalid opportunityId", async () => {
-    require("react-router-dom").useLocation.mockReturnValue({
-      search: "?opportunityId=doesnotexist",
-      pathname: "/dashboard/applicant",
-    });
+  test("calls onApplicationAdded after successful apply", async () => {
+    const mockCallback = jest.fn();
 
-    getDocs.mockResolvedValue({
-      docs: mockOpportunities.map((o) => ({
-        id: o.id,
-        data: () => o,
-      })),
-    });
+    getDoc.mockResolvedValue({ exists: () => false });
+
+    getDocs
+      .mockReset()
+      .mockResolvedValueOnce(mockOpportunityDocs([mockOpportunities[0]]))
+      .mockResolvedValueOnce({ docs: [] });
+
+    addDoc.mockResolvedValue({ id: "newApp123" });
+    window.alert = jest.fn();
 
     await act(async () => {
-      render(<OpportunityList />);
+      render(<OpportunityList onApplicationAdded={mockCallback} />);
     });
 
     await waitFor(() => {
@@ -577,8 +405,120 @@ describe("OpportunityList — opportunityId query param", () => {
       ).toBeInTheDocument();
     });
 
-    expect(
-      screen.queryByText("About this opportunity")
-    ).not.toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(screen.getByText("Apply Now"));
+    });
+
+    await waitFor(() => {
+      expect(mockCallback).toHaveBeenCalled();
+    });
+  });
+
+  test("renders company website link when companyUrl exists", async () => {
+    getDoc.mockResolvedValue({ exists: () => false });
+
+    getDocs
+      .mockReset()
+      .mockResolvedValueOnce({
+        docs: [
+          {
+            id: "opp1",
+            data: () => ({
+              ...mockOpportunities[0],
+              companyUrl: "https://techcorp.com",
+            }),
+          },
+        ],
+      })
+      .mockResolvedValueOnce({ docs: [] });
+
+    await act(async () => {
+      render(<OpportunityList />);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/More about TechCorp/i)).toBeInTheDocument();
+    });
+  });
+
+  test("renders required and preferred skills", async () => {
+    getDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({
+        skills: ["react"],
+      }),
+    });
+
+    getDocs
+      .mockReset()
+      .mockResolvedValueOnce({
+        docs: [
+          {
+            id: "opp1",
+            data: () => ({
+              ...mockOpportunities[0],
+              requiredSkills: ["react", "javascript"],
+              preferredSkills: ["figma"],
+            }),
+          },
+        ],
+      })
+      .mockResolvedValueOnce({ docs: [] });
+
+    await act(async () => {
+      render(<OpportunityList />);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("react")).toBeInTheDocument();
+      expect(screen.getByText("javascript")).toBeInTheDocument();
+      expect(screen.getByText("figma")).toBeInTheDocument();
+    });
+  });
+
+  test("handles applicant profile fetch error gracefully", async () => {
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    getDoc.mockRejectedValue(new Error("profile error"));
+
+    getDocs
+      .mockReset()
+      .mockResolvedValueOnce({ docs: [] })
+      .mockResolvedValueOnce({ docs: [] });
+
+    await act(async () => {
+      render(<OpportunityList />);
+    });
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Error fetching applicant profile:",
+        expect.any(Error)
+      );
+    });
+
+    consoleSpy.mockRestore();
+  });
+
+  test("handles opportunities fetch failure", async () => {
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    getDocs
+      .mockReset()
+      .mockRejectedValueOnce(new Error("fetch failed"))
+      .mockResolvedValueOnce({ docs: [] });
+
+    await act(async () => {
+      render(<OpportunityList />);
+    });
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Error fetching opportunities:",
+        expect.any(Error)
+      );
+    });
+
+    consoleSpy.mockRestore();
   });
 });
