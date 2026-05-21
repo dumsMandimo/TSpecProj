@@ -339,10 +339,10 @@ export function SaqaQualificationDropdown({
       };
     }
 
-    return qualifications.find(
+    return filteredQualifications.find(
       (qualification) => qualification.value === value,
     );
-  }, [qualifications, value]);
+  }, [filteredQualifications, value]);
 
   const pick = (qualification) => {
     onChange({

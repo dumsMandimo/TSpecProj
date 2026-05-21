@@ -43,6 +43,52 @@ function sanitizeId(raw) {
   return str;
 }
 
+function normalizeText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getSearchTokens(value) {
+  const stopWords = new Set([
+    "the",
+    "and",
+    "for",
+    "with",
+    "in",
+    "of",
+    "to",
+    "a",
+    "an",
+    "level",
+    "nqf",
+  ]);
+
+  return [
+    ...new Set(
+      normalizeText(value)
+        .split(" ")
+        .filter((word) => word.length > 2 && !stopWords.has(word)),
+    ),
+  ];
+}
+
+function prepareQualificationForSearch(qualification) {
+  const title = qualification.title || qualification.label || "";
+
+  return {
+    ...qualification,
+    normalizedTitle: normalizeText(title),
+    searchTokens: getSearchTokens(title),
+    nqf_level_number: qualification.nqf_level_number
+      ? Number(qualification.nqf_level_number)
+      : null,
+    field_name: qualification.field_name || "",
+  };
+}
+
 async function deleteDocsNotInImport(collectionName, validIds) {
   const snapshot = await db.collection(collectionName).get();
 
@@ -136,9 +182,11 @@ async function commitInBatches(collectionName, items, getRawId, options = {}) {
 async function main() {
   console.log("Importing SAQA data to Firestore...\n");
 
-  await commitInBatches("saqaFields", fields, (f) => String(f.field_code), {
-    deleteStale: true,
-  });
+ const searchableQualifications = qualifications.map(prepareQualificationForSearch);
+
+await commitInBatches("saqaQualifications", searchableQualifications, (q) =>
+  String(q.value),
+);
 
   await commitInBatches("saqaNqfLevels", nqfLevels, (level) => {
     const levelNumber = level.level ?? level.value;

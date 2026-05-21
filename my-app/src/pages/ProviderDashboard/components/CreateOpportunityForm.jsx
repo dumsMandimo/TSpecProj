@@ -1,17 +1,33 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { createOpportunity } from "../../../services/providerService";
 import { auth } from "../../../services/firebase";
+import { verifyQualificationAgainstSaqa } from "../../../services/saqaVerificationService";
 import "./CreateOpportunityForm.css";
-import saqaFields from "../../../data/saqa/fields.json";
-import saqaSkillTags from "../../../data/saqa/skill_tags.json";
-import saqaQualifications from "../../../data/saqa/qualification_dropdown.json";
-import saqaNqfLevels from "../../../data/saqa/nqf_levels.json";
+import {
+  NqfDropdown,
+  SectorDropdown,
+  SaqaQualificationDropdown,
+  OTHER_QUALIFICATION_VALUE,
+} from "../../../components/nqfSelect";
 
 const today = new Date().toISOString().split("T")[0];
 
-const OTHER_QUALIFICATION_VALUE = "OTHER_NOT_LISTED";
-
-const NQF_LEVELS = saqaNqfLevels;
+const EMPTY_QUALIFICATION_DRAFT = {
+  saqaQualificationId: "",
+  qualificationTitle: "",
+  customQualificationTitle: "",
+  qualificationSource: "",
+  qualificationSourceUrl: "",
+  learningSubfield: "",
+  nqfLevel: "",
+  fieldName: "",
+  inputMode: "",
+  saqaVerificationStatus: "not_checked",
+  matchedSaqaQualificationId: null,
+  matchedSaqaTitle: "",
+  saqaMatchScore: 0,
+  requiresReview: false,
+};
 
 const EMPTY_FORM = {
   title: "",
@@ -23,17 +39,10 @@ const EMPTY_FORM = {
 
   sector: "",
   minimumNqfLevel: "",
+  minimumNqfLabel: "",
 
-  requiredQualificationId: "",
-  requiredQualificationTitle: "",
-  customQualificationTitle: "",
-  requiredQualificationSource: "",
-  requiredQualificationSourceUrl: "",
-  requiredQualificationLearningSubfield: "",
-  requiredQualificationNqfLevel: "",
-  requiredQualificationFieldName: "",
-
-  preferredLearningArea: "",
+  acceptableQualifications: [],
+  qualificationDraft: EMPTY_QUALIFICATION_DRAFT,
 
   requiredSkills: [],
   requiredSkillInput: "",
@@ -48,14 +57,6 @@ function normalizeSkill(skill) {
     .replace(/\s+/g, " ");
 }
 
-function normalizeKey(value) {
-  return String(value || "")
-    .toLowerCase()
-    .replace(/[^\w\s]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 function splitSkillInput(input) {
   return String(input || "")
     .split(",")
@@ -63,17 +64,114 @@ function splitSkillInput(input) {
     .filter(Boolean);
 }
 
-function dedupeByKey(items, getKey) {
-  const seen = new Set();
+function parseNqfLevel(value) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
 
-  return items.filter((item) => {
-    const key = getKey(item);
+  if (!value) return "";
 
-    if (seen.has(key)) return false;
+  const directNumber = Number(value);
 
-    seen.add(key);
-    return true;
-  });
+  if (Number.isInteger(directNumber)) {
+    return directNumber;
+  }
+
+  const match = String(value).match(/NQF\s*(?:Level\s*)?(\d+)/i);
+
+  return match ? Number(match[1]) : "";
+}
+
+function getQualificationDisplayTitle(qualification) {
+  return (
+    qualification.qualificationTitle ||
+    qualification.customQualificationTitle ||
+    "Unnamed qualification"
+  );
+}
+
+function getQualificationTitleFromMatch(match) {
+  return match?.title || match?.label || match?.qualification_title || "";
+}
+
+function getQualificationNqfLevelFromMatch(match) {
+  return match?.nqf_level_number || match?.nqfLevel || "";
+}
+
+function getQualificationLearningArea(qualification) {
+  return (
+    qualification.saqaLearningArea ||
+    qualification.learningSubfield ||
+    qualification.learning_subfield ||
+    ""
+  );
+}
+
+function getQualificationKey(qualification) {
+  if (qualification.saqaQualificationId) {
+    return `saqa-${qualification.saqaQualificationId}`;
+  }
+
+  return `custom-${normalizeSkill(
+    qualification.customQualificationTitle || qualification.qualificationTitle,
+  )}-${qualification.nqfLevel || ""}-${qualification.fieldName || ""}`;
+}
+
+function resetMatchingDrafts() {
+  return {
+    acceptableQualifications: [],
+    qualificationDraft: EMPTY_QUALIFICATION_DRAFT,
+  };
+}
+
+function buildAcceptableQualificationFromDraft(form) {
+  const draft = form.qualificationDraft;
+  const isOther = draft.saqaQualificationId === OTHER_QUALIFICATION_VALUE;
+  const title = isOther
+    ? draft.customQualificationTitle.trim()
+    : draft.qualificationTitle.trim();
+
+  if (!title) return null;
+
+  return {
+    id: crypto.randomUUID
+      ? crypto.randomUUID()
+      : `qualification_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+    saqaQualificationId: isOther ? null : draft.saqaQualificationId || null,
+    qualificationTitle: title,
+    customQualificationTitle: isOther
+      ? draft.customQualificationTitle.trim()
+      : "",
+    qualificationSource: isOther
+      ? "User entered"
+      : draft.qualificationSource || "SAQA",
+    qualificationSourceUrl: isOther ? "" : draft.qualificationSourceUrl || "",
+    learningSubfield: isOther ? "" : draft.learningSubfield || "",
+    saqaLearningArea: isOther
+      ? ""
+      : draft.saqaLearningArea || draft.learningSubfield || "",
+    nqfLevel: Number(draft.nqfLevel || form.minimumNqfLevel) || null,
+    fieldName: draft.fieldName || form.sector || "",
+    inputMode: isOther ? "custom" : draft.inputMode || "saqa",
+    saqaVerificationStatus:
+      draft.saqaVerificationStatus || (isOther ? "not_checked" : "matched"),
+    matchedSaqaQualificationId:
+      draft.matchedSaqaQualificationId ||
+      (isOther ? null : draft.saqaQualificationId),
+    matchedSaqaTitle: draft.matchedSaqaTitle || title,
+    saqaMatchScore: draft.saqaMatchScore || (isOther ? 0 : 1),
+    requiresReview:
+      draft.requiresReview ||
+      isOther ||
+      draft.saqaVerificationStatus === "not_found" ||
+      draft.saqaVerificationStatus === "error",
+  };
+}
+
+function getFirstAcceptableQualification(acceptableQualifications) {
+  return acceptableQualifications.length > 0
+    ? acceptableQualifications[0]
+    : null;
 }
 
 export default function CreateOpportunityForm() {
@@ -81,183 +179,286 @@ export default function CreateOpportunityForm() {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
-
-  const sectors = useMemo(
-    () => saqaFields.map((field) => field.field_name),
-    [],
-  );
-
-  const selectedMinimumNqfLevel = form.minimumNqfLevel
-    ? Number(form.minimumNqfLevel)
-    : null;
-
-  const qualificationOptions = useMemo(() => {
-    const filtered = saqaQualifications.filter((qualification) => {
-      const matchesSector =
-        !form.sector || qualification.field_name === form.sector;
-
-      const matchesNqf =
-        !selectedMinimumNqfLevel ||
-        Number(qualification.nqf_level_number) === selectedMinimumNqfLevel;
-
-      return matchesSector && matchesNqf;
-    });
-
-    const sorted = [...filtered].sort((a, b) => {
-      if (a.nqf_level_number !== b.nqf_level_number) {
-        return a.nqf_level_number - b.nqf_level_number;
-      }
-
-      return a.label.localeCompare(b.label);
-    });
-
-    return dedupeByKey(
-      sorted,
-      (qualification) =>
-        `${normalizeKey(qualification.label)}-${normalizeKey(
-          qualification.field_name,
-        )}`,
-    );
-  }, [form.sector, selectedMinimumNqfLevel]);
-
-  const learningAreaOptions = useMemo(() => {
-    if (!form.sector) return [];
-
-    const filtered = saqaSkillTags.filter((tag) => {
-      const matchesSector = tag.field_name === form.sector;
-
-      const matchesNqf =
-        !selectedMinimumNqfLevel ||
-        Number(tag.nqf_level_number) <= selectedMinimumNqfLevel;
-
-      return matchesSector && matchesNqf;
-    });
-
-    const sorted = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
-
-    return dedupeByKey(
-      sorted,
-      (tag) => `${normalizeKey(tag.name)}-${normalizeKey(tag.field_name)}`,
-    );
-  }, [form.sector, selectedMinimumNqfLevel]);
-
-  const validate = () => {
-    const next = {};
-
-    if (!form.title.trim()) next.title = "Title is required.";
-    if (!form.location.trim()) next.location = "Location is required.";
-    if (!form.description.trim()) next.description = "Description is required.";
-    if (!form.closingDate) next.closingDate = "Closing date is required.";
-
-    if (!form.sector) {
-      next.sector = "Sector is required for opportunity matching.";
-    }
-
-    if (!form.minimumNqfLevel) {
-      next.minimumNqfLevel = "Minimum NQF level is required.";
-    }
-
-    if (
-      form.requiredQualificationId === OTHER_QUALIFICATION_VALUE &&
-      !form.customQualificationTitle.trim()
-    ) {
-      next.customQualificationTitle =
-        "Enter the qualification name or choose a SAQA option.";
-    }
-
-    if (form.requiredSkills.length === 0) {
-      next.requiredSkills = "Add at least one required skill.";
-    }
-
-    return next;
-  };
+  const [qualificationSaqaCheck, setQualificationSaqaCheck] = useState(null);
+  const [checkingQualificationSaqa, setCheckingQualificationSaqa] =
+    useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setForm((prev) => {
-      const next = { ...prev, [name]: value };
-
-      if (name === "sector" || name === "minimumNqfLevel") {
-        next.preferredLearningArea = "";
-        next.requiredQualificationId = "";
-        next.requiredQualificationTitle = "";
-        next.customQualificationTitle = "";
-        next.requiredQualificationSource = "";
-        next.requiredQualificationSourceUrl = "";
-        next.requiredQualificationLearningSubfield = "";
-        next.requiredQualificationNqfLevel = "";
-        next.requiredQualificationFieldName = "";
-      }
-
-      return next;
-    });
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
 
     setErrors((prev) => ({ ...prev, [name]: undefined }));
     setSuccessMsg("");
   };
 
+  const handleSectorChange = (e) => {
+    setQualificationSaqaCheck(null);
+
+    setForm((prev) => ({
+      ...prev,
+      sector: e.target.value,
+      ...resetMatchingDrafts(),
+    }));
+
+    setErrors((prev) => ({ ...prev, sector: undefined }));
+    setSuccessMsg("");
+  };
+
+  const handleMinimumNqfChange = (e) => {
+    setQualificationSaqaCheck(null);
+
+    const level = e.target.dataset?.nqfLevel || parseNqfLevel(e.target.value);
+
+    setForm((prev) => ({
+      ...prev,
+      minimumNqfLevel: level ? String(level) : "",
+      minimumNqfLabel: e.target.value,
+      ...resetMatchingDrafts(),
+    }));
+
+    setErrors((prev) => ({ ...prev, minimumNqfLevel: undefined }));
+    setSuccessMsg("");
+  };
+
   const handleQualificationChange = (e) => {
+    setQualificationSaqaCheck(null);
+
+    const data = e.target.dataset;
     const selectedValue = e.target.value;
+    const isOther = data.isOther === "true";
 
     if (!selectedValue) {
       setForm((prev) => ({
         ...prev,
-        requiredQualificationId: "",
-        requiredQualificationTitle: "",
-        customQualificationTitle: "",
-        requiredQualificationSource: "",
-        requiredQualificationSourceUrl: "",
-        requiredQualificationLearningSubfield: "",
-        requiredQualificationNqfLevel: "",
-        requiredQualificationFieldName: "",
+        qualificationDraft: EMPTY_QUALIFICATION_DRAFT,
       }));
-      setErrors((prev) => ({ ...prev, customQualificationTitle: undefined }));
+      setErrors((prev) => ({ ...prev, qualificationDraft: undefined }));
       return;
     }
 
-    if (selectedValue === OTHER_QUALIFICATION_VALUE) {
+    if (isOther) {
       setForm((prev) => ({
         ...prev,
-        requiredQualificationId: OTHER_QUALIFICATION_VALUE,
-        requiredQualificationTitle: "",
-        customQualificationTitle: "",
-        requiredQualificationSource: "User entered",
-        requiredQualificationSourceUrl: "",
-        requiredQualificationLearningSubfield: "",
-        requiredQualificationNqfLevel: prev.minimumNqfLevel,
-        requiredQualificationFieldName: prev.sector,
+        qualificationDraft: {
+          saqaQualificationId: OTHER_QUALIFICATION_VALUE,
+          qualificationTitle: "",
+          customQualificationTitle: "",
+          qualificationSource: "User entered",
+          qualificationSourceUrl: "",
+          learningSubfield: "",
+          saqaLearningArea: "",
+          nqfLevel: prev.minimumNqfLevel,
+          fieldName: prev.sector,
+          inputMode: "custom",
+          saqaVerificationStatus: "not_checked",
+          matchedSaqaQualificationId: null,
+          matchedSaqaTitle: "",
+          saqaMatchScore: 0,
+          requiresReview: true,
+        },
       }));
       return;
     }
-
-    const selectedQualification = saqaQualifications.find(
-      (qualification) => qualification.value === selectedValue,
-    );
-
-    if (!selectedQualification) return;
 
     setForm((prev) => ({
       ...prev,
-      requiredQualificationId: selectedQualification.value,
-      requiredQualificationTitle:
-        selectedQualification.title || selectedQualification.label || "",
-      customQualificationTitle: "",
-      requiredQualificationSource: "SAQA",
-      requiredQualificationSourceUrl: selectedQualification.source_url || "",
-      requiredQualificationLearningSubfield:
-        selectedQualification.learning_subfield || "",
-      requiredQualificationNqfLevel:
-        selectedQualification.nqf_level_number || prev.minimumNqfLevel,
-      requiredQualificationFieldName:
-        selectedQualification.field_name || prev.sector,
-      preferredLearningArea:
-        prev.preferredLearningArea ||
-        selectedQualification.learning_subfield ||
-        "",
+      qualificationDraft: {
+        saqaQualificationId: selectedValue,
+        qualificationTitle: data.title || "",
+        customQualificationTitle: "",
+        qualificationSource: "SAQA",
+        qualificationSourceUrl: data.sourceUrl || "",
+        learningSubfield: data.learningSubfield || "",
+        saqaLearningArea: data.learningSubfield || "",
+        nqfLevel: data.nqfLevel || prev.minimumNqfLevel,
+        fieldName: data.fieldName || prev.sector,
+        inputMode: "saqa",
+        saqaVerificationStatus: "matched",
+        matchedSaqaQualificationId: selectedValue,
+        matchedSaqaTitle: data.title || "",
+        saqaMatchScore: 1,
+        requiresReview: false,
+      },
     }));
 
-    setErrors((prev) => ({ ...prev, customQualificationTitle: undefined }));
+    setQualificationSaqaCheck(null);
+    setErrors((prev) => ({ ...prev, qualificationDraft: undefined }));
+    setSuccessMsg("");
+  };
+
+  const handleCustomQualificationChange = (e) => {
+    const value = e.target.value;
+
+    setQualificationSaqaCheck(null);
+
+    setForm((prev) => ({
+      ...prev,
+      qualificationDraft: {
+        ...prev.qualificationDraft,
+        customQualificationTitle: value,
+        qualificationTitle: value,
+        qualificationSource: "User entered",
+        inputMode: "custom",
+        saqaVerificationStatus: "not_checked",
+        matchedSaqaQualificationId: null,
+        matchedSaqaTitle: "",
+        saqaMatchScore: 0,
+        requiresReview: true,
+      },
+    }));
+
+    setErrors((prev) => ({ ...prev, qualificationDraft: undefined }));
+    setSuccessMsg("");
+  };
+
+  const handleCheckQualificationAgainstSaqa = async () => {
+    const customTitle = form.qualificationDraft.customQualificationTitle || "";
+
+    if (!customTitle.trim()) {
+      setErrors((prev) => ({
+        ...prev,
+        qualificationDraft:
+          "Enter the qualification name before checking SAQA.",
+      }));
+      return;
+    }
+
+    setCheckingQualificationSaqa(true);
+    setQualificationSaqaCheck(null);
+    setErrors((prev) => ({ ...prev, qualificationDraft: undefined }));
+
+    try {
+      const result = await verifyQualificationAgainstSaqa(customTitle, {
+        selectedSector: form.sector,
+        selectedNqfLevel: form.minimumNqfLabel || form.minimumNqfLevel,
+      });
+
+      setQualificationSaqaCheck(result);
+
+      setForm((prev) => ({
+        ...prev,
+        qualificationDraft: {
+          ...prev.qualificationDraft,
+          saqaVerificationStatus: result.status,
+          matchedSaqaQualificationId: result.bestMatch?.id || null,
+          matchedSaqaTitle: getQualificationTitleFromMatch(result.bestMatch),
+          saqaMatchScore: result.matchScore || 0,
+          requiresReview:
+            result.status === "not_found" || result.status === "error",
+        },
+      }));
+    } catch (error) {
+      console.error("SAQA qualification check failed:", error);
+
+      const failedResult = {
+        status: "error",
+        bestMatch: null,
+        matches: [],
+        matchScore: 0,
+      };
+
+      setQualificationSaqaCheck(failedResult);
+
+      setForm((prev) => ({
+        ...prev,
+        qualificationDraft: {
+          ...prev.qualificationDraft,
+          saqaVerificationStatus: "error",
+          matchedSaqaQualificationId: null,
+          matchedSaqaTitle: "",
+          saqaMatchScore: 0,
+          requiresReview: true,
+        },
+      }));
+    } finally {
+      setCheckingQualificationSaqa(false);
+    }
+  };
+
+  const useSaqaMatchForQualificationDraft = (
+    match,
+    result = qualificationSaqaCheck,
+  ) => {
+    const matchedTitle = getQualificationTitleFromMatch(match);
+    const matchedNqfLevel =
+      getQualificationNqfLevelFromMatch(match) || form.minimumNqfLevel;
+
+    setForm((prev) => ({
+      ...prev,
+      qualificationDraft: {
+        saqaQualificationId: match.id,
+        qualificationTitle: matchedTitle,
+        customQualificationTitle: "",
+        qualificationSource: "SAQA matched custom entry",
+        qualificationSourceUrl: match.source_url || "",
+        learningSubfield: match.learning_subfield || "",
+        saqaLearningArea: match.learning_subfield || "",
+        nqfLevel: String(matchedNqfLevel || ""),
+        fieldName: match.field_name || prev.sector,
+        inputMode: "saqa_matched_custom",
+        saqaVerificationStatus: "matched",
+        matchedSaqaQualificationId: match.id,
+        matchedSaqaTitle: matchedTitle,
+        saqaMatchScore: result?.matchScore || match.matchScore || 0,
+        requiresReview: false,
+      },
+    }));
+
+    setQualificationSaqaCheck(null);
+    setErrors((prev) => ({ ...prev, qualificationDraft: undefined }));
+  };
+
+  const addAcceptableQualification = () => {
+    const qualification = buildAcceptableQualificationFromDraft(form);
+
+    if (!qualification) {
+      setErrors((prev) => ({
+        ...prev,
+        qualificationDraft:
+          "Choose a SAQA qualification or enter a custom qualification first.",
+      }));
+      return;
+    }
+
+    const nextKey = getQualificationKey(qualification);
+
+    setForm((prev) => {
+      const alreadyExists = prev.acceptableQualifications.some(
+        (existing) => getQualificationKey(existing) === nextKey,
+      );
+
+      if (alreadyExists) {
+        return {
+          ...prev,
+          qualificationDraft: EMPTY_QUALIFICATION_DRAFT,
+        };
+      }
+
+      return {
+        ...prev,
+        acceptableQualifications: [
+          ...prev.acceptableQualifications,
+          qualification,
+        ],
+        qualificationDraft: EMPTY_QUALIFICATION_DRAFT,
+      };
+    });
+
+    setErrors((prev) => ({ ...prev, qualificationDraft: undefined }));
+    setSuccessMsg("");
+  };
+
+  const removeAcceptableQualification = (qualificationId) => {
+    setForm((prev) => ({
+      ...prev,
+      acceptableQualifications: prev.acceptableQualifications.filter(
+        (qualification) => qualification.id !== qualificationId,
+      ),
+    }));
   };
 
   const addSkill = (fieldName, inputName, errorName) => {
@@ -300,6 +501,38 @@ export default function CreateOpportunityForm() {
     }
   };
 
+  const validate = () => {
+    const next = {};
+
+    if (!form.title.trim()) next.title = "Title is required.";
+    if (!form.location.trim()) next.location = "Location is required.";
+    if (!form.description.trim()) next.description = "Description is required.";
+    if (!form.closingDate) next.closingDate = "Closing date is required.";
+
+    if (!form.sector) {
+      next.sector = "Sector is required for opportunity matching.";
+    }
+
+    if (!form.minimumNqfLevel) {
+      next.minimumNqfLevel = "Minimum NQF level is required.";
+    }
+
+    if (
+      form.qualificationDraft.saqaQualificationId ===
+        OTHER_QUALIFICATION_VALUE &&
+      !form.qualificationDraft.customQualificationTitle.trim()
+    ) {
+      next.qualificationDraft =
+        "Enter the qualification name or add a SAQA option.";
+    }
+
+    if (form.requiredSkills.length === 0) {
+      next.requiredSkills = "Add at least one required skill.";
+    }
+
+    return next;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -323,12 +556,32 @@ export default function CreateOpportunityForm() {
         normalizeSkill(skill),
       );
 
-      const isOtherQualification =
-        form.requiredQualificationId === OTHER_QUALIFICATION_VALUE;
+      const acceptableQualifications = form.acceptableQualifications.map(
+        (qualification) => ({
+          saqaQualificationId: qualification.saqaQualificationId || null,
+          qualificationTitle: qualification.qualificationTitle || "",
+          customQualificationTitle:
+            qualification.customQualificationTitle || "",
+          qualificationSource: qualification.qualificationSource || "",
+          qualificationSourceUrl: qualification.qualificationSourceUrl || "",
+          learningSubfield: qualification.learningSubfield || "",
+          saqaLearningArea: qualification.saqaLearningArea || "",
+          nqfLevel: qualification.nqfLevel || null,
+          fieldName: qualification.fieldName || "",
+          inputMode: qualification.inputMode || "",
+          saqaVerificationStatus:
+            qualification.saqaVerificationStatus || "not_checked",
+          matchedSaqaQualificationId:
+            qualification.matchedSaqaQualificationId || null,
+          matchedSaqaTitle: qualification.matchedSaqaTitle || "",
+          saqaMatchScore: qualification.saqaMatchScore || 0,
+          requiresReview: Boolean(qualification.requiresReview),
+        }),
+      );
 
-      const finalRequiredQualificationTitle = isOtherQualification
-        ? form.customQualificationTitle
-        : form.requiredQualificationTitle;
+      const firstQualification = getFirstAcceptableQualification(
+        acceptableQualifications,
+      );
 
       await createOpportunity({
         title: form.title,
@@ -341,27 +594,36 @@ export default function CreateOpportunityForm() {
         sector: form.sector,
         minimumNqfLevel: Number(form.minimumNqfLevel),
 
-        requiredQualificationId: isOtherQualification
-          ? null
-          : form.requiredQualificationId || null,
-        requiredQualificationTitle: finalRequiredQualificationTitle || "",
-        requiredQualificationSource: form.requiredQualificationId
-          ? form.requiredQualificationSource
-          : "",
-        requiredQualificationSourceUrl: isOtherQualification
-          ? ""
-          : form.requiredQualificationSourceUrl || "",
-        requiredQualificationLearningSubfield: isOtherQualification
-          ? ""
-          : form.requiredQualificationLearningSubfield || "",
-        requiredQualificationNqfLevel: form.requiredQualificationId
-          ? Number(form.requiredQualificationNqfLevel || form.minimumNqfLevel)
-          : null,
-        requiredQualificationFieldName: form.requiredQualificationId
-          ? form.requiredQualificationFieldName || form.sector
-          : "",
+        acceptableQualifications,
+        acceptableQualificationTitles: acceptableQualifications.map(
+          (qualification) => qualification.qualificationTitle,
+        ),
+        acceptableQualificationIds: acceptableQualifications
+          .map((qualification) => qualification.saqaQualificationId)
+          .filter(Boolean),
 
-        preferredLearningArea: form.preferredLearningArea,
+        // Legacy fields kept so existing applicant-dashboard matching still works.
+        requiredQualificationId:
+          firstQualification?.saqaQualificationId || null,
+        requiredQualificationTitle:
+          firstQualification?.qualificationTitle || "",
+        requiredQualificationSource:
+          firstQualification?.qualificationSource || "",
+        requiredQualificationSourceUrl:
+          firstQualification?.qualificationSourceUrl || "",
+        requiredQualificationLearningSubfield:
+          firstQualification?.learningSubfield || "",
+        requiredQualificationNqfLevel:
+          firstQualification?.nqfLevel || Number(form.minimumNqfLevel),
+        requiredQualificationFieldName:
+          firstQualification?.fieldName || form.sector,
+
+        // One SAQA learning area is attached to each acceptable qualification.
+        // This legacy field keeps existing displays/matching working by using the first acceptable qualification.
+        preferredLearningArea:
+          firstQualification?.saqaLearningArea ||
+          firstQualification?.learningSubfield ||
+          "",
 
         requiredSkills: form.requiredSkills,
         normalizedRequiredSkills,
@@ -384,6 +646,11 @@ export default function CreateOpportunityForm() {
       setSubmitting(false);
     }
   };
+
+  const qualificationDraft = form.qualificationDraft;
+  const canChooseSaqaQualification = Boolean(
+    form.sector && form.minimumNqfLevel,
+  );
 
   return (
     <section aria-label="Post new opportunity">
@@ -564,177 +831,238 @@ export default function CreateOpportunityForm() {
           <legend className="create-form__legend">Matching requirements</legend>
 
           <section className="create-form__row create-form__row--half">
-            <label className="create-form__label" htmlFor="opp-sector">
+            <label className="create-form__label">
               Sector / SAQA Field <span aria-hidden="true">*</span>
             </label>
-            <select
-              id="opp-sector"
-              className={`create-form__select${
-                errors.sector ? " create-form__input--error" : ""
-              }`}
-              name="sector"
+            <SectorDropdown
               value={form.sector}
-              onChange={handleChange}
-              aria-required="true"
-              aria-describedby={errors.sector ? "opp-sector-err" : undefined}
-            >
-              <option value="">Select sector</option>
-              {sectors.map((sector) => (
-                <option key={sector} value={sector}>
-                  {sector}
-                </option>
-              ))}
-            </select>
+              onChange={handleSectorChange}
+              required
+            />
             {errors.sector && (
-              <p
-                id="opp-sector-err"
-                className="create-form__field-error"
-                role="alert"
-              >
+              <p className="create-form__field-error" role="alert">
                 {errors.sector}
               </p>
             )}
           </section>
 
           <section className="create-form__row create-form__row--half">
-            <label className="create-form__label" htmlFor="opp-min-nqf">
+            <label className="create-form__label">
               Minimum NQF Level <span aria-hidden="true">*</span>
             </label>
-            <select
-              id="opp-min-nqf"
-              className={`create-form__select${
-                errors.minimumNqfLevel ? " create-form__input--error" : ""
-              }`}
-              name="minimumNqfLevel"
-              value={form.minimumNqfLevel}
-              onChange={handleChange}
-              aria-required="true"
-              aria-describedby={
-                errors.minimumNqfLevel ? "opp-min-nqf-err" : undefined
-              }
-            >
-              <option value="">Select minimum NQF level</option>
-              {NQF_LEVELS.map((level) => (
-                <option key={level.level} value={String(level.level)}>
-                  {level.group}
-                </option>
-              ))}
-            </select>
+            <NqfDropdown
+              value={form.minimumNqfLabel}
+              onChange={handleMinimumNqfChange}
+              required
+            />
             {errors.minimumNqfLevel && (
-              <p
-                id="opp-min-nqf-err"
-                className="create-form__field-error"
-                role="alert"
-              >
+              <p className="create-form__field-error" role="alert">
                 {errors.minimumNqfLevel}
               </p>
             )}
           </section>
 
           <section className="create-form__row">
-            <label className="create-form__label" htmlFor="opp-qualification">
-              Specific Qualification Name (optional)
+            <label className="create-form__label">
+              Acceptable Qualifications (optional)
             </label>
-            <select
-              id="opp-qualification"
-              className="create-form__select"
-              name="requiredQualificationId"
-              value={form.requiredQualificationId}
-              onChange={handleQualificationChange}
-              disabled={!form.sector && !form.minimumNqfLevel}
-            >
-              <option value="">
-                {form.sector || form.minimumNqfLevel
-                  ? "No specific qualification required"
-                  : "Select sector or NQF level first"}
-              </option>
 
-              {qualificationOptions.map((qualification) => (
-                <option key={qualification.value} value={qualification.value}>
-                  {qualification.label}
-                </option>
-              ))}
+            {canChooseSaqaQualification ? (
+              <>
+                <SaqaQualificationDropdown
+                  value={qualificationDraft.saqaQualificationId}
+                  onChange={handleQualificationChange}
+                  selectedNqf={form.minimumNqfLabel || form.minimumNqfLevel}
+                  selectedSector={form.sector}
+                  includeOther
+                />
 
-              <option value={OTHER_QUALIFICATION_VALUE}>
-                Other / Not listed
-              </option>
-            </select>
+                {qualificationDraft.saqaQualificationId ===
+                  OTHER_QUALIFICATION_VALUE && (
+                  <section className="create-form__row">
+                    <label
+                      className="create-form__label"
+                      htmlFor="opp-custom-qualification"
+                    >
+                      Enter qualification name
+                    </label>
+                    <input
+                      id="opp-custom-qualification"
+                      className={`create-form__input${
+                        errors.qualificationDraft
+                          ? " create-form__input--error"
+                          : ""
+                      }`}
+                      type="text"
+                      value={qualificationDraft.customQualificationTitle}
+                      onChange={handleCustomQualificationChange}
+                      placeholder="e.g. National Senior Certificate / Matric"
+                      aria-describedby={
+                        errors.qualificationDraft
+                          ? "opp-custom-qualification-err"
+                          : undefined
+                      }
+                    />
+                  </section>
+                )}
+
+                {qualificationDraft.saqaQualificationId ===
+                  OTHER_QUALIFICATION_VALUE && (
+                  <>
+                    <button
+                      type="button"
+                      className="create-form__secondary-btn"
+                      onClick={handleCheckQualificationAgainstSaqa}
+                      disabled={
+                        checkingQualificationSaqa ||
+                        !qualificationDraft.customQualificationTitle.trim()
+                      }
+                    >
+                      {checkingQualificationSaqa
+                        ? "Checking SAQA..."
+                        : "Check against SAQA records"}
+                    </button>
+
+                    {qualificationSaqaCheck?.status === "matched" && (
+                      <div className="create-form__helper">
+                        <p>
+                          <strong>SAQA record match found:</strong>{" "}
+                          {getQualificationTitleFromMatch(
+                            qualificationSaqaCheck.bestMatch,
+                          )}
+                        </p>
+                        <button
+                          type="button"
+                          className="create-form__secondary-btn"
+                          onClick={() =>
+                            useSaqaMatchForQualificationDraft(
+                              qualificationSaqaCheck.bestMatch,
+                              qualificationSaqaCheck,
+                            )
+                          }
+                        >
+                          Use this SAQA match
+                        </button>
+                      </div>
+                    )}
+
+                    {qualificationSaqaCheck?.status === "possible_match" && (
+                      <div className="create-form__helper">
+                        <p>
+                          <strong>Possible SAQA match:</strong>{" "}
+                          {getQualificationTitleFromMatch(
+                            qualificationSaqaCheck.bestMatch,
+                          )}
+                        </p>
+                        <button
+                          type="button"
+                          className="create-form__secondary-btn"
+                          onClick={() =>
+                            useSaqaMatchForQualificationDraft(
+                              qualificationSaqaCheck.bestMatch,
+                              qualificationSaqaCheck,
+                            )
+                          }
+                        >
+                          Yes, use this SAQA match
+                        </button>
+                      </div>
+                    )}
+
+                    {qualificationSaqaCheck?.status === "not_found" && (
+                      <p className="create-form__helper">
+                        No SAQA record match was found in the current dataset.
+                        This qualification can still be added as a custom
+                        acceptable qualification for review.
+                      </p>
+                    )}
+
+                    {qualificationSaqaCheck?.status === "error" && (
+                      <p className="create-form__helper">
+                        Could not check SAQA records right now. This
+                        qualification can still be added as a custom acceptable
+                        qualification for review.
+                      </p>
+                    )}
+                  </>
+                )}
+
+                {getQualificationLearningArea(qualificationDraft) && (
+                  <p className="create-form__helper">
+                    <strong>SAQA-aligned learning area:</strong>{" "}
+                    {getQualificationLearningArea(qualificationDraft)}
+                  </p>
+                )}
+
+                <button
+                  type="button"
+                  className="create-form__secondary-btn"
+                  onClick={addAcceptableQualification}
+                >
+                  Add acceptable qualification
+                </button>
+              </>
+            ) : (
+              <p className="create-form__helper">
+                Select a sector and minimum NQF level before adding acceptable
+                qualifications.
+              </p>
+            )}
+
+            {errors.qualificationDraft && (
+              <p
+                id="opp-custom-qualification-err"
+                className="create-form__field-error"
+                role="alert"
+              >
+                {errors.qualificationDraft}
+              </p>
+            )}
+
             <p className="create-form__helper">
-              Use this when the opportunity requires or prefers a specific
-              qualification, not just a broad NQF level.
+              Add more than one qualification if different SAQA-aligned
+              qualifications can meet the opportunity criteria.
             </p>
+
+            {form.acceptableQualifications.length > 0 && (
+              <ul
+                className="create-form__skill-chip-list"
+                aria-label="Acceptable qualifications"
+              >
+                {form.acceptableQualifications.map((qualification) => (
+                  <li key={qualification.id} className="create-form__chip">
+                    <span>
+                      {getQualificationDisplayTitle(qualification)}
+                      {qualification.nqfLevel
+                        ? ` — NQF ${qualification.nqfLevel}`
+                        : ""}
+                      {getQualificationLearningArea(qualification)
+                        ? ` — ${getQualificationLearningArea(qualification)}`
+                        : ""}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        removeAcceptableQualification(qualification.id)
+                      }
+                      aria-label={`Remove ${getQualificationDisplayTitle(
+                        qualification,
+                      )}`}
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
 
-          {form.requiredQualificationId === OTHER_QUALIFICATION_VALUE && (
-            <section className="create-form__row">
-              <label
-                className="create-form__label"
-                htmlFor="opp-custom-qualification"
-              >
-                Enter qualification name <span aria-hidden="true">*</span>
-              </label>
-              <input
-                id="opp-custom-qualification"
-                className={`create-form__input${
-                  errors.customQualificationTitle
-                    ? " create-form__input--error"
-                    : ""
-                }`}
-                type="text"
-                name="customQualificationTitle"
-                value={form.customQualificationTitle}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    customQualificationTitle: e.target.value,
-                    requiredQualificationTitle: e.target.value,
-                  }))
-                }
-                placeholder="e.g. National Senior Certificate / Matric"
-                aria-describedby={
-                  errors.customQualificationTitle
-                    ? "opp-custom-qualification-err"
-                    : undefined
-                }
-              />
-              {errors.customQualificationTitle && (
-                <p
-                  id="opp-custom-qualification-err"
-                  className="create-form__field-error"
-                  role="alert"
-                >
-                  {errors.customQualificationTitle}
-                </p>
-              )}
-            </section>
-          )}
-
           <section className="create-form__row">
-            <label className="create-form__label" htmlFor="opp-learning-area">
-              Preferred SAQA Learning Area (optional)
-            </label>
-            <select
-              id="opp-learning-area"
-              className="create-form__select"
-              name="preferredLearningArea"
-              value={form.preferredLearningArea}
-              onChange={handleChange}
-              disabled={!form.sector}
-            >
-              <option value="">
-                {form.sector
-                  ? "No specific learning area"
-                  : "Select sector first"}
-              </option>
-              {learningAreaOptions.map((tag) => (
-                <option key={`${tag.name}-${tag.field_name}`} value={tag.name}>
-                  {tag.name}
-                </option>
-              ))}
-            </select>
             <p className="create-form__helper">
-              Select a sector first. Learning areas are filtered by sector and,
-              if selected, minimum NQF level.
+              SAQA learning areas are attached to each acceptable qualification
+              automatically after you choose or add the qualification. Add
+              another acceptable qualification if the opportunity can accept a
+              different learning area.
             </p>
           </section>
 
