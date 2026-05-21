@@ -32,17 +32,117 @@ function normalizeList(values) {
   return [];
 }
 
-function getApplicantNqfLevel(applicant) {
-  if (!applicant) return null;
-
-  if (typeof applicant.nqfLevel === "number") {
-    return applicant.nqfLevel;
+function parseNqfLevel(value) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
   }
 
-  const qualificationText = applicant.qualification || "";
-  const match = String(qualificationText).match(/NQF\s*(?:Level\s*)?(\d+)/i);
+  if (!value) return null;
+
+  const match = String(value).match(/NQF\s*(?:Level\s*)?(\d+)/i);
 
   return match ? Number(match[1]) : null;
+}
+
+function getApplicantEducationHistory(applicant) {
+  if (!applicant) return [];
+
+  const savedHistory = Array.isArray(applicant.educationHistory)
+    ? applicant.educationHistory.filter(Boolean)
+    : [];
+
+  if (savedHistory.length > 0) {
+    return savedHistory;
+  }
+
+  return [
+    {
+      qualification: applicant.qualification || "",
+      sector: applicant.sector || "",
+      saqaQualificationId: applicant.saqaQualificationId || "",
+      matchedSaqaQualificationId: applicant.matchedSaqaQualificationId || "",
+      qualificationTitle: applicant.qualificationTitle || "",
+      matchedSaqaTitle: applicant.matchedSaqaTitle || "",
+      learningSubfield: applicant.learningSubfield || "",
+      saqaLearningArea: applicant.saqaLearningArea || "",
+    },
+  ];
+}
+
+function getEducationNqfLevel(educationEntry) {
+  if (!educationEntry) return null;
+
+  return (
+    parseNqfLevel(educationEntry.nqfLevel) ||
+    parseNqfLevel(educationEntry.qualificationNqfLevel) ||
+    parseNqfLevel(educationEntry.qualification)
+  );
+}
+
+function getHighestApplicantNqfLevel(applicant) {
+  const levels = getApplicantEducationHistory(applicant)
+    .map(getEducationNqfLevel)
+    .filter((level) => Number.isFinite(level));
+
+  return levels.length > 0 ? Math.max(...levels) : null;
+}
+
+function educationMatchesSector(educationEntry, opportunity) {
+  return (
+    educationEntry?.sector &&
+    opportunity?.sector &&
+    normalizeText(educationEntry.sector) === normalizeText(opportunity.sector)
+  );
+}
+
+function educationMatchesLearningArea(educationEntry, opportunity) {
+  if (!opportunity?.preferredLearningArea) return false;
+
+  const preferredLearningArea = normalizeText(
+    opportunity.preferredLearningArea,
+  );
+
+  return (
+    normalizeText(educationEntry?.saqaLearningArea) === preferredLearningArea ||
+    normalizeText(educationEntry?.learningSubfield) === preferredLearningArea
+  );
+}
+
+function educationMatchesQualification(educationEntry, opportunity) {
+  if (!educationEntry || !opportunity) return false;
+
+  if (opportunity.requiredQualificationId) {
+    return (
+      educationEntry.saqaQualificationId ===
+        opportunity.requiredQualificationId ||
+      educationEntry.matchedSaqaQualificationId ===
+        opportunity.requiredQualificationId
+    );
+  }
+
+  if (opportunity.requiredQualificationTitle) {
+    const requiredTitle = normalizeText(opportunity.requiredQualificationTitle);
+
+    return (
+      normalizeText(educationEntry.qualificationTitle) === requiredTitle ||
+      normalizeText(educationEntry.matchedSaqaTitle) === requiredTitle ||
+      normalizeText(educationEntry.customQualificationTitle) === requiredTitle
+    );
+  }
+
+  return false;
+}
+
+function getBestEducationSummary(educationEntry) {
+  if (!educationEntry) return "";
+
+  return (
+    educationEntry.qualificationTitle ||
+    educationEntry.matchedSaqaTitle ||
+    educationEntry.customQualificationTitle ||
+    educationEntry.qualification ||
+    ""
+  );
 }
 
 function getMatchDetails(applicant, opportunity) {
@@ -55,13 +155,22 @@ function getMatchDetails(applicant, opportunity) {
       missingRequiredSkills: [],
       matchedPreferredSkills: [],
       reasons: [],
+      educationMatches: {
+        consideredEducationCount: 0,
+        sector: false,
+        nqf: false,
+        learningArea: false,
+        qualification: false,
+      },
     };
   }
 
   let score = 0;
   const reasons = [];
 
-  const applicantNqfLevel = getApplicantNqfLevel(applicant);
+  const educationHistory = getApplicantEducationHistory(applicant);
+  const applicantNqfLevel = getHighestApplicantNqfLevel(applicant);
+
   const minimumNqfLevel = opportunity.minimumNqfLevel
     ? Number(opportunity.minimumNqfLevel)
     : null;
@@ -94,47 +203,64 @@ function getMatchDetails(applicant, opportunity) {
     applicantSkills.includes(skill),
   );
 
-  if (
-    applicant.sector &&
-    opportunity.sector &&
-    applicant.sector === opportunity.sector
-  ) {
+  const sectorMatchedEducation = educationHistory.find((educationEntry) =>
+    educationMatchesSector(educationEntry, opportunity),
+  );
+
+  if (sectorMatchedEducation) {
     score += 30;
-    reasons.push("Sector match");
+    reasons.push("Sector match from education history");
   }
 
-  if (minimumNqfLevel && applicantNqfLevel) {
-    if (applicantNqfLevel >= minimumNqfLevel) {
+  let nqfMatchedEducation = null;
+
+  if (minimumNqfLevel) {
+    nqfMatchedEducation = educationHistory.find((educationEntry) => {
+      const educationNqfLevel = getEducationNqfLevel(educationEntry);
+      return educationNqfLevel && educationNqfLevel >= minimumNqfLevel;
+    });
+
+    if (nqfMatchedEducation) {
       score += 25;
       reasons.push(`Meets minimum NQF ${minimumNqfLevel}`);
-    } else {
+    } else if (applicantNqfLevel) {
       score -= 20;
       reasons.push(`Below minimum NQF ${minimumNqfLevel}`);
     }
   }
 
-  if (
-    opportunity.preferredLearningArea &&
-    (applicant.saqaLearningArea === opportunity.preferredLearningArea ||
-      applicant.learningSubfield === opportunity.preferredLearningArea)
-  ) {
+  const learningAreaMatchedEducation = educationHistory.find((educationEntry) =>
+    educationMatchesLearningArea(educationEntry, opportunity),
+  );
+
+  if (learningAreaMatchedEducation) {
     score += 20;
-    reasons.push("Learning area match");
+    reasons.push("Learning area match from education history");
   }
 
-  if (opportunity.requiredQualificationId && applicant.saqaQualificationId) {
-    if (opportunity.requiredQualificationId === applicant.saqaQualificationId) {
-      score += 25;
-      reasons.push("Specific qualification match");
+  const qualificationMatchedEducation = educationHistory.find(
+    (educationEntry) =>
+      educationMatchesQualification(educationEntry, opportunity),
+  );
+
+  if (qualificationMatchedEducation) {
+    score += opportunity.requiredQualificationId ? 25 : 20;
+    reasons.push("Specific qualification match from education history");
+  }
+
+  const bestEducationForDisplay =
+    qualificationMatchedEducation ||
+    learningAreaMatchedEducation ||
+    sectorMatchedEducation ||
+    nqfMatchedEducation ||
+    null;
+
+  if (bestEducationForDisplay) {
+    const educationSummary = getBestEducationSummary(bestEducationForDisplay);
+
+    if (educationSummary) {
+      reasons.push(`Matched education: ${educationSummary}`);
     }
-  } else if (
-    opportunity.requiredQualificationTitle &&
-    applicant.qualificationTitle &&
-    normalizeText(opportunity.requiredQualificationTitle) ===
-      normalizeText(applicant.qualificationTitle)
-  ) {
-    score += 20;
-    reasons.push("Specific qualification match");
   }
 
   if (requiredSkills.length > 0) {
@@ -186,6 +312,13 @@ function getMatchDetails(applicant, opportunity) {
     missingRequiredSkills,
     matchedPreferredSkills,
     reasons,
+    educationMatches: {
+      consideredEducationCount: educationHistory.length,
+      sector: Boolean(sectorMatchedEducation),
+      nqf: Boolean(nqfMatchedEducation),
+      learningArea: Boolean(learningAreaMatchedEducation),
+      qualification: Boolean(qualificationMatchedEducation),
+    },
   };
 }
 

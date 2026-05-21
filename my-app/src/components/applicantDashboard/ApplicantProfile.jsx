@@ -11,6 +11,8 @@ import {
   OTHER_QUALIFICATION_VALUE,
 } from "../nqfSelect";
 
+import { verifyQualificationAgainstSaqa } from "../../services/saqaVerificationService";
+
 const supabase = createClient(
   "https://mmimkmmmpctwqhoxhvij.supabase.co",
   "sb_publishable_TDVvjNdOlW0a_SfxqPqyZg__W9X0Cpq",
@@ -52,6 +54,159 @@ function getSkillsArray(skills) {
   return [];
 }
 
+function createEducationId() {
+  return `edu_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function createEmptyEducationEntry() {
+  return {
+    id: createEducationId(),
+    qualification: "",
+    sector: "",
+    saqaQualificationId: "",
+    qualificationTitle: "",
+    customQualificationTitle: "",
+    qualificationSource: "",
+    qualificationSourceUrl: "",
+    learningSubfield: "",
+    saqaLearningArea: "",
+    qualificationInputMode: "",
+    saqaVerificationStatus: "not_checked",
+    matchedSaqaQualificationId: null,
+    matchedSaqaTitle: "",
+    saqaMatchScore: 0,
+    requiresReview: false,
+  };
+}
+
+function normalizeEducationEntry(entry = {}) {
+  const normalized = {
+    ...createEmptyEducationEntry(),
+    ...entry,
+    id: entry.id || createEducationId(),
+  };
+
+  delete normalized.skills;
+  return normalized;
+}
+
+function hasEducationContent(entry = {}) {
+  return Boolean(
+    entry.qualification ||
+    entry.sector ||
+    entry.saqaQualificationId ||
+    entry.qualificationTitle ||
+    entry.customQualificationTitle,
+  );
+}
+
+function getQualificationTitleFromMatch(match) {
+  return match?.title || match?.label || match?.qualification_title || "";
+}
+
+function getQualificationNqfLevelFromMatch(match) {
+  return match?.nqf_level_number || match?.nqfLevel || "";
+}
+
+function buildEducationHistory(applicantData = {}) {
+  if (
+    Array.isArray(applicantData.educationHistory) &&
+    applicantData.educationHistory.length > 0
+  ) {
+    return applicantData.educationHistory.map(normalizeEducationEntry);
+  }
+
+  const isUserEnteredQualification =
+    applicantData.qualificationSource === "User entered" &&
+    applicantData.qualificationTitle;
+
+  const legacyEntry = normalizeEducationEntry({
+    id: "primary_education",
+    qualification: applicantData.qualification || "",
+    sector: applicantData.sector || "",
+    saqaQualificationId: isUserEnteredQualification
+      ? OTHER_QUALIFICATION_VALUE
+      : applicantData.saqaQualificationId || "",
+    qualificationTitle: applicantData.qualificationTitle || "",
+    customQualificationTitle: isUserEnteredQualification
+      ? applicantData.qualificationTitle
+      : applicantData.customQualificationTitle || "",
+    qualificationSource: applicantData.qualificationSource || "",
+    qualificationSourceUrl: applicantData.qualificationSourceUrl || "",
+    learningSubfield: applicantData.learningSubfield || "",
+    saqaLearningArea: applicantData.saqaLearningArea || "",
+    qualificationInputMode: isUserEnteredQualification
+      ? "custom"
+      : applicantData.qualificationInputMode || "saqa",
+    saqaVerificationStatus:
+      applicantData.saqaVerificationStatus ||
+      (isUserEnteredQualification ? "not_checked" : "matched"),
+    matchedSaqaQualificationId:
+      applicantData.matchedSaqaQualificationId ||
+      applicantData.saqaQualificationId ||
+      null,
+    matchedSaqaTitle:
+      applicantData.matchedSaqaTitle || applicantData.qualificationTitle || "",
+    saqaMatchScore: applicantData.saqaMatchScore || 0,
+    requiresReview: applicantData.requiresReview ?? isUserEnteredQualification,
+  });
+
+  return hasEducationContent(legacyEntry)
+    ? [legacyEntry]
+    : [createEmptyEducationEntry()];
+}
+
+function prepareEducationHistoryForSave(educationHistory = []) {
+  return educationHistory
+    .map(normalizeEducationEntry)
+    .filter(hasEducationContent)
+    .map((entry) => {
+      const isOtherQualification =
+        entry.saqaQualificationId === OTHER_QUALIFICATION_VALUE ||
+        entry.qualificationInputMode === "custom";
+
+      const finalQualificationTitle = isOtherQualification
+        ? entry.customQualificationTitle || entry.qualificationTitle || ""
+        : entry.qualificationTitle || "";
+
+      return {
+        id: entry.id,
+        qualification: entry.qualification || "",
+        sector: entry.sector || "",
+        saqaQualificationId: isOtherQualification
+          ? null
+          : entry.saqaQualificationId || "",
+        qualificationTitle: finalQualificationTitle,
+        customQualificationTitle: isOtherQualification
+          ? entry.customQualificationTitle || finalQualificationTitle || ""
+          : "",
+        qualificationSource: isOtherQualification
+          ? "User entered"
+          : entry.qualificationSource || "SAQA",
+        qualificationSourceUrl: isOtherQualification
+          ? ""
+          : entry.qualificationSourceUrl || "",
+        learningSubfield: isOtherQualification
+          ? ""
+          : entry.learningSubfield || "",
+        saqaLearningArea: isOtherQualification
+          ? ""
+          : entry.saqaLearningArea || "",
+        qualificationInputMode: entry.qualificationInputMode || "",
+        saqaVerificationStatus:
+          entry.saqaVerificationStatus ||
+          (isOtherQualification ? "not_checked" : "matched"),
+        matchedSaqaQualificationId:
+          entry.matchedSaqaQualificationId ||
+          (isOtherQualification ? null : entry.saqaQualificationId || null),
+        matchedSaqaTitle:
+          entry.matchedSaqaTitle || finalQualificationTitle || "",
+        saqaMatchScore: entry.saqaMatchScore || 0,
+        requiresReview: Boolean(entry.requiresReview),
+      };
+    });
+}
+
 const uploadCvToSupabase = async (file, userId) => {
   const fileName = `${userId}_${Date.now()}.pdf`;
 
@@ -69,6 +224,8 @@ export default function ApplicantProfile() {
   const [profile, setProfile] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [newCv, setNewCv] = useState(null);
+  const [saqaChecks, setSaqaChecks] = useState({});
+  const [checkingSaqaById, setCheckingSaqaById] = useState({});
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -84,10 +241,9 @@ export default function ApplicantProfile() {
             : {};
           const userData = userSnap.exists() ? userSnap.data() : {};
           const skillsArray = getSkillsArray(applicantData.skills);
-
-          const isUserEnteredQualification =
-            applicantData.qualificationSource === "User entered" &&
-            applicantData.qualificationTitle;
+          const educationHistory = buildEducationHistory(applicantData);
+          const primaryEducation =
+            educationHistory.find(hasEducationContent) || educationHistory[0];
 
           setProfile({
             id: user.uid,
@@ -96,12 +252,71 @@ export default function ApplicantProfile() {
             skillInput: "",
             skillsNotes: applicantData.skillsNotes || "",
             province: userData.province || applicantData.province || "",
-            saqaQualificationId: isUserEnteredQualification
-              ? OTHER_QUALIFICATION_VALUE
-              : applicantData.saqaQualificationId || "",
-            customQualificationTitle: isUserEnteredQualification
-              ? applicantData.qualificationTitle
-              : applicantData.customQualificationTitle || "",
+            educationHistory,
+            primaryEducationId:
+              applicantData.primaryEducationId ||
+              primaryEducation?.id ||
+              educationHistory[0]?.id ||
+              "",
+
+            // Legacy fields kept for backwards compatibility with existing matching/listing code.
+            qualification:
+              primaryEducation?.qualification ||
+              applicantData.qualification ||
+              "",
+            sector: primaryEducation?.sector || applicantData.sector || "",
+            saqaQualificationId:
+              primaryEducation?.saqaQualificationId ||
+              applicantData.saqaQualificationId ||
+              "",
+            qualificationTitle:
+              primaryEducation?.qualificationTitle ||
+              applicantData.qualificationTitle ||
+              "",
+            customQualificationTitle:
+              primaryEducation?.customQualificationTitle ||
+              applicantData.customQualificationTitle ||
+              "",
+            qualificationSource:
+              primaryEducation?.qualificationSource ||
+              applicantData.qualificationSource ||
+              "",
+            qualificationSourceUrl:
+              primaryEducation?.qualificationSourceUrl ||
+              applicantData.qualificationSourceUrl ||
+              "",
+            learningSubfield:
+              primaryEducation?.learningSubfield ||
+              applicantData.learningSubfield ||
+              "",
+            saqaLearningArea:
+              primaryEducation?.saqaLearningArea ||
+              applicantData.saqaLearningArea ||
+              "",
+            qualificationInputMode:
+              primaryEducation?.qualificationInputMode ||
+              applicantData.qualificationInputMode ||
+              "",
+            saqaVerificationStatus:
+              primaryEducation?.saqaVerificationStatus ||
+              applicantData.saqaVerificationStatus ||
+              "",
+            matchedSaqaQualificationId:
+              primaryEducation?.matchedSaqaQualificationId ||
+              applicantData.matchedSaqaQualificationId ||
+              null,
+            matchedSaqaTitle:
+              primaryEducation?.matchedSaqaTitle ||
+              applicantData.matchedSaqaTitle ||
+              "",
+            saqaMatchScore:
+              primaryEducation?.saqaMatchScore ||
+              applicantData.saqaMatchScore ||
+              0,
+            requiresReview:
+              primaryEducation?.requiresReview ||
+              applicantData.requiresReview ||
+              false,
           });
         } catch (err) {
           console.error("Error fetching profile:", err);
@@ -113,6 +328,213 @@ export default function ApplicantProfile() {
 
     return () => unsubscribe();
   }, []);
+
+  const updateEducationEntry = (entryId, patch) => {
+    setProfile((prev) => ({
+      ...prev,
+      educationHistory: prev.educationHistory.map((entry) =>
+        entry.id === entryId ? { ...entry, ...patch } : entry,
+      ),
+    }));
+  };
+
+  const clearSaqaCheck = (entryId) => {
+    setSaqaChecks((prev) => {
+      const copy = { ...prev };
+      delete copy[entryId];
+      return copy;
+    });
+  };
+
+  const addEducationEntry = () => {
+    setProfile((prev) => ({
+      ...prev,
+      educationHistory: [
+        ...(prev.educationHistory || []),
+        createEmptyEducationEntry(),
+      ],
+    }));
+  };
+
+  const removeEducationEntry = (entryId) => {
+    setProfile((prev) => {
+      const remaining = (prev.educationHistory || []).filter(
+        (entry) => entry.id !== entryId,
+      );
+
+      return {
+        ...prev,
+        educationHistory:
+          remaining.length > 0 ? remaining : [createEmptyEducationEntry()],
+        primaryEducationId:
+          prev.primaryEducationId === entryId
+            ? remaining[0]?.id || ""
+            : prev.primaryEducationId,
+      };
+    });
+
+    clearSaqaCheck(entryId);
+  };
+
+  const handleEducationNqfChange = (entryId, e) => {
+    clearSaqaCheck(entryId);
+
+    updateEducationEntry(entryId, {
+      qualification: e.target.value,
+      saqaQualificationId: "",
+      qualificationTitle: "",
+      customQualificationTitle: "",
+      qualificationSource: "",
+      qualificationSourceUrl: "",
+      learningSubfield: "",
+      saqaLearningArea: "",
+      qualificationInputMode: "",
+      saqaVerificationStatus: "not_checked",
+      matchedSaqaQualificationId: null,
+      matchedSaqaTitle: "",
+      saqaMatchScore: 0,
+      requiresReview: false,
+    });
+  };
+
+  const handleEducationSectorChange = (entryId, e) => {
+    clearSaqaCheck(entryId);
+
+    updateEducationEntry(entryId, {
+      sector: e.target.value,
+      saqaQualificationId: "",
+      qualificationTitle: "",
+      customQualificationTitle: "",
+      qualificationSource: "",
+      qualificationSourceUrl: "",
+      learningSubfield: "",
+      saqaLearningArea: "",
+      qualificationInputMode: "",
+      saqaVerificationStatus: "not_checked",
+      matchedSaqaQualificationId: null,
+      matchedSaqaTitle: "",
+      saqaMatchScore: 0,
+      requiresReview: false,
+    });
+  };
+
+  const handleEducationSaqaQualificationChange = (entryId, e) => {
+    const data = e.target.dataset;
+    const isOther = data.isOther === "true";
+
+    clearSaqaCheck(entryId);
+
+    updateEducationEntry(entryId, {
+      saqaQualificationId: e.target.value,
+      qualificationTitle: data.title || "",
+      customQualificationTitle: "",
+      qualificationSource: isOther ? "User entered" : "SAQA",
+      qualificationSourceUrl: isOther ? "" : data.sourceUrl || "",
+      learningSubfield: isOther ? "" : data.learningSubfield || "",
+      saqaLearningArea: isOther ? "" : data.learningSubfield || "",
+      qualificationInputMode: isOther ? "custom" : "saqa",
+      saqaVerificationStatus: isOther ? "not_checked" : "matched",
+      matchedSaqaQualificationId: isOther ? null : e.target.value,
+      matchedSaqaTitle: isOther ? "" : data.title || "",
+      saqaMatchScore: isOther ? 0 : 1,
+      requiresReview: isOther,
+    });
+  };
+
+  const handleCustomQualificationChange = (entryId, e) => {
+    const value = e.target.value;
+
+    clearSaqaCheck(entryId);
+
+    updateEducationEntry(entryId, {
+      customQualificationTitle: value,
+      qualificationTitle: value,
+      qualificationInputMode: "custom",
+      qualificationSource: "User entered",
+      saqaVerificationStatus: "not_checked",
+      matchedSaqaQualificationId: null,
+      matchedSaqaTitle: "",
+      saqaMatchScore: 0,
+      requiresReview: true,
+    });
+  };
+
+  const handleCheckCustomQualification = async (entry) => {
+    const customTitle = entry.customQualificationTitle || "";
+
+    if (!customTitle.trim()) {
+      alert("Please enter your qualification title first.");
+      return;
+    }
+
+    setCheckingSaqaById((prev) => ({ ...prev, [entry.id]: true }));
+    clearSaqaCheck(entry.id);
+
+    try {
+      const result = await verifyQualificationAgainstSaqa(customTitle, {
+        selectedSector: entry.sector,
+        selectedNqfLevel: entry.qualification,
+      });
+
+      setSaqaChecks((prev) => ({ ...prev, [entry.id]: result }));
+
+      updateEducationEntry(entry.id, {
+        saqaVerificationStatus: result.status,
+        matchedSaqaQualificationId: result.bestMatch?.id || null,
+        matchedSaqaTitle: getQualificationTitleFromMatch(result.bestMatch),
+        saqaMatchScore: result.matchScore || 0,
+        requiresReview:
+          result.status === "not_found" || result.status === "error",
+      });
+    } catch (error) {
+      console.error("SAQA qualification check failed:", error);
+
+      const failedResult = {
+        status: "error",
+        bestMatch: null,
+        matches: [],
+        matchScore: 0,
+      };
+
+      setSaqaChecks((prev) => ({ ...prev, [entry.id]: failedResult }));
+
+      updateEducationEntry(entry.id, {
+        saqaVerificationStatus: "error",
+        matchedSaqaQualificationId: null,
+        matchedSaqaTitle: "",
+        saqaMatchScore: 0,
+        requiresReview: true,
+      });
+    } finally {
+      setCheckingSaqaById((prev) => ({ ...prev, [entry.id]: false }));
+    }
+  };
+
+  const useSaqaMatch = (entryId, match, result) => {
+    const matchedTitle = getQualificationTitleFromMatch(match);
+
+    updateEducationEntry(entryId, {
+      saqaQualificationId: match.id,
+      qualificationTitle: matchedTitle,
+      customQualificationTitle: "",
+      qualificationSource: "SAQA matched custom entry",
+      qualificationSourceUrl: match.source_url || "",
+      learningSubfield: match.learning_subfield || "",
+      saqaLearningArea: match.learning_subfield || "",
+      qualificationInputMode: "saqa_matched_custom",
+      saqaVerificationStatus: "matched",
+      matchedSaqaQualificationId: match.id,
+      matchedSaqaTitle: matchedTitle,
+      qualificationNqfLevel: String(
+        getQualificationNqfLevelFromMatch(match) || "",
+      ),
+      qualificationFieldName: match.field_name || "",
+      saqaMatchScore: result?.matchScore || match.matchScore || 0,
+      requiresReview: false,
+    });
+
+    clearSaqaCheck(entryId);
+  };
 
   const addSkill = () => {
     const newSkills = splitSkillInput(profile.skillInput);
@@ -153,52 +575,6 @@ export default function ApplicantProfile() {
     }
   };
 
-  const handleNqfChange = (e) => {
-    setProfile((prev) => ({
-      ...prev,
-      qualification: e.target.value,
-      saqaQualificationId: "",
-      qualificationTitle: "",
-      customQualificationTitle: "",
-      qualificationSource: "",
-      qualificationSourceUrl: "",
-      learningSubfield: "",
-      saqaLearningArea: "",
-    }));
-  };
-
-  const handleSectorChange = (e) => {
-    setProfile((prev) => ({
-      ...prev,
-      sector: e.target.value,
-      saqaQualificationId: "",
-      qualificationTitle: "",
-      customQualificationTitle: "",
-      qualificationSource: "",
-      qualificationSourceUrl: "",
-      learningSubfield: "",
-      saqaLearningArea: "",
-    }));
-  };
-
-  const handleSaqaQualificationChange = (e) => {
-    const data = e.target.dataset;
-    const isOther = data.isOther === "true";
-
-    setProfile((prev) => ({
-      ...prev,
-      saqaQualificationId: e.target.value,
-      qualificationTitle: data.title || "",
-      customQualificationTitle: isOther
-        ? prev.customQualificationTitle || ""
-        : "",
-      qualificationSource: isOther ? "User entered" : "SAQA",
-      qualificationSourceUrl: data.sourceUrl || "",
-      learningSubfield: data.learningSubfield || "",
-      saqaLearningArea: data.learningSubfield || "",
-    }));
-  };
-
   const handleUpdate = async () => {
     try {
       const user = auth.currentUser;
@@ -215,33 +591,51 @@ export default function ApplicantProfile() {
 
       const skills = getSkillsArray(profile.skills);
       const normalizedSkills = skills.map((skill) => normalizeSkill(skill));
+      const educationHistory = prepareEducationHistoryForSave(
+        profile.educationHistory,
+      );
 
-      const isOtherQualification =
-        profile.saqaQualificationId === OTHER_QUALIFICATION_VALUE;
-
-      const finalQualificationTitle = isOtherQualification
-        ? profile.customQualificationTitle || profile.qualificationTitle || ""
-        : profile.qualificationTitle || "";
-
-      if (!profile.qualification) {
-        alert("Please select an NQF level / qualification type.");
+      if (educationHistory.length === 0) {
+        alert("Please add at least one education background.");
         return;
       }
 
-      if (!profile.sector) {
-        alert("Please select a career interest sector.");
-        return;
+      for (const education of educationHistory) {
+        if (!education.qualification) {
+          alert(
+            "Please select an NQF level / qualification type for each education background.",
+          );
+          return;
+        }
+
+        if (!education.sector) {
+          alert("Please select a sector for each education background.");
+          return;
+        }
+
+        if (
+          !education.saqaQualificationId &&
+          education.qualificationInputMode !== "custom"
+        ) {
+          alert(
+            "Please select a specific qualification or Other / Not listed for each education background.",
+          );
+          return;
+        }
+
+        if (
+          education.qualificationInputMode === "custom" &&
+          !education.qualificationTitle.trim()
+        ) {
+          alert("Please enter the custom qualification title.");
+          return;
+        }
       }
 
-      if (!profile.saqaQualificationId) {
-        alert("Please select a specific qualification or Other / Not listed.");
-        return;
-      }
-
-      if (isOtherQualification && !finalQualificationTitle.trim()) {
-        alert("Please enter your qualification title.");
-        return;
-      }
+      const primaryEducation =
+        educationHistory.find(
+          (entry) => entry.id === profile.primaryEducationId,
+        ) || educationHistory[0];
 
       await updateDoc(doc(db, "applicants", user.uid), {
         name: profile.name,
@@ -254,24 +648,28 @@ export default function ApplicantProfile() {
         skillsText: skills.join(", "),
         skillsNotes: profile.skillsNotes || "",
 
-        qualification: profile.qualification || "",
-        sector: profile.sector || "",
-        saqaQualificationId: isOtherQualification
-          ? null
-          : profile.saqaQualificationId,
-        qualificationTitle: finalQualificationTitle,
-        qualificationSource: isOtherQualification
-          ? "User entered"
-          : profile.qualificationSource || "SAQA",
-        qualificationSourceUrl: isOtherQualification
-          ? ""
-          : profile.qualificationSourceUrl || "",
-        learningSubfield: isOtherQualification
-          ? ""
-          : profile.learningSubfield || "",
-        saqaLearningArea: isOtherQualification
-          ? ""
-          : profile.saqaLearningArea || "",
+        educationHistory,
+        primaryEducationId: primaryEducation.id,
+
+        // Legacy fields kept so existing matching/dashboard code still works.
+        qualification: primaryEducation.qualification || "",
+        sector: primaryEducation.sector || "",
+        saqaQualificationId: primaryEducation.saqaQualificationId || null,
+        qualificationTitle: primaryEducation.qualificationTitle || "",
+        qualificationSource: primaryEducation.qualificationSource || "",
+        qualificationSourceUrl: primaryEducation.qualificationSourceUrl || "",
+        learningSubfield: primaryEducation.learningSubfield || "",
+        saqaLearningArea: primaryEducation.saqaLearningArea || "",
+        qualificationInputMode: primaryEducation.qualificationInputMode || "",
+        customQualificationTitle:
+          primaryEducation.customQualificationTitle || "",
+        saqaVerificationStatus:
+          primaryEducation.saqaVerificationStatus || "not_checked",
+        matchedSaqaQualificationId:
+          primaryEducation.matchedSaqaQualificationId || null,
+        matchedSaqaTitle: primaryEducation.matchedSaqaTitle || "",
+        saqaMatchScore: primaryEducation.saqaMatchScore || 0,
+        requiresReview: Boolean(primaryEducation.requiresReview),
 
         cvUrl,
       });
@@ -292,6 +690,7 @@ export default function ApplicantProfile() {
   if (!profile) return <p className="loading">Loading...</p>;
 
   const skills = getSkillsArray(profile.skills);
+  const educationHistory = profile.educationHistory || [];
 
   return (
     <section className="page">
@@ -342,56 +741,178 @@ export default function ApplicantProfile() {
           </select>
 
           <fieldset className="group">
-            <legend>Qualification Details</legend>
+            <legend>Education History</legend>
 
-            <label>NQF Level / Qualification Type</label>
-            <NqfDropdown
-              value={profile.qualification || ""}
-              onChange={handleNqfChange}
-              required
-            />
+            {educationHistory.map((entry, index) => {
+              const saqaCheck = saqaChecks[entry.id];
+              const checkingSaqa = Boolean(checkingSaqaById[entry.id]);
+              const bestMatchTitle = getQualificationTitleFromMatch(
+                saqaCheck?.bestMatch,
+              );
 
-            <label>Career Interest Sector</label>
-            <SectorDropdown
-              value={profile.sector || ""}
-              onChange={handleSectorChange}
-              required
-            />
+              return (
+                <fieldset key={entry.id} className="group">
+                  <legend>Education Background {index + 1}</legend>
 
-            <label>Specific Qualification</label>
-            <SaqaQualificationDropdown
-              value={profile.saqaQualificationId || ""}
-              onChange={handleSaqaQualificationChange}
-              selectedNqf={profile.qualification}
-              selectedSector={profile.sector}
-              required
-            />
+                  <button
+                    type="button"
+                    className={`button secondary ${
+                      profile.primaryEducationId === entry.id
+                        ? "primary-selected"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      setProfile((prev) => ({
+                        ...prev,
+                        primaryEducationId: entry.id,
+                      }))
+                    }
+                  >
+                    {profile.primaryEducationId === entry.id
+                      ? "Primary education selected"
+                      : "Use as primary education for matching"}
+                  </button>
 
-            {profile.saqaQualificationId === OTHER_QUALIFICATION_VALUE && (
-              <>
-                <label>Enter qualification title</label>
-                <input
-                  type="text"
-                  value={profile.customQualificationTitle || ""}
-                  onChange={(e) =>
-                    setProfile({
-                      ...profile,
-                      customQualificationTitle: e.target.value,
-                      qualificationTitle: e.target.value,
-                    })
-                  }
-                  className="input"
-                  placeholder="e.g. National Senior Certificate / Matric"
-                />
-              </>
-            )}
+                  <label>NQF Level / Qualification Type</label>
+                  <NqfDropdown
+                    value={entry.qualification || ""}
+                    onChange={(e) => handleEducationNqfChange(entry.id, e)}
+                    required
+                  />
 
-            {(profile.saqaLearningArea || profile.learningSubfield) && (
-              <p className="helper-text">
-                <strong>SAQA-aligned learning area:</strong>{" "}
-                {profile.saqaLearningArea || profile.learningSubfield}
-              </p>
-            )}
+                  <label>Career Interest Sector</label>
+                  <SectorDropdown
+                    value={entry.sector || ""}
+                    onChange={(e) => handleEducationSectorChange(entry.id, e)}
+                    required
+                  />
+
+                  <label>Specific Qualification</label>
+                  <SaqaQualificationDropdown
+                    value={entry.saqaQualificationId || ""}
+                    onChange={(e) =>
+                      handleEducationSaqaQualificationChange(entry.id, e)
+                    }
+                    selectedNqf={entry.qualification}
+                    selectedSector={entry.sector}
+                    required
+                  />
+
+                  {entry.saqaQualificationId === OTHER_QUALIFICATION_VALUE && (
+                    <>
+                      <label>Enter qualification title</label>
+                      <input
+                        type="text"
+                        value={entry.customQualificationTitle || ""}
+                        onChange={(e) =>
+                          handleCustomQualificationChange(entry.id, e)
+                        }
+                        className="input"
+                        placeholder="e.g. National Senior Certificate / Matric"
+                      />
+
+                      <button
+                        type="button"
+                        className="button secondary"
+                        onClick={() => handleCheckCustomQualification(entry)}
+                        disabled={
+                          checkingSaqa ||
+                          !(entry.customQualificationTitle || "").trim()
+                        }
+                      >
+                        {checkingSaqa
+                          ? "Checking SAQA..."
+                          : "Check against SAQA records"}
+                      </button>
+
+                      {saqaCheck?.status === "matched" && (
+                        <div className="helper-text">
+                          <p>
+                            <strong>SAQA record match found:</strong>{" "}
+                            {bestMatchTitle}
+                          </p>
+                          <button
+                            type="button"
+                            className="button secondary"
+                            onClick={() =>
+                              useSaqaMatch(
+                                entry.id,
+                                saqaCheck.bestMatch,
+                                saqaCheck,
+                              )
+                            }
+                          >
+                            Use this SAQA match
+                          </button>
+                        </div>
+                      )}
+
+                      {saqaCheck?.status === "possible_match" && (
+                        <div className="helper-text">
+                          <p>
+                            <strong>Possible SAQA match:</strong>{" "}
+                            {bestMatchTitle}
+                          </p>
+                          <button
+                            type="button"
+                            className="button secondary"
+                            onClick={() =>
+                              useSaqaMatch(
+                                entry.id,
+                                saqaCheck.bestMatch,
+                                saqaCheck,
+                              )
+                            }
+                          >
+                            Yes, use this SAQA match
+                          </button>
+                        </div>
+                      )}
+
+                      {saqaCheck?.status === "not_found" && (
+                        <p className="helper-text">
+                          No SAQA record match was found in the current dataset.
+                          This qualification can still be saved as a custom
+                          qualification for review.
+                        </p>
+                      )}
+
+                      {saqaCheck?.status === "error" && (
+                        <p className="helper-text">
+                          Could not check SAQA records right now. This
+                          qualification can still be saved as a custom
+                          qualification for review.
+                        </p>
+                      )}
+                    </>
+                  )}
+
+                  {(entry.saqaLearningArea || entry.learningSubfield) && (
+                    <p className="helper-text">
+                      <strong>SAQA-aligned learning area:</strong>{" "}
+                      {entry.saqaLearningArea || entry.learningSubfield}
+                    </p>
+                  )}
+
+                  <button
+                    type="button"
+                    className="button secondary"
+                    onClick={() => removeEducationEntry(entry.id)}
+                    disabled={educationHistory.length === 1}
+                  >
+                    Remove this education background
+                  </button>
+                </fieldset>
+              );
+            })}
+
+            <button
+              type="button"
+              className="button secondary"
+              onClick={addEducationEntry}
+            >
+              + Add another education background
+            </button>
           </fieldset>
 
           <label>Practical Skills</label>
@@ -493,17 +1014,49 @@ export default function ApplicantProfile() {
           <p>
             <strong>Education Summary:</strong> {profile.education || "—"}
           </p>
+
           <p>
-            <strong>NQF / Qualification Type:</strong>{" "}
+            <strong>Education Backgrounds:</strong>
+          </p>
+
+          {educationHistory.filter(hasEducationContent).length > 0 ? (
+            <ul className="skill-chip-list" aria-label="Education backgrounds">
+              {educationHistory.filter(hasEducationContent).map((entry) => (
+                <li key={entry.id} className="skill-chip">
+                  <span>
+                    {entry.qualificationTitle ||
+                      entry.customQualificationTitle ||
+                      "Unnamed qualification"}{" "}
+                    {entry.qualification ? `— ${entry.qualification}` : ""}
+                    {entry.saqaLearningArea || entry.learningSubfield
+                      ? ` — ${entry.saqaLearningArea || entry.learningSubfield}`
+                      : ""}
+                    {profile.primaryEducationId === entry.id
+                      ? " — Primary"
+                      : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>—</p>
+          )}
+
+          <p>
+            <strong>Primary NQF / Qualification Type:</strong>{" "}
             {profile.qualification || "—"}
           </p>
           <p>
-            <strong>Specific Qualification:</strong>{" "}
+            <strong>Primary Specific Qualification:</strong>{" "}
             {profile.qualificationTitle || "—"}
           </p>
           <p>
-            <strong>Qualification Source:</strong>{" "}
+            <strong>Primary Qualification Source:</strong>{" "}
             {profile.qualificationSource || "—"}
+          </p>
+          <p>
+            <strong>SAQA Verification Status:</strong>{" "}
+            {profile.saqaVerificationStatus || "—"}
           </p>
 
           {profile.qualificationSourceUrl && (

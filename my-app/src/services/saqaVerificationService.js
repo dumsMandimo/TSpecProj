@@ -35,6 +35,29 @@ function getSearchTokens(value) {
     .filter((word) => word.length > 2 && !stopWords.has(word));
 }
 
+function chooseBestSearchToken(customTitle) {
+  const tokens = getSearchTokens(customTitle);
+
+  if (tokens.length === 0) return "";
+
+  const genericQualificationWords = new Set([
+    "certificate",
+    "diploma",
+    "degree",
+    "national",
+    "higher",
+    "advanced",
+    "occupational",
+    "qualification",
+  ]);
+
+  const meaningfulTokens = tokens.filter(
+    (token) => !genericQualificationWords.has(token),
+  );
+
+  return meaningfulTokens[0] || tokens[0];
+}
+
 function similarityScore(input, candidate) {
   const inputTokens = new Set(getSearchTokens(input));
   const candidateTokens = new Set(getSearchTokens(candidate));
@@ -52,24 +75,92 @@ function similarityScore(input, candidate) {
   return overlap / Math.max(inputTokens.size, candidateTokens.size);
 }
 
-function chooseBestSearchToken(customTitle) {
-  const tokens = getSearchTokens(customTitle);
+function getQualificationTitle(data) {
+  return data?.title || data?.label || data?.qualification_title || "";
+}
 
-  if (tokens.length === 0) return "";
+function normalizeNqfLevel(value) {
+  if (!value) return null;
 
-  const priorityWords = tokens.filter(
-    (token) =>
-      ![
-        "certificate",
-        "diploma",
-        "degree",
-        "national",
-        "higher",
-        "advanced",
-      ].includes(token),
+  const directNumber = Number(value);
+  if (Number.isInteger(directNumber)) return directNumber;
+
+  const match = String(value).match(/NQF\s*Level\s*(\d+)|NQF\s*(\d+)/i);
+  const level = match ? Number(match[1] || match[2]) : null;
+
+  return Number.isInteger(level) ? level : null;
+}
+
+function buildMatchResult({
+  status,
+  bestMatch = null,
+  matches = [],
+  matchScore = 0,
+  searchToken = "",
+  selectedSector = "",
+  selectedNqfLevel = null,
+  fallbackUsed = false,
+}) {
+  return {
+    status,
+    bestMatch,
+    matches,
+    matchScore,
+    fallbackUsed,
+    searchedWith: {
+      searchToken,
+      selectedSector: selectedSector || "",
+      selectedNqfLevel,
+    },
+  };
+}
+
+function scoreAndSortMatches(snapshot, customTitle) {
+  return snapshot.docs
+    .map((doc) => {
+      const data = doc.data();
+      const title = getQualificationTitle(data);
+
+      return {
+        id: doc.id,
+        ...data,
+        title,
+        matchScore: similarityScore(customTitle, title),
+      };
+    })
+    .filter((item) => item.matchScore >= 0.35)
+    .sort((a, b) => b.matchScore - a.matchScore)
+    .slice(0, 5);
+}
+
+async function runStrictQuery({ searchToken, selectedSector, nqfLevel }) {
+  const filters = [where("searchTokens", "array-contains", searchToken)];
+
+  if (selectedSector) {
+    filters.push(where("field_name", "==", selectedSector));
+  }
+
+  if (nqfLevel) {
+    filters.push(where("nqf_level_number", "<=", nqfLevel));
+  }
+
+  const saqaQuery = query(
+    collection(db, "saqaQualifications"),
+    ...filters,
+    limit(50),
   );
 
-  return priorityWords[0] || tokens[0];
+  return getDocs(saqaQuery);
+}
+
+async function runTokenOnlyFallbackQuery(searchToken) {
+  const fallbackQuery = query(
+    collection(db, "saqaQualifications"),
+    where("searchTokens", "array-contains", searchToken),
+    limit(50),
+  );
+
+  return getDocs(fallbackQuery);
 }
 
 export async function verifyQualificationAgainstSaqa(
@@ -77,71 +168,59 @@ export async function verifyQualificationAgainstSaqa(
   { selectedSector, selectedNqfLevel } = {},
 ) {
   const searchToken = chooseBestSearchToken(customTitle);
+  const nqfLevel = normalizeNqfLevel(selectedNqfLevel);
 
   if (!searchToken) {
-    return {
+    return buildMatchResult({
       status: "not_found",
-      bestMatch: null,
-      matches: [],
-      matchScore: 0,
-    };
+      searchToken: "",
+      selectedSector,
+      selectedNqfLevel: nqfLevel,
+    });
   }
 
-  const filters = [
-    where("searchTokens", "array-contains", searchToken),
-    limit(50),
-  ];
+  let snapshot;
+  let fallbackUsed = false;
 
-  if (selectedSector) {
-    filters.unshift(where("field_name", "==", selectedSector));
+  try {
+    snapshot = await runStrictQuery({
+      searchToken,
+      selectedSector,
+      nqfLevel,
+    });
+  } catch (error) {
+    console.warn(
+      "Strict SAQA qualification query failed. Falling back to token-only search:",
+      error,
+    );
+
+    fallbackUsed = true;
+    snapshot = await runTokenOnlyFallbackQuery(searchToken);
   }
 
-  if (selectedNqfLevel) {
-    filters.unshift(where("nqf_level_number", "<=", Number(selectedNqfLevel)));
-  }
-
-  const q = query(collection(db, "saqaQualifications"), ...filters);
-  const snapshot = await getDocs(q);
-
-  const matches = snapshot.docs
-    .map((doc) => {
-      const data = doc.data();
-      const title = data.title || data.label || "";
-
-      return {
-        id: doc.id,
-        ...data,
-        matchScore: similarityScore(customTitle, title),
-      };
-    })
-    .filter((item) => item.matchScore >= 0.35)
-    .sort((a, b) => b.matchScore - a.matchScore)
-    .slice(0, 5);
-
-  const bestMatch = matches[0];
+  const matches = scoreAndSortMatches(snapshot, customTitle);
+  const bestMatch = matches[0] || null;
 
   if (!bestMatch) {
-    return {
+    return buildMatchResult({
       status: "not_found",
-      bestMatch: null,
-      matches: [],
-      matchScore: 0,
-    };
+      searchToken,
+      selectedSector,
+      selectedNqfLevel: nqfLevel,
+      fallbackUsed,
+    });
   }
 
-  if (bestMatch.matchScore >= 0.75) {
-    return {
-      status: "matched",
-      bestMatch,
-      matches,
-      matchScore: bestMatch.matchScore,
-    };
-  }
+  const status = bestMatch.matchScore >= 0.75 ? "matched" : "possible_match";
 
-  return {
-    status: "possible_match",
+  return buildMatchResult({
+    status,
     bestMatch,
     matches,
     matchScore: bestMatch.matchScore,
-  };
+    searchToken,
+    selectedSector,
+    selectedNqfLevel: nqfLevel,
+    fallbackUsed,
+  });
 }
