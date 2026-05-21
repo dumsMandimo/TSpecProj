@@ -1,10 +1,15 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import saqaFields from "../data/saqa/fields.json";
-import saqaQualifications from "../data/saqa/qualification_dropdown.json";
-import saqaSkillTags from "../data/saqa/skill_tags.json";
-import saqaNqfLevels from "../data/saqa/nqf_levels.json";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { db } from "../firebase";
 
-const NQF_LEVELS = saqaNqfLevels;
+import fallbackFields from "../data/saqa/fields.json";
+import fallbackQualifications from "../data/saqa/qualification_dropdown.json";
+import fallbackSkillTags from "../data/saqa/skill_tags.json";
+import fallbackNqfLevels from "../data/saqa/nqf_levels.json";
+
+const NQF_LEVELS = fallbackNqfLevels;
+
+const collectionCache = new Map();
 
 const OTHER_QUALIFICATION_VALUE = "OTHER_NOT_LISTED";
 
@@ -28,6 +33,64 @@ function useCloseOnOutsideClick(ref, setOpen) {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [ref, setOpen]);
+}
+
+function useSaqaCollection(collectionName, fallbackData, sortField) {
+  const cacheKey = `${collectionName}:${sortField || "unsorted"}`;
+  const [items, setItems] = useState(() => {
+    return collectionCache.get(cacheKey) || fallbackData || [];
+  });
+  const [loading, setLoading] = useState(!collectionCache.has(cacheKey));
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+
+    async function fetchItems() {
+      if (collectionCache.has(cacheKey)) {
+        setItems(collectionCache.get(cacheKey));
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const collectionRef = collection(db, collectionName);
+        const collectionQuery = sortField
+          ? query(collectionRef, orderBy(sortField))
+          : collectionRef;
+
+        const snapshot = await getDocs(collectionQuery);
+
+        const firebaseItems = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        if (active && firebaseItems.length > 0) {
+          collectionCache.set(cacheKey, firebaseItems);
+          setItems(firebaseItems);
+        }
+      } catch (fetchError) {
+        console.error(`Failed to fetch ${collectionName}:`, fetchError);
+
+        if (active) {
+          setError(fetchError);
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchItems();
+
+    return () => {
+      active = false;
+    };
+  }, [cacheKey, collectionName, sortField]);
+
+  return { items, loading, error };
 }
 
 function isAtOrBelowSelectedNqf(itemLevel, selectedNqfLevel) {
@@ -64,6 +127,12 @@ export function NqfDropdown({ value, onChange, required }) {
   const ref = useRef(null);
 
   useCloseOnOutsideClick(ref, setOpen);
+
+  const { items: nqfLevels } = useSaqaCollection(
+    "saqaNqfLevels",
+    fallbackNqfLevels,
+    "level",
+  );
 
   const pick = (name, group, level) => {
     const selectedValue = `${name} (${group})`;
@@ -111,7 +180,7 @@ export function NqfDropdown({ value, onChange, required }) {
 
       {open && (
         <ul className="nqf-list">
-          {[...NQF_LEVELS]
+          {[...nqfLevels]
             .sort((a, b) => Number(a.level) - Number(b.level))
             .map(({ group, level, options }) => (
               <li key={group}>
@@ -142,9 +211,15 @@ export function SectorDropdown({ value, onChange, required }) {
 
   useCloseOnOutsideClick(ref, setOpen);
 
+  const { items: fields } = useSaqaCollection(
+    "saqaFields",
+    fallbackFields,
+    "field_name",
+  );
+
   const sectors = useMemo(
-    () => saqaFields.map((field) => field.field_name),
-    [],
+    () => fields.map((field) => field.field_name).filter(Boolean),
+    [fields],
   );
 
   const pick = (name) => {
@@ -213,6 +288,12 @@ export function SaqaQualificationDropdown({
 
   useCloseOnOutsideClick(ref, setOpen);
 
+  const { items: qualifications } = useSaqaCollection(
+    "saqaQualifications",
+    fallbackQualifications,
+    "label",
+  );
+
   const selectedNqfLevel = useMemo(
     () =>
       typeof selectedNqf === "number"
@@ -222,7 +303,7 @@ export function SaqaQualificationDropdown({
   );
 
   const filteredQualifications = useMemo(() => {
-    const filtered = saqaQualifications.filter((qualification) => {
+    const filtered = qualifications.filter((qualification) => {
       const matchesNqf =
         !selectedNqfLevel ||
         Number(qualification.nqf_level_number) <= Number(selectedNqfLevel);
@@ -248,7 +329,7 @@ export function SaqaQualificationDropdown({
           qualification.field_name,
         )}`,
     );
-  }, [selectedNqfLevel, selectedSector]);
+  }, [qualifications, selectedNqfLevel, selectedSector]);
 
   const selectedQualification = useMemo(() => {
     if (value === OTHER_QUALIFICATION_VALUE) {
@@ -258,10 +339,10 @@ export function SaqaQualificationDropdown({
       };
     }
 
-    return saqaQualifications.find(
+    return qualifications.find(
       (qualification) => qualification.value === value,
     );
-  }, [value]);
+  }, [qualifications, value]);
 
   const pick = (qualification) => {
     onChange({
@@ -372,6 +453,12 @@ export function SaqaSkillTagDropdown({
 
   useCloseOnOutsideClick(ref, setOpen);
 
+  const { items: skillTags } = useSaqaCollection(
+    "saqaLearningAreas",
+    fallbackSkillTags,
+    "name",
+  );
+
   const selectedNqfLevel = useMemo(
     () =>
       typeof selectedNqf === "number"
@@ -381,7 +468,7 @@ export function SaqaSkillTagDropdown({
   );
 
   const filteredSkillTags = useMemo(() => {
-    const filtered = saqaSkillTags.filter((tag) => {
+    const filtered = skillTags.filter((tag) => {
       const matchesNqf =
         !selectedNqfLevel ||
         Number(tag.nqf_level_number) <= Number(selectedNqfLevel);
@@ -392,7 +479,7 @@ export function SaqaSkillTagDropdown({
       return matchesNqf && matchesSector;
     });
 
-    const sorted = filtered.sort((a, b) => {
+    const sorted = [...filtered].sort((a, b) => {
       if (a.name !== b.name) {
         return a.name.localeCompare(b.name);
       }
@@ -401,15 +488,15 @@ export function SaqaSkillTagDropdown({
     });
 
     return dedupeByKey(sorted, (tag) => `${tag.name}-${tag.field_name}`);
-  }, [selectedSector, selectedNqfLevel]);
+  }, [skillTags, selectedSector, selectedNqfLevel]);
 
   const selectedTag = useMemo(
     () =>
-      saqaSkillTags.find(
+      skillTags.find(
         (tag) =>
           `${tag.name}-${tag.field_name}-${tag.nqf_level_number}` === value,
       ),
-    [value],
+    [skillTags, value],
   );
 
   const pick = (tag) => {

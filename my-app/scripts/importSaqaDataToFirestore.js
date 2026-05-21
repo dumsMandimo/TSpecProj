@@ -10,11 +10,15 @@
 //   Add serviceAccountKey.json to .gitignore immediately
 const path = require("path");
 const admin = require("firebase-admin");
-const serviceAccount = require(path.resolve(__dirname, "../../serviceAccountKey.json"));
+const serviceAccount = require(path.resolve(
+  __dirname,
+  "../../serviceAccountKey.json",
+));
 
 const qualifications = require("../src/data/saqa/qualification_dropdown.json");
 const fields = require("../src/data/saqa/fields.json");
 const skillTags = require("../src/data/saqa/skill_tags.json");
+const nqfLevels = require("../src/data/saqa/nqf_levels.json");
 const scraperReport = require("../src/data/saqa/scraper_report.json");
 
 admin.initializeApp({
@@ -35,17 +39,52 @@ function sanitizeId(raw) {
   if (!str || str === "." || str === "..") {
     throw new Error(`ID "${raw}" sanitises to an illegal value`);
   }
+
   return str;
 }
 
-async function commitInBatches(collectionName, items, getRawId) {
+async function deleteDocsNotInImport(collectionName, validIds) {
+  const snapshot = await db.collection(collectionName).get();
+
+  let batch = db.batch();
+  let count = 0;
+  let deleted = 0;
+
+  for (const doc of snapshot.docs) {
+    if (!validIds.has(doc.id)) {
+      batch.delete(doc.ref);
+      count++;
+      deleted++;
+    }
+
+    if (count === 450) {
+      await batch.commit();
+      batch = db.batch();
+      count = 0;
+    }
+  }
+
+  if (count > 0) {
+    await batch.commit();
+  }
+
+  if (deleted > 0) {
+    console.log(`Deleted ${deleted} stale docs from ${collectionName}`);
+  }
+}
+
+async function commitInBatches(collectionName, items, getRawId, options = {}) {
+  const { deleteStale = false } = options;
+
   let batch = db.batch();
   let count = 0;
   let total = 0;
   let skipped = 0;
+  const seenIds = new Set();
 
   for (const item of items) {
     let id;
+
     try {
       id = sanitizeId(getRawId(item));
     } catch (err) {
@@ -54,8 +93,20 @@ async function commitInBatches(collectionName, items, getRawId) {
       continue;
     }
 
+    if (seenIds.has(id)) {
+      console.warn(`Duplicate skipped in ${collectionName}: ${id}`);
+      skipped++;
+      continue;
+    }
+
+    seenIds.add(id);
+
     const ref = db.collection(collectionName).doc(id);
-    batch.set(ref, { ...item, importedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    batch.set(
+      ref,
+      { ...item, importedAt: admin.firestore.FieldValue.serverTimestamp() },
+      { merge: true },
+    );
 
     count++;
     total++;
@@ -72,6 +123,10 @@ async function commitInBatches(collectionName, items, getRawId) {
     await batch.commit();
   }
 
+  if (deleteStale) {
+    await deleteDocsNotInImport(collectionName, seenIds);
+  }
+
   console.log(
     `Done: ${total} records → ${collectionName}` +
       (skipped ? ` (${skipped} skipped)` : ""),
@@ -81,10 +136,22 @@ async function commitInBatches(collectionName, items, getRawId) {
 async function main() {
   console.log("Importing SAQA data to Firestore...\n");
 
-  await commitInBatches("saqaFields", fields, (f) => String(f.field_code));
+  await commitInBatches("saqaFields", fields, (f) => String(f.field_code), {
+    deleteStale: true,
+  });
 
-  await commitInBatches("saqaQualifications", qualifications, (q) =>
-    String(q.value),
+  await commitInBatches("saqaNqfLevels", nqfLevels, (level) => {
+    const levelNumber = level.level ?? level.value;
+    return `nqf_${levelNumber}`;
+  }, {
+    deleteStale: true,
+  });
+
+  await commitInBatches(
+    "saqaQualifications",
+    qualifications,
+    (q) => String(q.value),
+    { deleteStale: true },
   );
 
   await commitInBatches(
@@ -94,11 +161,15 @@ async function main() {
       `${tag.name}-${tag.field_name}-${tag.nqf_level_number}`
         .toLowerCase()
         .replace(/[^\w]+/g, "-"),
+    { deleteStale: true },
   );
 
   const reportRef = db.collection("saqaMetadata").doc("scraperReport");
   await reportRef.set(
-    { ...scraperReport, importedAt: admin.firestore.FieldValue.serverTimestamp() },
+    {
+      ...scraperReport,
+      importedAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
     { merge: true },
   );
 
