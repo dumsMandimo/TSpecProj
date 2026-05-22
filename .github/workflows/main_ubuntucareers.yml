@@ -9,8 +9,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    continue-on-error: true
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,19 +22,27 @@ jobs:
         run: npm ci --legacy-peer-deps
         working-directory: my-app
 
-      - name: Run tests with coverage
+      - name: Run tests with coverage (non-blocking)
+        id: tests
+        continue-on-error: true
         run: npm run test:ci
         working-directory: my-app
         env:
           CI: true
 
+      - name: Verify coverage folder exists
+        run: |
+          ls -la my-app/coverage || echo "No coverage folder generated"
+
       - name: Upload coverage report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: my-app/coverage
 
       - name: Upload to Codecov
+        if: always()
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
