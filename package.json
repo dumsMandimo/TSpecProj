@@ -13,14 +13,13 @@
     "react-scripts": "5.0.1"
   },
   "scripts": {
-    "start": "node server.js",
-    "client": "react-scripts start",
-    "import:saqa": "node scripts/importSaqaDataToFirestore.js",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --watchAll=false",
     "test:ci": "react-scripts test --coverage --watchAll=false --passWithNoTests",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "import:saqa": "node scripts/importSaqaDataToFirestore.js"
   },
   "engines": {
     "node": ">=18"
