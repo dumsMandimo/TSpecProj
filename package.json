@@ -18,6 +18,7 @@
     "import:saqa": "node scripts/importSaqaDataToFirestore.js",
     "build": "react-scripts build",
     "test": "react-scripts test --watchAll=false",
+    "test:ci": "jest --coverage --watchAll=false --passWithNoTests",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject"
   },
@@ -25,6 +26,9 @@
     "node": ">=18"
   },
   "jest": {
+    "roots": [
+      "<rootDir>/src"
+    ],
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
       "!src/**/*.test.{js,jsx}",
@@ -41,6 +45,16 @@
       "lcov",
       "text",
       "json-summary"
+    ],
+    "testEnvironment": "jsdom",
+    "setupFilesAfterFramework": [
+      "<rootDir>/src/setupTests.js"
+    ],
+    "transform": {
+      "^.+\\.(js|jsx)$": "babel-jest"
+    },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(@firebase|firebase|@supabase)/)"
     ]
   },
   "browserslist": {
@@ -64,6 +78,8 @@
     "dotenv": "^17.4.2",
     "firebase-admin": "^13.10.0",
     "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "supertest": "^7.2.2"
   }
 }
