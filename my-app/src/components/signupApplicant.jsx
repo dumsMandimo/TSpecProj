@@ -3,19 +3,6 @@ import { useState } from "react";
 import { signUpWithGoogle } from "../services/authService";
 import { NqfDropdown } from "./nqfSelect";
 
-const NQF_LEVELS = [
-  "NQF 1 — General Certificate",
-  "NQF 2 — Elementary Certificate",
-  "NQF 3 — Intermediate Certificate",
-  "NQF 4 — National Certificate (Matric)",
-  "NQF 5 — Higher Certificate",
-  "NQF 6 — Diploma / Advanced Certificate",
-  "NQF 7 — Bachelor's Degree",
-  "NQF 8 — Honours / Postgrad Diploma",
-  "NQF 9 — Master's Degree",
-  "NQF 10 — Doctoral Degree",
-];
-
 const PROVINCES = [
   "Eastern Cape",
   "Free State",
@@ -51,7 +38,6 @@ export default function SignupApplicant() {
     if (loading) return;
     setLoading(true);
 
-    // Validate required fields
     if (
       !form.firstName.trim() ||
       !form.lastName.trim() ||
@@ -71,24 +57,20 @@ export default function SignupApplicant() {
         qualification: form.qualification,
       });
 
-      console.log("Applicant created:", user?.uid);
-      console.log("Role returned:", role);
-
-      // Block if account already exists
       if (existingUser) {
         setErrorMsg("You already have an account. Please log in.");
         setLoading(false);
         return;
       }
 
-      // Prevent login if role is not applicant
       if (role && role.toLowerCase() !== "applicant") {
-        setErrorMsg("You already have an account with a different role. Please log in.");
+        setErrorMsg(
+          "You already have an account with a different role. Please log in."
+        );
         setLoading(false);
         return;
       }
 
-      // Navigate to the correct applicant dashboard
       navigate("/dashboard/applicant/createProfile");
     } catch (error) {
       console.error("Signup error:", error);
@@ -104,30 +86,39 @@ export default function SignupApplicant() {
         <legend>Personal details</legend>
 
         {errorMsg && (
-          <p style={{ color: "red", marginBottom: "10px" }}>{errorMsg}</p>
+          <p style={{ color: "#b00020", marginBottom: "10px" }}>{errorMsg}</p>
         )}
 
-        <label>
-          First name
-          <input
-            value={form.firstName}
-            onChange={setField("firstName")}
-            required
-          />
-        </label>
+        <div className="field-row">
+          <label>
+            First name *
+            <input
+              name="firstName"
+              value={form.firstName}
+              onChange={setField("firstName")}
+              placeholder="e.g. Thabo"
+              autoComplete="given-name"
+              required
+            />
+          </label>
+
+          <label>
+            Last name *
+            <input
+              name="lastName"
+              value={form.lastName}
+              onChange={setField("lastName")}
+              placeholder="e.g. Mokoena"
+              autoComplete="family-name"
+              required
+            />
+          </label>
+        </div>
 
         <label>
-          Last name
-          <input
-            value={form.lastName}
-            onChange={setField("lastName")}
-            required
-          />
-        </label>
-
-        <label>
-          Province
+          Province *
           <select
+            name="province"
             value={form.province}
             onChange={setField("province")}
             required
@@ -142,7 +133,7 @@ export default function SignupApplicant() {
         </label>
 
         <label>
-          Qualification
+          Highest qualification (NQF) *
           <NqfDropdown
             value={form.qualification}
             onChange={setField("qualification")}
