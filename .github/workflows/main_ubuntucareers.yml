@@ -73,14 +73,20 @@ jobs:
           REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
           REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
 
-      - name: Verify build output
-        run: ls -la my-app/build || echo "BUILD FOLDER MISSING"
-
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: build
           path: my-app/build
+
+      - name: Upload server files artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-files
+          path: |
+            my-app/server.js
+            my-app/package.json
+            my-app/package-lock.json
 
   deploy:
     runs-on: ubuntu-latest
@@ -93,19 +99,29 @@ jobs:
           name: build
           path: build
 
-      - name: Verify downloaded build
-        run: ls -la build || echo "NO BUILD DOWNLOADED"
+      - name: Download server files
+        uses: actions/download-artifact@v4
+        with:
+          name: server-files
+          path: server-files
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Verify build folder
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Contents of build folder:"
+          ls -la build
+          echo "Contents of server-files folder:"
+          ls -la server-files
 
       - name: Prepare deployment package
         run: |
           mkdir -p deploy-package
-          cp -r build/* deploy-package/
-          cp my-app/server.js deploy-package/
-          cp my-app/package.json deploy-package/
-          cp my-app/package-lock.json deploy-package/
+          cp -r build deploy-package/build
+          cp server-files/server.js deploy-package/
+          cp server-files/package.json deploy-package/
+          cp server-files/package-lock.json deploy-package/
+          echo "Deployment package contents:"
+          ls -la deploy-package
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
