@@ -91,3 +91,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare deployment package
+        run: |
+          mkdir deploy-package
+          cp -r build deploy-package/
+          cp my-app/server.js deploy-package/
+          cp my-app/package.json deploy-package/
+          cp my-app/package-lock.json deploy-package/
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: "UbuntuCareers"
+          slot-name: "Production"
+          package: deploy-package
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69C9B4F571244BB0AA7474BC29A01C9C }}
