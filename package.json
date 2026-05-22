@@ -26,9 +26,6 @@
     "node": ">=18"
   },
   "jest": {
-    "roots": [
-      "<rootDir>/src"
-    ],
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
       "!src/**/*.test.{js,jsx}",
@@ -36,6 +33,9 @@
       "!src/index.js",
       "!src/reportWebVitals.js",
       "!src/setupTests.js"
+    ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/src/setupTests.js"
     ],
     "moduleNameMapper": {
       "\\.(css|less|scss|sass)$": "identity-obj-proxy",
@@ -47,9 +47,6 @@
       "json-summary"
     ],
     "testEnvironment": "jsdom",
-    "setupFilesAfterFramework": [
-      "<rootDir>/src/setupTests.js"
-    ],
     "transform": {
       "^.+\\.(js|jsx)$": "babel-jest"
     },
