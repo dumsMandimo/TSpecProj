@@ -23,7 +23,6 @@ jobs:
         working-directory: my-app
 
       - name: Run tests with coverage (non-blocking)
-        id: tests
         continue-on-error: true
         run: npm run test:ci
         working-directory: my-app
@@ -74,6 +73,9 @@ jobs:
           REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
           REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
 
+      - name: Verify build output
+        run: ls -la my-app/build || echo "BUILD FOLDER MISSING"
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -91,15 +93,15 @@ jobs:
           name: build
           path: build
 
+      - name: Verify downloaded build
+        run: ls -la build || echo "NO BUILD DOWNLOADED"
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Debug build folder
-        run: ls -la build
-
       - name: Prepare deployment package
         run: |
-          mkdir deploy-package
+          mkdir -p deploy-package
           cp -r build/* deploy-package/
           cp my-app/server.js deploy-package/
           cp my-app/package.json deploy-package/
