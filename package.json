@@ -42,9 +42,6 @@
       "lcov",
       "text",
       "json-summary"
-    ],
-    "setupFilesAfterEnv": [
-      "<rootDir>/src/setupTests.js"
     ]
   },
   "browserslist": {
