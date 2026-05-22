@@ -79,6 +79,15 @@ jobs:
           name: build
           path: my-app/build
 
+      - name: Upload server files artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-files
+          path: |
+            my-app/server.js
+            my-app/package.json
+            my-app/package-lock.json
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -90,19 +99,29 @@ jobs:
           name: build
           path: build
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Download server files
+        uses: actions/download-artifact@v4
+        with:
+          name: server-files
+          path: server-files
 
       - name: Verify build folder
-        run: ls -la build
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Contents of build folder:"
+          ls -la build
+          echo "Contents of server-files folder:"
+          ls -la server-files
 
       - name: Prepare deployment package
         run: |
           mkdir -p deploy-package
           cp -r build deploy-package/build
-          cp my-app/server.js deploy-package/
-          cp my-app/package.json deploy-package/
-          cp my-app/package-lock.json deploy-package/
+          cp server-files/server.js deploy-package/
+          cp server-files/package.json deploy-package/
+          cp server-files/package-lock.json deploy-package/
+          echo "Deployment package contents:"
+          ls -la deploy-package
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
