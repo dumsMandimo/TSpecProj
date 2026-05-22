@@ -21,7 +21,15 @@ jobs:
         working-directory: my-app
 
       - name: Debug Jest config
-        run: npx react-scripts test --showConfig --watchAll=false 2>&1 | grep -E "roots|rootDir" || true
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Directory contents:"
+          ls -la
+          echo "src directory exists:"
+          ls -la src || echo "NO SRC DIRECTORY FOUND"
+          echo "Node modules react-scripts exists:"
+          ls node_modules/.bin/react-scripts || echo "react-scripts NOT FOUND"
         working-directory: my-app
 
       - name: Run tests with coverage
