@@ -30,10 +30,6 @@ jobs:
         env:
           CI: true
 
-      - name: Verify coverage folder exists
-        run: |
-          ls -la my-app/coverage || echo "No coverage folder generated"
-
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
@@ -98,10 +94,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Debug build folder
+        run: ls -la build
+
       - name: Prepare deployment package
         run: |
           mkdir deploy-package
-          cp -r build deploy-package/
+          cp -r build/* deploy-package/
           cp my-app/server.js deploy-package/
           cp my-app/package.json deploy-package/
           cp my-app/package-lock.json deploy-package/
