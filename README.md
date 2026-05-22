@@ -1,6 +1,6 @@
 # Ubuntu Careers Platform
 
-![CI/CD Pipeline](https://github.com/dumsMandimo/TSpecProj/actions/workflows/ci-cd.yml/badge.svg)
+
 [![codecov](https://codecov.io/gh/dumsMandimo/TSpecProj/branch/main/graph/badge.svg)](https://codecov.io/gh/YOUR_GITHUB_USERNAME/TSpecProj)
 
 ---
