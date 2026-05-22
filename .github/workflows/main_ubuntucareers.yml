@@ -1,5 +1,4 @@
 name: CI/CD Pipeline
-
 on:
   push:
     branches: [main]
@@ -8,7 +7,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -19,10 +17,16 @@ jobs:
           node-version: "20.x"
 
       - name: Install dependencies
-        run: cd my-app && npm ci --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
+        working-directory: my-app
+
+      - name: Debug Jest config
+        run: npx react-scripts test --showConfig --watchAll=false 2>&1 | grep -E "roots|rootDir" || true
+        working-directory: my-app
 
       - name: Run tests with coverage
-        run: cd my-app && npm test -- --coverage --watchAll=false --passWithNoTests
+        run: npm test -- --coverage --watchAll=false --passWithNoTests
+        working-directory: my-app
         env:
           CI: true
 
@@ -42,7 +46,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: test
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -53,10 +56,12 @@ jobs:
           node-version: "20.x"
 
       - name: Install dependencies
-        run: cd my-app && npm ci --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
+        working-directory: my-app
 
       - name: Build React app
-        run: cd my-app && npm run build
+        run: npm run build
+        working-directory: my-app
         env:
           CI: false
           REACT_APP_FIREBASE_API_KEY: ${{ secrets.REACT_APP_FIREBASE_API_KEY }}
@@ -75,7 +80,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -83,18 +87,7 @@ jobs:
           name: build
           path: build
 
-      - name: Prepare deployment package
-        run: |
-          mkdir deploy-package
-          cp -r build deploy-package/
-          cp my-app/server.js deploy-package/
-          cp my-app/package.json deploy-package/
-          cp my-app/package-lock.json deploy-package/
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: "UbuntuCareers"
-          slot-name: "Production"
-          package: deploy-package
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_69C9B4F571244BB0AA7474BC29A01C9C }}
+      - name: Prepare deployment package
