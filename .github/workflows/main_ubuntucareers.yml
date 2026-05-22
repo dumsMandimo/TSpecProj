@@ -20,20 +20,18 @@ jobs:
         run: npm ci --legacy-peer-deps
         working-directory: my-app
 
-      - name: Debug Jest config
+      - name: Debug directory structure
         run: |
           echo "Current directory:"
           pwd
           echo "Directory contents:"
           ls -la
-          echo "src directory exists:"
+          echo "src directory:"
           ls -la src || echo "NO SRC DIRECTORY FOUND"
-          echo "Node modules react-scripts exists:"
-          ls node_modules/.bin/react-scripts || echo "react-scripts NOT FOUND"
         working-directory: my-app
 
       - name: Run tests with coverage
-        run: npm test -- --coverage --watchAll=false --passWithNoTests
+        run: npm run test:ci
         working-directory: my-app
         env:
           CI: true
